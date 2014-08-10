@@ -1,0 +1,5 @@
+dependencies {
+    compile project(':shared:backend')
+
+    compile 'org.rocket:rocket-network:1.1-beta9'
+}

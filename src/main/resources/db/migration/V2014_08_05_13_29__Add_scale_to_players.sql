@@ -1,0 +1,1 @@
+alter table players add scale smallint not null;
