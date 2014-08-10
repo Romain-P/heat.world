@@ -28,6 +28,10 @@ allprojects {
         provided
     }
 
+    configurations.all {
+        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    }
+
     dependencies {
         provided 'org.projectlombok:lombok:1.14.0'
 
