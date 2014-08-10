@@ -22,3 +22,6 @@ dependencies {
 
 apply plugin: 'application'
 mainClassName = 'org.heat.world.App'
+run {
+    workingDir = rootProject.projectDir
+}
