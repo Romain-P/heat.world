@@ -1,0 +1,8 @@
+include 'world'
+    include 'world:world-backend'
+    include 'world:world-frontend'
+    include 'world:world-distrib'
+
+include 'world-api'
+    include 'world-api:world-backend-api'
+    include 'world-api:world-players-api'

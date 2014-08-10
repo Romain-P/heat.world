@@ -1,0 +1,31 @@
+apply plugin: 'maven'
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar, javadocJar
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            if (project.version.endsWith('SNAPSHOT')) {
+                repository(url: 'http://archiva.gitlab.servers.loadlow.me/repository/snapshots') {
+                    authentication(userName: archivaUsername, password: archivaPassword)
+                }
+            } else {
+                repository(url: 'http://archiva.gitlab.servers.loadlow.me/repository/internal') {
+                    authentication(userName: archivaUsername, password: archivaPassword)
+                }
+            }
+        }
+    }
+}

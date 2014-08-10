@@ -1,5 +1,6 @@
-dependencies {
-    compile project(':shared:backend')
+apply from: '../../publishable.gradle'
 
+dependencies {
+    compile 'org.heat:shared-backend:0.1-SNAPSHOT'
     compile 'org.rocket:rocket-network:1.1-beta9'
 }

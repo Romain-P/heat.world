@@ -1,1 +1,1 @@
-flyway.url=jdbc:postgresql://localhost/heat_login
+flyway.url=jdbc:postgresql://localhost/heat_world_jiva

@@ -1,5 +1,5 @@
 dependencies {
-    compile project(':shared:distrib')
+    compile 'org.heat:shared-distrib:0.1-SNAPSHOT'
 
     compile project(':world:world-backend')
     compile project(':world:world-frontend')
