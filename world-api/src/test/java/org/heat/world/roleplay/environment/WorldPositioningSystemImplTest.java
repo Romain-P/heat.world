@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.concurrent.ExecutorService;
 
 import static org.junit.Assert.assertEquals;
@@ -29,11 +30,17 @@ public class WorldPositioningSystemImplTest {
 
     @Before
     public void setUp() throws Exception {
+        File configFile = new File(System.getenv("PWD") + "/world.conf").getAbsoluteFile();
+
+        if (!configFile.exists()) {
+            throw new FileNotFoundException(configFile.toString());
+        }
+
         Guice.createInjector(
                 new StdDataModule(),
                 new StdWorldEnvironmentModule(),
                 binder -> {
-                    binder.bind(Config.class).toInstance(ConfigFactory.parseFileAnySyntax(new File("world.conf")));
+                    binder.bind(Config.class).toInstance(ConfigFactory.parseFileAnySyntax(configFile));
                     binder.bind(EventBusBuilder.class).toInstance(mock(EventBusBuilder.class));
                     binder.bind(ExecutorService.class).toInstance(MoreExecutors.sameThreadExecutor());
                 }
