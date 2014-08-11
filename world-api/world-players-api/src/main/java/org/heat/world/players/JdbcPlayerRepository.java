@@ -177,6 +177,7 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
         return DefaultPlayerSpellBook.create(spells);
     }
 
+    @SuppressWarnings("RedundantTypeArguments")
     @SneakyThrows
     private Array exportPlayerSpells(PlayerSpellBook book) {
         Connection co = connection.get();
