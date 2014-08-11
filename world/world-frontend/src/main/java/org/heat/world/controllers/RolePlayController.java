@@ -6,6 +6,7 @@ import com.ankamagames.dofus.network.messages.game.context.roleplay.*;
 import com.github.blackrush.acara.Listener;
 import lombok.extern.slf4j.Slf4j;
 import org.heat.world.controllers.events.CreateContextEvent;
+import org.heat.world.controllers.events.DestroyContextEvent;
 import org.heat.world.controllers.events.EnterContextEvent;
 import org.heat.world.controllers.events.QuitContextEvent;
 import org.heat.world.controllers.utils.Basics;
@@ -45,6 +46,14 @@ public class RolePlayController {
         });
 
         client.getEventBus().publish(new CreateContextEvent(ROLE_PLAY));
+    }
+
+    @Disconnect
+    public void destroyContext() {
+        if (player.isPresent()) {
+            client.getEventBus().publish(new QuitContextEvent(ROLE_PLAY));
+            client.getEventBus().publish(new DestroyContextEvent(ROLE_PLAY));
+        }
     }
 
     @Receive
