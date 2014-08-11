@@ -127,6 +127,28 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
         Experience step = this.experience.getNextUntilEnoughExperience(experience);
         return new PlayerExperience(experience, step);
     }
+    
+    @SneakyThrows
+    private PlayerStatBook buildPlayerStats(Breed breed, ResultSet rset) {
+        PlayerStatBook stats = new DefaultPlayerStatBook(
+                breed,
+                rset.getInt("statsPoints"),
+                rset.getInt("spellsPoints"),
+                rset.getShort("strength"),
+                rset.getShort("vitality"),
+                rset.getShort("wisdom"),
+                rset.getShort("chance"),
+                rset.getShort("agility"),
+                rset.getShort("intelligence")
+        );
+        stats.get(LIFE).setCurrentAndMax(rset.getShort("life"));
+        stats.get(ENERGY).setCurrentAndMax(rset.getShort("energy"), rset.getShort("maxEnergy"));
+        stats.get(ACTIONS).setBase(rset.getShort("actions"));
+        stats.get(MOVEMENTS).setBase(rset.getShort("movements"));
+        stats.get(PROSPECTING).setBase(rset.getShort("prospecting"));
+        stats.get(SUMMONABLE_CREATURES).setBase(rset.getShort("summonableCreatures"));
+        return stats;
+    }
 
     @SneakyThrows
     private Player importFromDb(ResultSet rset) {
@@ -149,23 +171,7 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
                 DirectionsEnum.valueOf(rset.getInt("directionId")).get()
         ));
         player.setExperience(buildPlayerExperience(rset.getDouble("experience")));
-        player.setStats(new DefaultPlayerStatBook(
-                player.getBreed(),
-                rset.getInt("statsPoints"),
-                rset.getInt("spellsPoints"),
-                rset.getShort("strength"),
-                rset.getShort("vitality"),
-                rset.getShort("wisdom"),
-                rset.getShort("chance"),
-                rset.getShort("agility"),
-                rset.getShort("intelligence")
-        ));
-        player.getStats().get(LIFE).setCurrentAndMax(rset.getShort("life"));
-        player.getStats().get(ENERGY).setCurrentAndMax(rset.getShort("energy"), rset.getShort("maxEnergy"));
-        player.getStats().get(ACTIONS).setBase(rset.getShort("actions"));
-        player.getStats().get(MOVEMENTS).setBase(rset.getShort("movements"));
-        player.getStats().get(PROSPECTING).setBase(rset.getShort("prospecting"));
-        player.getStats().get(SUMMONABLE_CREATURES).setBase(rset.getShort("summonableCreatures"));
+        player.setStats(buildPlayerStats(player.getBreed(), rset));
         return player;
     }
 
