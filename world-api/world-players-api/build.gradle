@@ -2,4 +2,6 @@ apply from: '../../publishable.gradle'
 
 dependencies {
     compile project(':world-api')
+
+    testCompile 'org.heat:shared-distrib:0.1-SNAPSHOT'
 }

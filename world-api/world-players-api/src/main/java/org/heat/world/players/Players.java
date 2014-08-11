@@ -1,12 +1,17 @@
 package org.heat.world.players;
 
 import com.ankamagames.dofus.datacenter.breeds.Breed;
+import com.ankamagames.dofus.datacenter.spells.Spell;
 import com.ankamagames.dofus.network.types.game.character.characteristic.CharacterCharacteristicsInformations;
+import org.heat.data.Datacenter;
 import org.heat.shared.IntPair;
 import org.heat.world.metrics.GameStatBook;
 import org.heat.world.metrics.GameStats;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 import static org.heat.world.metrics.GameStats.*;
 
@@ -67,6 +72,27 @@ public final class Players {
             cost += i;
         }
         return cost;
+    }
+
+    public static List<PlayerSpell> buildDefaultBreedSpells(Datacenter datacenter, int[] minLevels, Breed breed, int actualLevel) {
+        long[] spellsId = breed.getBreedSpellsId();
+        List<PlayerSpell> spells = new ArrayList<>(spellsId.length);
+
+        for (int i = 0; i < spellsId.length; i++) {
+            long spellId = spellsId[i];
+
+            Spell spell = datacenter.find(Spell.class, (int) spellId).get();
+
+            int minLevel = minLevels[i];
+
+            OptionalInt position = actualLevel >= minLevel
+                    ? OptionalInt.of(i + 1)
+                    : OptionalInt.empty();
+
+            spells.add(PlayerSpell.create(spell, minLevel, position));
+        }
+
+        return spells;
     }
 
     public static void populateCharacterCharacteristicsInformations(GameStatBook book, CharacterCharacteristicsInformations infos) {

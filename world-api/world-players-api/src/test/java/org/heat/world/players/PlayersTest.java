@@ -1,18 +1,49 @@
 package org.heat.world.players;
 
+import com.ankamagames.dofus.datacenter.breeds.Breed;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import lombok.RequiredArgsConstructor;
+import org.heat.StdDataModule;
+import org.heat.data.Datacenter;
 import org.heat.shared.IntPair;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.heat.shared.tests.CollectionMatchers.hasSize;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class PlayersTest {
 
+    @Inject Datacenter datacenter;
 
     @Before
     public void setUp() throws Exception {
+        File configFile = new File("world.conf").getAbsoluteFile();
 
+        if (!configFile.exists()) {
+            throw new FileNotFoundException(configFile.toString());
+        }
+
+        Guice.createInjector(
+                new StdDataModule(),
+                binder -> {
+                    binder.bind(Config.class).toInstance(ConfigFactory.parseFileAnySyntax(configFile));
+                    binder.bind(ExecutorService.class).toInstance(MoreExecutors.sameThreadExecutor());
+                }
+        ).injectMembers(this);
     }
 
     @Test
@@ -97,5 +128,22 @@ public class PlayersTest {
                     Players.upgrade(expectation.stats, expectation.actual, expectation.points)
             );
         }
+    }
+
+    @Test
+    public void testBuildDefaultBreedSpells() throws Exception {
+        // given
+        Breed breed = datacenter.find(Breed.class, 1).get();
+        int[] minLevels = Files.lines(Paths.get("dist/spells.txt"))
+                .mapToInt(Integer::parseInt)
+                .toArray();
+        int actualLevel = 1;
+
+        // when
+        List<PlayerSpell> spells = Players.buildDefaultBreedSpells(datacenter, minLevels, breed, actualLevel);
+
+        // then
+        assertThat("spells", spells, hasSize(21));
+        assertThat("spells with position", spells.stream().filter(PlayerSpell::hasPosition).count(), equalTo(3L));
     }
 }
