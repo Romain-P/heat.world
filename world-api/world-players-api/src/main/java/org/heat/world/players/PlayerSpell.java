@@ -16,11 +16,12 @@ import static org.heat.world.players.Players.checkValidSpellLevel;
 public final class PlayerSpell {
 
     final Spell data;
+    final int minPlayerLevel;
     byte level;
     @Setter OptionalInt position;
 
-    public static PlayerSpell create(Spell data) {
-        return create(data, MIN_SPELL_LEVEL, OptionalInt.empty());
+    public static PlayerSpell create(Spell data, int minPlayerLevel, OptionalInt position) {
+        return create(data, minPlayerLevel, MIN_SPELL_LEVEL, position);
     }
 
     public int getId() {
