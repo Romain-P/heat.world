@@ -75,6 +75,7 @@ public class DefaultPlayerFactory implements PlayerFactory {
         player.setPosition(buildPosition(player.getBreed()));
         player.setExperience(buildExperience());
         player.setStats(buildStats(player.getBreed()));
+        player.setSpells(buildSpells(player.getBreed(), player.getExperience().getCurrentLevel()));
 
         return Futures.success(player);
     }
@@ -129,5 +130,9 @@ public class DefaultPlayerFactory implements PlayerFactory {
         book.setSpellsPoints(startSpellsPoints);
 
         return book;
+    }
+
+    protected PlayerSpellBook buildSpells(Breed breed, int level) {
+        return DefaultPlayerSpellBook.create(datacenter, breed, level);
     }
 }
