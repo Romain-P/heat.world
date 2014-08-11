@@ -28,6 +28,13 @@ public final class PlayerSpell {
         return data.getId();
     }
 
+    public int getMinPlayerLevel() {
+        if (level == Players.MAX_SPELL_LEVEL - 1) {
+            return 100 + minPlayerLevel;
+        }
+        return minPlayerLevel;
+    }
+
     public boolean hasPosition() {
         return this.position.isPresent();
     }
