@@ -15,8 +15,6 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
@@ -134,13 +132,10 @@ public class PlayersTest {
     public void testBuildDefaultBreedSpells() throws Exception {
         // given
         Breed breed = datacenter.find(Breed.class, 1).get();
-        int[] minLevels = Files.lines(Paths.get("dist/spells.txt"))
-                .mapToInt(Integer::parseInt)
-                .toArray();
         int actualLevel = 1;
 
         // when
-        List<PlayerSpell> spells = Players.buildDefaultBreedSpells(datacenter, minLevels, breed, actualLevel);
+        List<PlayerSpell> spells = Players.buildDefaultBreedSpells(datacenter, breed, actualLevel);
 
         // then
         assertThat("spells", spells, hasSize(21));
