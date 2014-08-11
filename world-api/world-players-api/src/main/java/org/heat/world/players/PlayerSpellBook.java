@@ -1,6 +1,7 @@
 package org.heat.world.players;
 
 import com.ankamagames.dofus.datacenter.spells.Spell;
+import com.ankamagames.dofus.network.types.game.data.items.SpellItem;
 
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -25,5 +26,9 @@ public interface PlayerSpellBook {
 
     default void resetAll() {
         getSpellStream().forEach(PlayerSpell::resetLevel);
+    }
+
+    default Stream<SpellItem> toSpellItem() {
+        return getSpellStream().map(PlayerSpell::toSpellItem);
     }
 }
