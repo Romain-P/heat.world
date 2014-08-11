@@ -9,22 +9,23 @@ import static org.junit.Assert.assertEquals;
 
 public class PlayersTest {
 
-    private long[][] stats;
 
     @Before
     public void setUp() throws Exception {
-        stats = new long[][] {
-            { 0, 1 },
-            { 100, 2 },
-            { 200, 3 },
-            { 300, 4 },
-            { 400, 5 },
-        };
+
     }
 
     @Test
     public void testGetCostOneUpgrade() throws Exception {
         // given
+        final long[][] stats = new long[][] {
+                { 0, 1 },
+                { 100, 2 },
+                { 200, 3 },
+                { 300, 4 },
+                { 400, 5 },
+        };
+
         final int[][] expectations = new int[][] {
         // actual, cost
             {0, 1},
@@ -61,6 +62,14 @@ public class PlayersTest {
     @Test
     public void testUpgrade() throws Exception {
         // given
+        final long[][] stats = new long[][] {
+                { 0, 1 },
+                { 100, 2 },
+                { 200, 3 },
+                { 300, 4 },
+                { 400, 5 },
+        };
+
         final expectation[] expectations = new expectation[]{
                 expectation.$(0, 200, IntPair.of(150, 200), stats),
                 expectation.$(100, 100, IntPair.of(50, 100), stats),
