@@ -150,6 +150,8 @@ public class PlayersController {
 
         if (cost > player.getStats().getSpellsPoints()) {
             client.write(SpellUpgradeFailureMessage.i);
+        } else if (player.getExperience().getCurrentLevel() < spell.getMinPlayerLevel()) {
+            client.write(SpellUpgradeFailureMessage.i);
         } else {
             player.getStats().plusSpellsPoints(-cost);
             spell.setLevel(msg.spellLevel);
