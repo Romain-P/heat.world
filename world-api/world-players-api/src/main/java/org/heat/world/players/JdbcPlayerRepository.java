@@ -1,6 +1,7 @@
 package org.heat.world.players;
 
 import com.ankamagames.dofus.datacenter.breeds.Breed;
+import com.ankamagames.dofus.datacenter.spells.Spell;
 import com.ankamagames.dofus.network.enums.DirectionsEnum;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
@@ -21,10 +22,8 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.sql.Struct;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -151,6 +150,34 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
     }
 
     @SneakyThrows
+    private PlayerSpellBook buildPlayerSpells(ResultSet rset) {
+        List<PlayerSpell> spells = new LinkedList<>();
+
+        Struct[] array = (Struct[]) rset.getArray("spells").getArray();
+        for (int i = 0; i < array.length; i++) {
+            // extract
+            Struct struct = array[i];
+            Object[] attr = struct.getAttributes();
+            int spellId = (Integer) attr[0];
+            int spellLevelInt = (Integer) attr[0];
+            int spellPositionInt = (Integer) attr[0];
+
+            // refine
+            Spell spellData = datacenter.find(Spell.class, spellId).get();
+            byte spellLevel = (byte) spellLevelInt;
+            OptionalInt spellPosition = spellPositionInt != -1
+                    ? OptionalInt.of(spellPositionInt)
+                    : OptionalInt.empty();
+            int spellMinPlayerLevel = Players.getSpellMinPlayerLevel(i);
+
+            // use
+            spells.add(PlayerSpell.create(spellData, spellMinPlayerLevel, spellLevel, spellPosition));
+        }
+
+        return DefaultPlayerSpellBook.create(spells);
+    }
+
+    @SneakyThrows
     private Player importFromDb(ResultSet rset) {
         Player player = new Player();
         player.setId(rset.getInt("id"));
@@ -172,6 +199,7 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
         ));
         player.setExperience(buildPlayerExperience(rset.getDouble("experience")));
         player.setStats(buildPlayerStats(player.getBreed(), rset));
+        player.setSpells(buildPlayerSpells(rset));
         return player;
     }
 
