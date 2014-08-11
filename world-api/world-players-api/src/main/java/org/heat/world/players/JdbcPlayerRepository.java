@@ -84,7 +84,8 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
             "actions",
             "movements",
             "prospecting",
-            "summonableCreatures"
+            "summonableCreatures",
+            "spells"
     );
     ImmutableList<String> modifiableFields = ImmutableList.of(
             "sex",
@@ -110,7 +111,8 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
             "actions",
             "movements",
             "prospecting",
-            "summonableCreatures"
+            "summonableCreatures",
+            "spells"
     );
 
     private void initIdGenerator() {
