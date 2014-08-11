@@ -12,6 +12,7 @@ import com.ankamagames.dofus.network.messages.game.context.notification.Notifica
 import com.ankamagames.dofus.network.messages.game.context.roleplay.stats.StatsUpgradeRequestMessage;
 import com.ankamagames.dofus.network.messages.game.context.roleplay.stats.StatsUpgradeResultMessage;
 import com.ankamagames.dofus.network.messages.game.initialization.CharacterLoadingCompleteMessage;
+import com.ankamagames.dofus.network.messages.game.inventory.spells.SpellListMessage;
 import com.github.blackrush.acara.Listener;
 import org.fungsi.Unit;
 import org.fungsi.concurrent.Future;
@@ -25,10 +26,7 @@ import org.heat.world.controllers.utils.Authenticated;
 import org.heat.world.controllers.utils.Idling;
 import org.heat.world.metrics.GameStats;
 import org.heat.world.metrics.RegularStat;
-import org.heat.world.players.Player;
-import org.heat.world.players.PlayerCreationException;
-import org.heat.world.players.PlayerFactory;
-import org.heat.world.players.PlayerRepository;
+import org.heat.world.players.*;
 import org.rocket.network.*;
 
 import javax.inject.Inject;
@@ -119,7 +117,9 @@ public class PlayersController {
     public void createRolePlayContext(CreateContextEvent evt) {
         if (evt.getContext() != GameContextEnum.ROLE_PLAY) return;
 
-        client.write(new CharacterStatsListMessage(player.get().toCharacterCharacteristicsInformations()));
+        Player player = this.player.get();
+        client.write(new SpellListMessage(false, player.getSpells().toSpellItem()));
+        client.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
     }
 
     @Receive
