@@ -54,7 +54,7 @@ public final class PlayerSpell {
 
     public SpellItem toSpellItem() {
         return new SpellItem(
-                (short) position.orElse(-1),
+                (short) 63, // TODO(world/players): spell position
                 data.getId(),
                 level
         );
