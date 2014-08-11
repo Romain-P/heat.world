@@ -19,10 +19,7 @@ import org.heat.world.roleplay.environment.WorldPositioningSystem;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Struct;
+import java.sql.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -32,6 +29,7 @@ import static org.heat.world.metrics.GameStats.*;
 
 public final class JdbcPlayerRepository extends JdbcRepository implements PlayerRepository {
     private final DataSource dataSource;
+    private final ThreadLocal<Connection> connection = new ThreadLocal<>();
     private final Worker worker;
     private final Datacenter datacenter;
     private final Experience experience;
@@ -178,6 +176,18 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
     }
 
     @SneakyThrows
+    private Array exportPlayerSpells(PlayerSpellBook book) {
+        Connection co = connection.get();
+        return co.createArrayOf("player_spell", book.getSpellStream()
+            .<Object>map(spell -> co.createStruct("player_spell", new Object[] {
+                    spell.getId(),
+                    (int) spell.getLevel(),
+                    spell.getPosition().orElse(-1)
+            }))
+            .toArray());
+    }
+
+    @SneakyThrows
     private Player importFromDb(ResultSet rset) {
         Player player = new Player();
         player.setId(rset.getInt("id"));
@@ -236,6 +246,7 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
         s.setShort(index++, player.getStats().get(MOVEMENTS).getBase());
         s.setShort(index++, player.getStats().get(PROSPECTING).getBase());
         s.setShort(index++, player.getStats().get(SUMMONABLE_CREATURES).getBase());
+        s.setArray(index++, exportPlayerSpells(player.getSpells()));
     }
 
     @SuppressWarnings("UnusedAssignment")
@@ -267,6 +278,7 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
         s.setShort(index++, player.getStats().get(MOVEMENTS).getBase());
         s.setShort(index++, player.getStats().get(PROSPECTING).getBase());
         s.setShort(index++, player.getStats().get(SUMMONABLE_CREATURES).getBase());
+        s.setArray(index++, exportPlayerSpells(player.getSpells()));
         s.setInt(index++, player.getId());
     }
 
@@ -315,7 +327,13 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
     @SneakyThrows
     @Override
     protected Connection getConnection() {
-        return dataSource.getConnection();
+        Connection co = dataSource.getConnection();
+        connection.set(co);
+        try {
+            return co;
+        } finally {
+            connection.remove();
+        }
     }
 
     @Override
