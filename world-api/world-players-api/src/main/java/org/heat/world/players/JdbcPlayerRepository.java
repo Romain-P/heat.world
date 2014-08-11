@@ -158,8 +158,8 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
             Struct struct = array[i];
             Object[] attr = struct.getAttributes();
             int spellId = (Integer) attr[0];
-            int spellLevelInt = (Integer) attr[0];
-            int spellPositionInt = (Integer) attr[0];
+            int spellLevelInt = (Integer) attr[1];
+            int spellPositionInt = (Integer) attr[2];
 
             // refine
             Spell spellData = datacenter.find(Spell.class, spellId).get();
