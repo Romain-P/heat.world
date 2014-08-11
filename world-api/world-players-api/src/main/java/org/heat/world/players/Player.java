@@ -38,6 +38,7 @@ public class Player
     WorldPosition position;
     PlayerExperience experience;
     PlayerStatBook stats;
+    PlayerSpellBook spells;
 
     // lombok auto-generates a #isSex() which is invalid here
     public boolean getSex() {
