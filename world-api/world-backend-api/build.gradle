@@ -1,6 +1,7 @@
 apply from: '../../publishable.gradle'
 
 dependencies {
+    compile 'org.heat:util:0.2.1'
     compile 'org.heat:shared-backend:0.1-SNAPSHOT'
     compile 'org.rocket:rocket-network:1.1-beta9'
 }

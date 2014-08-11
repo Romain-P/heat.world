@@ -46,6 +46,10 @@ allprojects {
     }
 
     idea { module { scopes.PROVIDED.plus += configurations.provided } }
+
+    test {
+        workingDir rootProject.projectDir
+    }
 }
 
 
