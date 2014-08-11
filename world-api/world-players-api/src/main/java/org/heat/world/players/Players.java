@@ -86,6 +86,16 @@ public final class Players {
         return cost;
     }
 
+    public static int getSpellMinPlayerLevel(int index) {
+        if (index < 0) {
+            throw new IllegalArgumentException("index must be positive or zero");
+        }
+        if (index < MIN_PLAYER_SPELL_LEVELS.length) {
+            return MIN_PLAYER_SPELL_LEVELS[index];
+        }
+        return NEW_SPELL_DEFAULT_MIN_LEVEL;
+    }
+
     public static List<PlayerSpell> buildDefaultBreedSpells(Datacenter datacenter, Breed breed, int actualLevel) {
         long[] spellsId = breed.getBreedSpellsId();
         List<PlayerSpell> spells = new ArrayList<>(spellsId.length);
