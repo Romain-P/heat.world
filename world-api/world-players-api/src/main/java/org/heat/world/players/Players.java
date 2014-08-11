@@ -21,6 +21,18 @@ public final class Players {
     public static final byte
             MIN_SPELL_LEVEL = 1,
             MAX_SPELL_LEVEL = 6;
+    
+    public static final int[] MIN_PLAYER_SPELL_LEVELS = new int[] {
+            1, 1, 1,
+            3, 6, 9,
+            13, 17, 21,
+            26, 31, 36,
+            42, 48, 54,
+            60, 70, 80, 90,
+            100, 200
+    };
+
+    public static final int NEW_SPELL_DEFAULT_MIN_LEVEL = 1;
 
     public static Optional<long[][]> getStatsPoints(Breed breed, GameStats<?> id) {
         if (id == STRENGTH) return Optional.of(breed.getStatsPointsForStrength());
@@ -74,16 +86,15 @@ public final class Players {
         return cost;
     }
 
-    public static List<PlayerSpell> buildDefaultBreedSpells(Datacenter datacenter, int[] minLevels, Breed breed, int actualLevel) {
+    public static List<PlayerSpell> buildDefaultBreedSpells(Datacenter datacenter, Breed breed, int actualLevel) {
         long[] spellsId = breed.getBreedSpellsId();
         List<PlayerSpell> spells = new ArrayList<>(spellsId.length);
 
         for (int i = 0; i < spellsId.length; i++) {
             long spellId = spellsId[i];
+            int minLevel = MIN_PLAYER_SPELL_LEVELS[i];
 
             Spell spell = datacenter.find(Spell.class, (int) spellId).get();
-
-            int minLevel = minLevels[i];
 
             OptionalInt position = actualLevel >= minLevel
                     ? OptionalInt.of(i + 1)
