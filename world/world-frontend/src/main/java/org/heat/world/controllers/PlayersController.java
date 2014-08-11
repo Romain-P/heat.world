@@ -9,6 +9,9 @@ import com.ankamagames.dofus.network.messages.game.character.creation.CharacterN
 import com.ankamagames.dofus.network.messages.game.character.creation.CharacterNameSuggestionSuccessMessage;
 import com.ankamagames.dofus.network.messages.game.character.stats.CharacterStatsListMessage;
 import com.ankamagames.dofus.network.messages.game.context.notification.NotificationListMessage;
+import com.ankamagames.dofus.network.messages.game.context.roleplay.spell.SpellUpgradeFailureMessage;
+import com.ankamagames.dofus.network.messages.game.context.roleplay.spell.SpellUpgradeRequestMessage;
+import com.ankamagames.dofus.network.messages.game.context.roleplay.spell.SpellUpgradeSuccessMessage;
 import com.ankamagames.dofus.network.messages.game.context.roleplay.stats.StatsUpgradeRequestMessage;
 import com.ankamagames.dofus.network.messages.game.context.roleplay.stats.StatsUpgradeResultMessage;
 import com.ankamagames.dofus.network.messages.game.initialization.CharacterLoadingCompleteMessage;
@@ -135,5 +138,27 @@ public class PlayersController {
             tx.write(new StatsUpgradeResultMessage(upgraded));
             tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
         });
+    }
+
+    @Receive
+    @Idling
+    public void upgradeSpell(SpellUpgradeRequestMessage msg) {
+        Player player = this.player.get();
+        PlayerSpell spell = player.getSpells().findById(msg.spellId).get();
+
+        int cost = Players.getCostUpgradeSpell(spell.getLevel(), msg.spellLevel);
+
+        if (cost > player.getStats().getSpellsPoints()) {
+            client.write(SpellUpgradeFailureMessage.i);
+        } else {
+            player.getStats().plusSpellsPoints(-cost);
+            spell.setLevel(msg.spellLevel);
+            players.save(player);
+
+            client.transaction(tx -> {
+                tx.write(new SpellUpgradeSuccessMessage(spell.getId(), spell.getLevel()));
+                tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
+            });
+        }
     }
 }
