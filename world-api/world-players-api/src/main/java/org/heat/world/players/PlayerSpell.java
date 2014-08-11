@@ -28,6 +28,10 @@ public final class PlayerSpell {
         return data.getId();
     }
 
+    public boolean hasPosition() {
+        return this.position.isPresent();
+    }
+
     public boolean hasPosition(int position) {
         return this.position.isPresent() && this.position.getAsInt() == position;
     }
