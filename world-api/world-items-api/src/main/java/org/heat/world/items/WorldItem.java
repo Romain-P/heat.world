@@ -41,7 +41,11 @@ public final class WorldItem {
     }
 
     WorldItem withUid(int uid) {
-        return create(uid, version, template, effects, position, quantity);
+        return create(uid, version + 1, template, effects, position, quantity);
+    }
+
+    WorldItem withNewVersion() {
+        return copy(template, effects, position, quantity);
     }
 
     // mutators
