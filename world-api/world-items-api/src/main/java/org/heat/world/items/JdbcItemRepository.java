@@ -2,6 +2,7 @@ package org.heat.world.items;
 
 import com.ankamagames.dofus.datacenter.items.Item;
 import com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum;
+import com.ankamagames.dofus.network.types.game.data.items.effects.ObjectEffect;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import lombok.SneakyThrows;
@@ -9,13 +10,18 @@ import org.fungsi.concurrent.Future;
 import org.fungsi.concurrent.Futures;
 import org.fungsi.concurrent.Worker;
 import org.heat.data.Datacenter;
+import org.heat.dofus.network.NetworkComponentFactory;
 import org.heat.shared.database.JdbcRepository;
+import org.heat.shared.io.AutoGrowingWriter;
+import org.heat.shared.io.DataReader;
+import org.heat.shared.io.HeapDataReader;
 import org.heat.shared.io.IO;
 import org.heat.shared.stream.ImmutableCollectors;
 import org.heat.shared.stream.MoreCollectors;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -28,14 +34,16 @@ public final class JdbcItemRepository extends JdbcRepository implements WorldIte
     private final DataSource dataSource;
     private final Worker worker;
     private final Datacenter datacenter;
+    private final NetworkComponentFactory<ObjectEffect> effectFactory;
 
     private final AtomicInteger idGenerator = new AtomicInteger();
 
     @Inject
-    public JdbcItemRepository(DataSource dataSource, Worker worker, Datacenter datacenter) {
+    public JdbcItemRepository(DataSource dataSource, Worker worker, Datacenter datacenter, NetworkComponentFactory<ObjectEffect> effectFactory) {
         this.dataSource = dataSource;
         this.worker = worker;
         this.datacenter = datacenter;
+        this.effectFactory = effectFactory;
     }
 
     ImmutableList<String> columns = ImmutableList.of(
@@ -47,13 +55,37 @@ public final class JdbcItemRepository extends JdbcRepository implements WorldIte
             "quantity"
     );
 
+    @SneakyThrows
     ImmutableSet<WorldItemEffect> importEffects(ResultSet rset) {
-        return ImmutableSet.of(); // TODO(world/items): import effects from database
+        Blob blob = rset.getBlob("effects");
+        try {
+            ImmutableSet.Builder<WorldItemEffect> effects = ImmutableSet.builder();
+
+            byte[] bytes = IO.readAll(blob.getBinaryStream()::read);
+            DataReader reader = new HeapDataReader(bytes, 0, bytes.length);
+            while (reader.canRead(2)) {
+                int typeId = reader.read_ui16();
+                ObjectEffect effect = effectFactory.create(typeId).get();
+                effect.deserialize(reader);
+
+                effects.add(Effects.fromObjectEffect(effect));
+            }
+
+            return effects.build();
+        } finally {
+            blob.free();
+        }
     }
 
     @SneakyThrows
     void exportEffects(PreparedStatement s, int index, ImmutableSet<WorldItemEffect> effects) {
-        s.setBlob(index, IO.asBlob(new byte[0])); // TODO(world/items): export effects to database
+        AutoGrowingWriter writer = new AutoGrowingWriter();
+        for (WorldItemEffect effect : effects) {
+            ObjectEffect e = effect.toObjectEffect();
+            writer.write_ui16(e.getProtocolId());
+            e.serialize(writer);
+        }
+        s.setBlob(index, IO.asBlob(writer.toByteArray()));
     }
 
     @SneakyThrows
