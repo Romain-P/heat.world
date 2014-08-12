@@ -48,6 +48,7 @@ public interface WorldItemBag {
      * Remove an item from bag
      * @param item a non-null item
      * @throws java.util.NoSuchElementException if it doesn't contain item
+     * @throws org.heat.world.items.OutdatedItemException if you try to remove a younger or older item
      */
     void remove(WorldItem item);
 
