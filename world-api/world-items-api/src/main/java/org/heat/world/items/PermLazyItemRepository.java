@@ -4,6 +4,8 @@ import com.google.common.collect.Maps;
 import org.fungsi.concurrent.Future;
 import org.fungsi.concurrent.Futures;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +16,8 @@ public final class PermLazyItemRepository implements WorldItemRepository {
 
     private final Map<Integer, WorldItem> cache = Maps.newConcurrentMap();
 
-    public PermLazyItemRepository(WorldItemRepository repository) {
+    @Inject
+    public PermLazyItemRepository(@Named("base") WorldItemRepository repository) {
         this.repository = repository;
     }
 

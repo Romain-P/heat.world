@@ -14,6 +14,7 @@ import org.heat.shared.io.IO;
 import org.heat.shared.stream.ImmutableCollectors;
 import org.heat.shared.stream.MoreCollectors;
 
+import javax.inject.Inject;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -30,6 +31,7 @@ public final class JdbcItemRepository extends JdbcRepository implements WorldIte
 
     private final AtomicInteger idGenerator = new AtomicInteger();
 
+    @Inject
     public JdbcItemRepository(DataSource dataSource, Worker worker, Datacenter datacenter) {
         this.dataSource = dataSource;
         this.worker = worker;
