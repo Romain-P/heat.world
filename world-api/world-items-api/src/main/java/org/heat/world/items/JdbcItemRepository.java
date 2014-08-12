@@ -48,7 +48,6 @@ public final class JdbcItemRepository extends JdbcRepository implements WorldIte
 
     ImmutableList<String> columns = ImmutableList.of(
             "uid",
-            "version",
             "gid",
             "effects",
             "position",
@@ -92,7 +91,7 @@ public final class JdbcItemRepository extends JdbcRepository implements WorldIte
     WorldItem importFromDb(ResultSet rset) {
         return WorldItem.create(
                 rset.getInt("uint"),
-                rset.getLong("version"),
+                0,
                 datacenter.find(Item.class, rset.getInt("template_id")).get(),
                 importEffects(rset),
                 CharacterInventoryPositionEnum.valueOf(rset.getInt("position")).get(),
@@ -105,7 +104,6 @@ public final class JdbcItemRepository extends JdbcRepository implements WorldIte
     void exportToDb(WorldItem item, PreparedStatement s) {
         int index = 1;
         s.setInt(index++, item.getUid());
-        s.setLong(index++, item.getVersion());
         s.setInt(index++, item.getTemplate().getId());
         exportEffects(s, index++, item.getEffects());
         s.setInt(index++, item.getPosition().value);
