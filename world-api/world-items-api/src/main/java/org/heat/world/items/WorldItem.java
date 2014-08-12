@@ -4,9 +4,15 @@ import com.ankamagames.dofus.datacenter.items.Item;
 import com.ankamagames.dofus.datacenter.items.Weapon;
 import com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum;
 import com.ankamagames.dofus.network.types.game.data.items.ObjectItem;
+import com.google.common.collect.ImmutableSet;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.fungsi.Either;
 
-import java.util.stream.Stream;
+import java.util.function.Function;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * {@link org.heat.world.items.WorldItem} is an immutable data class.
@@ -18,47 +24,77 @@ import java.util.stream.Stream;
  *     <li>GID, standing for Group IDentifier, an identifier referencing template's id</li>
  * </ol>
  */
-public interface WorldItem {
-    // constant properties
-    long getVersion();
-    int getUid();
-    Item getTemplate();
-    Stream<WorldItemEffect> getEffectStream();
+@Getter
+@RequiredArgsConstructor(staticName = "create")
+@EqualsAndHashCode(of = {"uid", "version"})
+public final class WorldItem {
+    final int uid;
+    final long version;
+    final Item template;
+    final ImmutableSet<WorldItemEffect> effects;
+    final CharacterInventoryPositionEnum position;
+    final int quantity;
 
-    // mutable properties
-    CharacterInventoryPositionEnum getPosition();
-    int getQuantity();
+    // backdoors
+    WorldItem copy(Item template, ImmutableSet<WorldItemEffect> effects, CharacterInventoryPositionEnum position, int quantity) {
+        return create(uid, version + 1, template, effects, position, quantity);
+    }
 
-    WorldItem withNewVersion();
-    WorldItem withPosition(CharacterInventoryPositionEnum position);
-    WorldItem withQuantity(int quantity);
+    WorldItem withUid(int uid) {
+        return create(uid, version, template, effects, position, quantity);
+    }
+
+    // mutators
+    public WorldItem withPosition(CharacterInventoryPositionEnum position) {
+        requireNonNull(position, "position");
+        return copy(template, effects, position, quantity);
+    }
+
+    public WorldItem withQuantity(int quantity) {
+        if (quantity < 0) {
+            throw new IllegalArgumentException("quantity must be positive or zero");
+        }
+        return copy(template, effects, position, quantity);
+    }
+
+    public WorldItem withEffects(ImmutableSet<WorldItemEffect> effects) {
+        requireNonNull(effects, "effects");
+        return copy(template, effects, position, quantity);
+    }
 
     // shorthands
-    default short getGid() {
+    public short getGid() {
         return (short) getTemplate().getId();
     }
 
-    default ObjectItem toObjectItem() {
-        return new ObjectItem(
-                getPosition().value,
-                getGid(),
-                getEffectStream().map(WorldItemEffect::toObjectEffect),
-                getUid(),
-                getQuantity()
-        );
-    }
-
-    default boolean isWeapon() {
+    public boolean isWeapon() {
         return getTemplate() instanceof Weapon;
     }
 
-    default Either<Item, Weapon> getItemOrWeapon() {
-        return isWeapon()
-                ? Either.right((Weapon) getTemplate())
-                : Either.left(getTemplate());
+    public Either<Item, Weapon> getItemOrWeapon() {
+        return isWeapon() ? Either.right(((Weapon) getTemplate())) : Either.left(getTemplate());
     }
 
-    default WorldItem plusQuantity(int quantity) {
+    public WorldItem plusQuantity(int quantity) {
         return withQuantity(getQuantity() + quantity);
+    }
+
+    public WorldItem mapEffects(Function<WorldItemEffect, WorldItemEffect> fn) {
+        ImmutableSet.Builder<WorldItemEffect> newEffects = ImmutableSet.builder();
+        for (WorldItemEffect effect : getEffects()) {
+            newEffects.add(fn.apply(effect));
+        }
+
+        return withEffects(newEffects.build());
+    }
+
+    public ObjectItem toObjectItem() {
+        return new ObjectItem(
+                getPosition().value,
+                getGid(),
+                getEffects().stream().map(WorldItemEffect::toObjectEffect),
+                getUid(),
+                getQuantity()
+        );
     }
 }
