@@ -49,7 +49,7 @@ public final class JdbcItemRepository extends JdbcRepository implements WorldIte
     ImmutableList<String> columns = ImmutableList.of(
             "uid",
             "version",
-            "template_id",
+            "gid",
             "effects",
             "position",
             "quantity"
