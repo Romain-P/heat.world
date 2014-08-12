@@ -1,5 +1,6 @@
 package org.heat.world.items;
 
+import com.ankamagames.dofus.datacenter.effects.EffectInstance;
 import com.ankamagames.dofus.datacenter.items.Item;
 import com.ankamagames.dofus.datacenter.items.Weapon;
 import com.google.common.collect.ImmutableSet;
@@ -27,6 +28,10 @@ public final class DefaultItemFactory implements WorldItemFactory {
     }
 
     ImmutableSet<WorldItemEffect> createEffects(Item item) {
-        return ImmutableSet.of(); // TODO(world/items): create effects
+        ImmutableSet.Builder<WorldItemEffect> effects = ImmutableSet.builder();
+        for (EffectInstance e : item.getPossibleEffects()) {
+            effects.add(Effects.fromEffectInstance(e));
+        }
+        return effects.build();
     }
 }
