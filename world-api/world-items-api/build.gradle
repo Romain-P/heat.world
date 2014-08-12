@@ -2,6 +2,7 @@ apply from: '../../publishable.gradle'
 
 dependencies {
     compile 'org.heat:util:0.2.1'
+    compile 'javax.inject:javax.inject:1'
 
     compile('org.heat.dofus:d2vendor:2.21.3-2') {
         exclude group: 'io.netty'
