@@ -2,10 +2,7 @@ package org.heat.world.items;
 
 import com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
@@ -30,12 +27,22 @@ public class HashItemBag implements WorldItemBag {
     }
 
     @Override
+    public Stream<WorldItem> getItemStream() {
+        return map.values().stream();
+    }
+
+    @Override
     public void add(WorldItem item) {
         if (map.containsKey(item.getUid())) {
             throw new IllegalArgumentException("bag already contains " + item);
         }
 
         map.put(item.getUid(), item);
+    }
+
+    @Override
+    public void addAll(List<WorldItem> items) {
+        items.forEach(this::add);
     }
 
     @Override

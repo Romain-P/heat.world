@@ -2,6 +2,7 @@ package org.heat.world.items;
 
 import com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -28,6 +29,12 @@ public interface WorldItemBag {
      */
     Stream<WorldItem> findByPosition(CharacterInventoryPositionEnum position);
 
+    /**
+     * Return a stream of items
+     * @return a non-null, non-leaking stream
+     */
+    Stream<WorldItem> getItemStream();
+
     // write operations
     /**
      * Add an item to bag
@@ -35,6 +42,13 @@ public interface WorldItemBag {
      * @throws java.lang.IllegalArgumentException if it already contains item
      */
     void add(WorldItem item);
+
+    /**
+     * Add multiple items to bag
+     * @param items a non-null, non-leaking stream
+     * @throws java.lang.IllegalArgumentException if it already contains one of stream's item
+     */
+    void addAll(List<WorldItem> items);
 
     /**
      * Update an item in bag
