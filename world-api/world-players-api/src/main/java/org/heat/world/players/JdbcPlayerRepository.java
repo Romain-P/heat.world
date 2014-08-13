@@ -6,11 +6,14 @@ import com.ankamagames.dofus.network.enums.DirectionsEnum;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import lombok.SneakyThrows;
+import org.fungsi.Throwables;
 import org.fungsi.concurrent.Worker;
 import org.heat.data.Datacenter;
 import org.heat.shared.Collections;
 import org.heat.shared.database.JdbcRepository;
 import org.heat.shared.stream.MoreCollectors;
+import org.heat.world.items.WorldItem;
+import org.heat.world.items.WorldItemRepository;
 import org.heat.world.metrics.Experience;
 import org.heat.world.roleplay.WorldActorLook;
 import org.heat.world.roleplay.environment.WorldMapPoint;
@@ -20,9 +23,11 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.sql.DataSource;
 import java.sql.*;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.heat.world.metrics.GameStats.*;
@@ -33,6 +38,7 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
     private final Datacenter datacenter;
     private final Experience experience;
     private final WorldPositioningSystem wps;
+    private final WorldItemRepository items;
 
     private final Map<Integer, Player> cache = Maps.newConcurrentMap();
     private final Map<Integer, LinkedList<Player>> cacheByUserId = Maps.newConcurrentMap();
@@ -45,13 +51,15 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
             @Named("player-repository") Worker worker,
             Datacenter datacenter,
             @Named("player") Experience experience,
-            WorldPositioningSystem wps
+            WorldPositioningSystem wps,
+            WorldItemRepository items
     ) {
         this.dataSource = dataSource;
         this.worker = worker;
         this.datacenter = datacenter;
         this.experience = experience;
         this.wps = wps;
+        this.items = items;
         initIdGenerator();
     }
 
@@ -84,7 +92,8 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
             "movements",
             "prospecting",
             "summonableCreatures",
-            "spells"
+            "spells",
+            "kamas"
     );
     ImmutableList<String> modifiableFields = ImmutableList.of(
             "sex",
@@ -111,7 +120,8 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
             "movements",
             "prospecting",
             "summonableCreatures",
-            "spells"
+            "spells",
+            "kamas"
     );
 
     private void initIdGenerator() {
@@ -193,6 +203,38 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
     }
 
     @SneakyThrows
+    private List<WorldItem> importPlayerItems(Connection connection, int id) {
+        String sql =
+            "select item_uid " +
+            "from player_items " +
+            "where player_id=?";
+
+
+        IntStream.Builder uids = IntStream.builder();
+
+        PreparedStatement s = connection.prepareStatement(sql);
+        s.setInt(1, id);
+
+        try (ResultSet subrset = s.executeQuery()) {
+            while (subrset.next()) {
+                uids.add(subrset.getInt(1));
+            }
+        } catch (SQLException e) {
+            throw Throwables.propagate(e);
+        }
+
+        return items.find(uids.build()).get(Duration.ofMillis(1000));
+    }
+
+    @SneakyThrows
+    private PlayerItemWallet buildWallet(ResultSet rset, int id) {
+        PlayerItemWallet wallet = new HashPlayerItemWallet();
+        wallet.setKamas(rset.getInt("kamas"));
+        wallet.addAll(importPlayerItems(rset.getStatement().getConnection(), id));
+        return wallet;
+    }
+
+    @SneakyThrows
     private Player importFromDb(ResultSet rset) {
         Player player = new Player();
         player.setId(rset.getInt("id"));
@@ -215,6 +257,7 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
         player.setExperience(buildPlayerExperience(rset.getDouble("experience")));
         player.setStats(buildPlayerStats(player.getBreed(), rset));
         player.setSpells(buildPlayerSpells(rset));
+        player.setWallet(buildWallet(rset, player.getId()));
         return player;
     }
 
@@ -252,6 +295,7 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
         s.setShort(index++, player.getStats().get(PROSPECTING).getBase());
         s.setShort(index++, player.getStats().get(SUMMONABLE_CREATURES).getBase());
         s.setArray(index++, exportPlayerSpells(s.getConnection(), player.getSpells()));
+        s.setInt(index++, player.getWallet().getKamas());
     }
 
     @SuppressWarnings("UnusedAssignment")
@@ -284,6 +328,7 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
         s.setShort(index++, player.getStats().get(PROSPECTING).getBase());
         s.setShort(index++, player.getStats().get(SUMMONABLE_CREATURES).getBase());
         s.setArray(index++, exportPlayerSpells(s.getConnection(), player.getSpells()));
+        s.setInt(index++, player.getWallet().getKamas());
         s.setInt(index++, player.getId());
     }
 
