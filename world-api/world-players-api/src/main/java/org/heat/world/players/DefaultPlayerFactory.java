@@ -8,6 +8,7 @@ import org.fungsi.concurrent.Future;
 import org.fungsi.concurrent.Futures;
 import org.heat.User;
 import org.heat.data.Datacenter;
+import org.heat.world.items.MapItemBag;
 import org.heat.world.metrics.Experience;
 import org.heat.world.metrics.GameStats;
 import org.heat.world.roleplay.WorldActorLook;
@@ -22,6 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DefaultPlayerFactory implements PlayerFactory {
     private final Datacenter datacenter;
     private final AtomicInteger idGenerator;
+    private final PlayerItemRepository playerItems;
 
     // these properties are immutable therefore freely sharable
     private final WorldPosition startPosition;
@@ -35,17 +37,22 @@ public class DefaultPlayerFactory implements PlayerFactory {
             startProspecting,
             startStatsPoints,
             startSpellsPoints;
+    private final int
+            startKamas
+            ;
 
     @Inject
     public DefaultPlayerFactory(
             Datacenter datacenter,
             PlayerRepository players,
+            PlayerItemRepository playerItems,
             Config config,
             @Named("player") Experience experience,
             WorldPositioningSystem wps
     ) {
         this.datacenter = datacenter;
         this.idGenerator = players.createIdGenerator().get();
+        this.playerItems = playerItems;
 
         Config startConfig = config.getConfig("heat.world.player.start");
 
@@ -66,6 +73,7 @@ public class DefaultPlayerFactory implements PlayerFactory {
         this.startProspecting  = (short) startConfig.getInt("prospecting");
         this.startStatsPoints  = (short) startConfig.getInt("stats-points");
         this.startSpellsPoints = (short) startConfig.getInt("spells-points");
+        this.startKamas        =         startConfig.getInt("kamas");
     }
 
     @Override
@@ -81,6 +89,7 @@ public class DefaultPlayerFactory implements PlayerFactory {
         player.setExperience(buildExperience());
         player.setStats(buildStats(player.getBreed()));
         player.setSpells(buildSpells(player.getBreed(), player.getExperience().getCurrentLevel()));
+        player.setWallet(buildWallet(player.getId()));
 
         return Futures.success(player);
     }
@@ -140,5 +149,9 @@ public class DefaultPlayerFactory implements PlayerFactory {
 
     protected PlayerSpellBook buildSpells(Breed breed, int level) {
         return DefaultPlayerSpellBook.create(datacenter, breed, level);
+    }
+
+    protected PlayerItemWallet buildWallet(int playerId) {
+        return new LazyPlayerItemWallet(startKamas, playerId, playerItems, MapItemBag::newHashMapItemBag);
     }
 }
