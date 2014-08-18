@@ -317,7 +317,10 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
                  Statement s = co.createStatement();
                  ResultSet rset = s.executeQuery("select max(id) from players"))
             {
-                return new AtomicInteger(uniqueInt(rset));
+                if (rset.next()) {
+                    return new AtomicInteger(rset.getInt(1));
+                }
+                return new AtomicInteger(0);
             }
         });
     }
