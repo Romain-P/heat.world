@@ -12,14 +12,17 @@ import java.util.stream.Stream;
 
 public final class LazyPlayerItemWallet implements PlayerItemWallet {
     private final AtomicInteger kamas;
-
+    private final int playerId;
+    private final PlayerItemRepository playerItems;
     private final Supplier<WorldItemBag> bagSupplier;
 
     private volatile WorldItemBag bag;
     private final Object bagLock = new Object();
 
-    public LazyPlayerItemWallet(int kamas, Supplier<WorldItemBag> bagSupplier) {
+    public LazyPlayerItemWallet(int kamas, int playerId, PlayerItemRepository playerItems, Supplier<WorldItemBag> bagSupplier) {
         this.kamas = new AtomicInteger(kamas);
+        this.playerId = playerId;
+        this.playerItems = playerItems;
         this.bagSupplier = bagSupplier;
     }
 
@@ -38,6 +41,15 @@ public final class LazyPlayerItemWallet implements PlayerItemWallet {
         this.kamas.getAndAdd(kamas);
     }
 
+    private WorldItemBag loadBag() {
+        // TODO(world/players): item load timeout
+        List<WorldItem> items = playerItems.findItemsByPlayer(playerId).get();
+
+        WorldItemBag bag = bagSupplier.get();
+        bag.addAll(items);
+        return bag;
+    }
+
     private WorldItemBag loadBagIfNeeded() {
         // double-checked locking
         WorldItemBag result = bag;
@@ -45,7 +57,7 @@ public final class LazyPlayerItemWallet implements PlayerItemWallet {
             synchronized (bagLock) {
                 result = bag;
                 if (result == null) {
-                    result = bag = bagSupplier.get();
+                    result = bag = loadBag();
                 }
             }
         }

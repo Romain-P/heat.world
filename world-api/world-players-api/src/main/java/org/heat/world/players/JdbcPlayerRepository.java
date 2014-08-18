@@ -12,7 +12,6 @@ import org.heat.shared.Collections;
 import org.heat.shared.database.JdbcRepository;
 import org.heat.shared.stream.MoreCollectors;
 import org.heat.world.items.HashItemBag;
-import org.heat.world.items.WorldItem;
 import org.heat.world.metrics.Experience;
 import org.heat.world.roleplay.WorldActorLook;
 import org.heat.world.roleplay.environment.WorldMapPoint;
@@ -203,14 +202,9 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
     private PlayerItemWallet buildWallet(ResultSet rset, int id) {
         return new LazyPlayerItemWallet(
                 rset.getInt("kamas"),
-                () -> {
-                    // TODO(world/players): add player's items load timeout
-                    List<WorldItem> items = playerItems.findItemsByPlayer(id).get();
-
-                    HashItemBag bag = new HashItemBag();
-                    bag.addAll(items);
-                    return bag;
-                }
+                id,
+                playerItems,
+                HashItemBag::new
         );
     }
 
