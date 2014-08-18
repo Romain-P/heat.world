@@ -66,6 +66,10 @@ public final class WorldItem {
         return copy(template, effects, position, quantity);
     }
 
+    public WorldItem fork(int quantity) {
+        return create(0, 0, template, effects, position, quantity);
+    }
+
     // shorthands
     public int getGid() {
         return getTemplate().getId();
