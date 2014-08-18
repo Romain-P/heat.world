@@ -1,14 +1,16 @@
 package org.heat.world.players;
 
+import org.fungsi.Unit;
+import org.fungsi.concurrent.Future;
+
 import java.util.List;
-import java.util.Optional;
 
 public interface PlayerRepository {
-    Optional<Player> find(int id);
-    List<Player> findByUserId(int userId);
-    Optional<Player> findByName(String name);
+    Future<Player> find(int id);
+    Future<List<Player>> findByUserId(int userId);
+    Future<Player> findByName(String name);
 
-    void create(Player player);
-    void save(Player player);
-    void remove(Player player);
+    Future<Unit> create(Player player);
+    Future<Unit> save(Player player);
+    Future<Unit> remove(Player player);
 }

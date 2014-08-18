@@ -5,7 +5,10 @@ import com.ankamagames.dofus.datacenter.spells.Spell;
 import com.ankamagames.dofus.network.enums.DirectionsEnum;
 import com.google.common.collect.ImmutableList;
 import lombok.SneakyThrows;
+import org.fungsi.Unit;
+import org.fungsi.concurrent.Future;
 import org.fungsi.concurrent.Worker;
+import org.fungsi.function.UnsafeConsumer;
 import org.heat.data.Datacenter;
 import org.heat.shared.database.JdbcRepository;
 import org.heat.shared.stream.MoreCollectors;
@@ -20,7 +23,6 @@ import javax.sql.DataSource;
 import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -293,38 +295,48 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
     }
 
     @Override
-    public void create(Player player) {
-        worker.cast(() -> doInsert(player));
+    public Future<Unit> create(Player player) {
+        return worker.cast(() -> doInsert(player));
     }
 
     @Override
-    public void save(Player o) {
-        worker.cast(() -> doUpdate(o));
+    public Future<Unit> save(Player o) {
+        return worker.cast(() -> doUpdate(o));
     }
 
     @Override
-    public void remove(Player o) {
-        worker.cast(() -> doDelete(o));
+    public Future<Unit> remove(Player o) {
+        return worker.cast(() -> doDelete(o));
+    }
+
+    private Stream<Player> query(String field, UnsafeConsumer<PreparedStatement> fn) {
+        return query(simpleSelect("players", field, fields), fn, this::importFromDb);
     }
 
     @Override
-    public Optional<Player> find(int id) {
-        try (Stream<Player> stream = query(simpleSelect("players", "id", fields), s -> s.setInt(1, id), this::importFromDb)) {
-            return stream.collect(MoreCollectors.uniqueOption());
-        }
+    public Future<Player> find(int id) {
+        return worker.submit(() -> {
+            try (Stream<Player> stream = query("id", (PreparedStatement s) -> s.setInt(1, id))) {
+                return stream.collect(MoreCollectors.unique());
+            }
+        });
     }
 
     @Override
-    public List<Player> findByUserId(int userId) {
-        try (Stream<Player> stream = query(simpleSelect("players", "userId", fields), s -> s.setInt(1, userId), this::importFromDb)) {
-            return stream.collect(Collectors.toCollection(LinkedList::new));
-        }
+    public Future<List<Player>> findByUserId(int userId) {
+        return worker.submit(() -> {
+            try (Stream<Player> stream = query("userId", (PreparedStatement s) -> s.setInt(1, userId))) {
+                return stream.collect(Collectors.toCollection(LinkedList::new));
+            }
+        });
     }
 
     @Override
-    public Optional<Player> findByName(String name) {
-        try (Stream<Player> stream = query(simpleSelect("players", "name", fields), s -> s.setString(1, name), this::importFromDb)) {
-            return stream.collect(MoreCollectors.uniqueOption());
-        }
+    public Future<Player> findByName(String name) {
+        return worker.submit(() -> {
+            try (Stream<Player> stream = query("name", (PreparedStatement s) -> s.setString(1, name))) {
+                return stream.collect(MoreCollectors.unique());
+            }
+        });
     }
 }
