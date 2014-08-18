@@ -1,5 +1,6 @@
 dependencies {
     compile project(':world-api:world-backend-api')
+    compile project(':world-api:world-frontend-api')
     compile project(':world-api:world-players-api')
     compile project(':world-api:world-items-api')
     compile 'org.rocket:rocket-network:1.1-beta9'

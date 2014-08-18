@@ -26,6 +26,7 @@ import org.heat.shared.Strings;
 import org.heat.shared.stream.MoreCollectors;
 import org.heat.world.backend.Backend;
 import org.heat.world.controllers.events.CreateContextEvent;
+import org.heat.world.controllers.events.CreatePlayerEvent;
 import org.heat.world.controllers.events.NewContextEvent;
 import org.heat.world.controllers.utils.Authenticated;
 import org.heat.world.controllers.utils.Idling;
@@ -86,22 +87,26 @@ public class PlayersController {
 
     @Receive
     public void create(CharacterCreationRequestMessage msg) {
+        // create player
         playerFactory.create(user.get(), msg.name, msg.breed, msg.sex, msg.colors, msg.cosmeticId)
-                .onSuccess(player -> {
-                    players.create(player);
-                    backend.setNrPlayers(user.get().getId(), getPlayers().size() + 1);
-                })
-                .flatMap(player -> client.write(new CharacterCreationResultMessage(OK.value))
-                        .flatMap(x -> doChoose(player)))
-                .mayRescue(cause -> {
-                    CharacterCreationResultEnum reason;
-                    if (cause instanceof PlayerCreationException) {
-                        reason = ((PlayerCreationException) cause).getReason();
-                    } else {
-                        reason = ERR_NO_REASON;
-                    }
-                    return client.write(new CharacterCreationResultMessage(reason.value));
-                })
+        // persist it to database
+        .flatMap(player -> players.create(player).map(x -> player))
+        // publish it
+        .flatMap(player -> client.getEventBus().publish(new CreatePlayerEvent(player)).map(x -> player))
+        // notify it to backend
+        .onSuccess(player -> backend.setNrPlayers(user.get().getId(), getPlayers().size() + 1))
+        // notify it to client
+        .flatMap(player -> client.write(new CharacterCreationResultMessage(OK.value))
+                .flatMap(x -> doChoose(player)))
+        .mayRescue(cause -> {
+            CharacterCreationResultEnum reason;
+            if (cause instanceof PlayerCreationException) {
+                reason = ((PlayerCreationException) cause).getReason();
+            } else {
+                reason = ERR_NO_REASON;
+            }
+            return client.write(new CharacterCreationResultMessage(reason.value));
+        })
         ;
     }
 
