@@ -8,6 +8,7 @@ public interface PlayerRepository {
     List<Player> findByUserId(int userId);
     Optional<Player> findByName(String name);
 
+    void create(Player player);
     void save(Player player);
     void remove(Player player);
 }

@@ -22,7 +22,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,8 +33,6 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
     private final Datacenter datacenter;
     private final Experience experience;
     private final WorldPositioningSystem wps;
-
-    private final AtomicInteger idGenerator = new AtomicInteger();
 
     @Inject
     public JdbcPlayerRepository(
@@ -50,7 +47,6 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
         this.datacenter = datacenter;
         this.experience = experience;
         this.wps = wps;
-        initIdGenerator();
     }
 
     ImmutableList<String> fields = ImmutableList.of(
@@ -111,13 +107,6 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
             "summonableCreatures",
             "spells"
     );
-
-    private void initIdGenerator() {
-        try (Stream<Integer> stream = query("select max(id) as lastId from players", rset -> rset.getInt("lastId"))) {
-            stream.collect(MoreCollectors.uniqueOption())
-                    .ifPresent(idGenerator::set);
-        }
-    }
 
     private PlayerExperience buildPlayerExperience(double experience) {
         Experience step = this.experience.getNextUntilEnoughExperience(experience);
@@ -304,15 +293,13 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
     }
 
     @Override
+    public void create(Player player) {
+        worker.cast(() -> doInsert(player));
+    }
+
+    @Override
     public void save(Player o) {
-        if (o.getId() == 0) {
-            o.setId(idGenerator.incrementAndGet());
-//            worker.cast(() -> doInsert(o));
-            doInsert(o); // TODO(world/players): for debug purposes only
-        } else {
-//            worker.cast(() -> doUpdate(o));
-            doUpdate(o);
-        }
+        worker.cast(() -> doUpdate(o));
     }
 
     @Override
