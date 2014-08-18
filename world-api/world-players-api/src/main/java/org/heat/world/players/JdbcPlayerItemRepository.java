@@ -37,7 +37,7 @@ public final class JdbcPlayerItemRepository implements PlayerItemRepository {
     @Override
     public Future<List<WorldItem>> findItemsByPlayer(int playerId) {
         try (Connection co = dataSource.getConnection()) {
-            try (PreparedStatement s = co.prepareStatement("select item_id from player_items where player_id=?")) {
+            try (PreparedStatement s = co.prepareStatement("select item_uid from player_items where player_id=?")) {
                 s.setInt(1, playerId);
 
                 IntStream.Builder uids = IntStream.builder();
@@ -58,7 +58,7 @@ public final class JdbcPlayerItemRepository implements PlayerItemRepository {
     @Override
     public Future<Unit> persist(int playerId, int itemId) {
         try (Connection co = dataSource.getConnection()) {
-            try (PreparedStatement s = co.prepareStatement("insert into player_items(player_id, item_id) values(?, ?)")) {
+            try (PreparedStatement s = co.prepareStatement("insert into player_items(player_id, item_uid) values(?, ?)")) {
                 s.setInt(1, playerId);
                 s.setInt(2, itemId);
 
@@ -96,7 +96,7 @@ public final class JdbcPlayerItemRepository implements PlayerItemRepository {
     @Override
     public Future<Unit> remove(int playerId, int itemId) {
         try (Connection co = dataSource.getConnection()) {
-            try (PreparedStatement s = co.prepareStatement("delete from player_items where player_id=? and item_id=?")) {
+            try (PreparedStatement s = co.prepareStatement("delete from player_items where player_id=? and item_uid=?")) {
                 s.setInt(1, playerId);
                 s.setInt(2, itemId);
 
