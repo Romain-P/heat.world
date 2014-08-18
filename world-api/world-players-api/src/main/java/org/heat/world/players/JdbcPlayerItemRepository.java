@@ -6,6 +6,7 @@ import org.fungsi.concurrent.Futures;
 import org.heat.world.items.WorldItem;
 import org.heat.world.items.WorldItemRepository;
 
+import javax.inject.Inject;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -18,6 +19,7 @@ public final class JdbcPlayerItemRepository implements PlayerItemRepository {
     private final DataSource dataSource;
     private final WorldItemRepository items;
 
+    @Inject
     public JdbcPlayerItemRepository(DataSource dataSource, WorldItemRepository items) {
         this.dataSource = dataSource;
         this.items = items;
