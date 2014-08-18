@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static java.util.Objects.requireNonNull;
+
 public interface WorldItemBag {
     // read operations
     /**
@@ -72,4 +74,16 @@ public interface WorldItemBag {
      * @return a non-null option
      */
     Optional<WorldItem> tryRemove(int uid);
+
+    /**
+     * Find first same item
+     * @param item a non-null item
+     * @return a non-null option
+     */
+    default Optional<WorldItem> findFirstSame(WorldItem item) {
+        requireNonNull(item, "item");
+        return getItemStream()
+                .filter(x -> WorldItem.compare(item, x) == 0)
+                .findFirst();
+    }
 }
