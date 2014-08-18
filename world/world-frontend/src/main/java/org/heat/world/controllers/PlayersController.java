@@ -57,7 +57,7 @@ public class PlayersController {
 
     List<Player> getPlayers() {
         if (cached == null) {
-            cached = players.findByUserId(user.get().getId());
+            cached = players.findByUserId(user.get().getId()).get(); // TODO(world/frontend): player load timeout
         }
         return cached;
     }
