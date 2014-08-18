@@ -5,11 +5,7 @@ import com.google.inject.Provides;
 import com.google.inject.name.Names;
 import org.fungsi.concurrent.Worker;
 import org.fungsi.concurrent.Workers;
-import org.heat.world.players.JdbcPlayerItemRepository;
-import org.heat.world.players.JdbcPlayerRepository;
-import org.heat.world.players.PlayerItemRepository;
-import org.heat.world.players.PermLazyPlayerRepository;
-import org.heat.world.players.PlayerRepository;
+import org.heat.world.players.*;
 
 import java.util.concurrent.ExecutorService;
 
@@ -21,6 +17,7 @@ public class StdJdbcPlayersModule extends PrivateModule {
         bind(PlayerRepository.class).to(PermLazyPlayerRepository.class).asEagerSingleton();
 
         expose(PlayerRepository.class);
+        expose(PlayerItemRepository.class);
     }
 
     @Provides
