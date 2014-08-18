@@ -1,7 +1,9 @@
 package org.heat.world.controllers;
 
 import com.ankamagames.dofus.network.enums.CharacterCreationResultEnum;
+import com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum;
 import com.ankamagames.dofus.network.enums.GameContextEnum;
+import com.ankamagames.dofus.network.enums.ObjectErrorEnum;
 import com.ankamagames.dofus.network.messages.game.character.choice.*;
 import com.ankamagames.dofus.network.messages.game.character.creation.CharacterCreationRequestMessage;
 import com.ankamagames.dofus.network.messages.game.character.creation.CharacterCreationResultMessage;
@@ -17,6 +19,8 @@ import com.ankamagames.dofus.network.messages.game.context.roleplay.stats.StatsU
 import com.ankamagames.dofus.network.messages.game.initialization.CharacterLoadingCompleteMessage;
 import com.ankamagames.dofus.network.messages.game.inventory.items.InventoryContentMessage;
 import com.ankamagames.dofus.network.messages.game.inventory.items.InventoryWeightMessage;
+import com.ankamagames.dofus.network.messages.game.inventory.items.ObjectErrorMessage;
+import com.ankamagames.dofus.network.messages.game.inventory.items.ObjectSetPositionMessage;
 import com.ankamagames.dofus.network.messages.game.inventory.spells.SpellListMessage;
 import com.github.blackrush.acara.Listener;
 import org.fungsi.Unit;
@@ -195,5 +199,48 @@ public class PlayersController {
                 tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
             });
         }
+    }
+
+    @Receive
+    @Idling
+    public void moveItem(ObjectSetPositionMessage msg) {
+        Player player = this.player.get();
+        PlayerItemWallet wallet = player.getWallet();
+
+        CharacterInventoryPositionEnum position = CharacterInventoryPositionEnum.valueOf(msg.position).get();
+        int quantity = msg.quantity;
+
+        // get item
+        WorldItem item = wallet.findByUid(msg.objectUID).get();
+
+        // verify movement validity
+        if (!wallet.isValidMove(item, position, quantity)) {
+            client.write(new ObjectErrorMessage(ObjectErrorEnum.CANNOT_EQUIP_HERE.value));
+            return;
+        }
+
+        // fork it
+        WorldItem forked = wallet.fork(item, quantity)
+            .foldLeft(pair -> pair.second) // actually forked item
+            .thenRight(x -> x);            // no fork needed
+
+        // merge it
+        WorldItem merged = wallet.merge(forked, position);
+
+        if (merged.getUid() != forked.getUid()) {
+            // actually merged it
+        }
+
+        // persist item
+        /**
+         * TODO(world/frontend): persist item
+         * create forked item if necessary
+         * update merged item (which is always new since we're always updating its position)
+         * collapse both operations if available
+         */
+
+
+        // notify client
+        // TODO(world/frontend): notify client of item movement
     }
 }
