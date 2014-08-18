@@ -16,13 +16,15 @@ import org.heat.shared.database.JdbcRepository;
 import org.heat.shared.io.AutoGrowingWriter;
 import org.heat.shared.io.DataReader;
 import org.heat.shared.io.HeapDataReader;
-import org.heat.shared.io.IO;
 import org.heat.shared.stream.ImmutableCollectors;
 import org.heat.shared.stream.MoreCollectors;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
@@ -54,24 +56,19 @@ public final class JdbcItemRepository extends JdbcRepository implements WorldIte
 
     @SneakyThrows
     ImmutableSet<WorldItemEffect> importEffects(ResultSet rset) {
-        Blob blob = rset.getBlob("effects");
-        try {
-            ImmutableSet.Builder<WorldItemEffect> effects = ImmutableSet.builder();
+        ImmutableSet.Builder<WorldItemEffect> effects = ImmutableSet.builder();
 
-            byte[] bytes = IO.readAll(blob.getBinaryStream()::read);
-            DataReader reader = new HeapDataReader(bytes, 0, bytes.length);
-            while (reader.canRead(2)) {
-                int typeId = reader.read_ui16();
-                ObjectEffect effect = effectFactory.create(typeId).get();
-                effect.deserialize(reader);
+        byte[] bytes = rset.getBytes("effects");
+        DataReader reader = new HeapDataReader(bytes, 0, bytes.length);
+        while (reader.canRead(2)) {
+            int typeId = reader.read_ui16();
+            ObjectEffect effect = effectFactory.create(typeId).get();
+            effect.deserialize(reader);
 
-                effects.add(Effects.fromObjectEffect(effect));
-            }
-
-            return effects.build();
-        } finally {
-            blob.free();
+            effects.add(Effects.fromObjectEffect(effect));
         }
+
+        return effects.build();
     }
 
     @SneakyThrows
@@ -88,9 +85,9 @@ public final class JdbcItemRepository extends JdbcRepository implements WorldIte
     @SneakyThrows
     WorldItem importFromDb(ResultSet rset) {
         return WorldItem.create(
-                rset.getInt("uint"),
+                rset.getInt("uid"),
                 0,
-                datacenter.find(Item.class, rset.getInt("template_id")).get(),
+                datacenter.find(Item.class, rset.getInt("gid")).get(),
                 importEffects(rset),
                 CharacterInventoryPositionEnum.valueOf(rset.getInt("position")).get(),
                 rset.getInt("quantity")
