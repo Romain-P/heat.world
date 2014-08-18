@@ -5,6 +5,7 @@ import com.ankamagames.dofus.datacenter.effects.instances.EffectInstanceDice;
 import com.ankamagames.dofus.datacenter.effects.instances.EffectInstanceInteger;
 import com.ankamagames.dofus.network.types.game.data.items.effects.ObjectEffect;
 import com.ankamagames.dofus.network.types.game.data.items.effects.ObjectEffectInteger;
+import org.heat.world.items.effects.FallbackItemEffect;
 import org.heat.world.items.effects.IntegerItemEffect;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -17,8 +18,7 @@ final class Effects {
             return new IntegerItemEffect(effect.actionId, ((ObjectEffectInteger) effect).value);
         }
 
-        // TODO(world/items): create effect from ObjectEffect
-        throw new UnsupportedOperationException("not implemented");
+        return new FallbackItemEffect(effect);
     }
 
     public static WorldItemEffect fromEffectInstance(EffectInstance effect) {
@@ -39,7 +39,10 @@ final class Effects {
             return new IntegerItemEffect((short) effect.getEffectId(), (short) ((EffectInstanceInteger) effect).getValue());
         }
 
-        // TODO(world/items): create effect from EffectInstance
+        return new FallbackItemEffect(toObjectEffect(effect));
+    }
+
+    public static ObjectEffect toObjectEffect(EffectInstance effect) {
         throw new UnsupportedOperationException("not implemented");
     }
 }
