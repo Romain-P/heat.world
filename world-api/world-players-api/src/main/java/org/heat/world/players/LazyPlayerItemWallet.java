@@ -1,6 +1,6 @@
 package org.heat.world.players;
 
-import com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum;
+import org.heat.world.items.DelegateItemBag;
 import org.heat.world.items.WorldItem;
 import org.heat.world.items.WorldItemBag;
 
@@ -8,9 +8,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
-public final class LazyPlayerItemWallet implements PlayerItemWallet {
+public final class LazyPlayerItemWallet extends DelegateItemBag implements PlayerItemWallet {
     private final AtomicInteger kamas;
     private final int playerId;
     private final PlayerItemRepository playerItems;
@@ -65,52 +64,31 @@ public final class LazyPlayerItemWallet implements PlayerItemWallet {
     }
 
     @Override
-    public Optional<WorldItem> findByUid(int uid) {
-        return loadBagIfNeeded().findByUid(uid);
-    }
-
-    @Override
-    public Stream<WorldItem> findByGid(int gid) {
-        return loadBagIfNeeded().findByGid(gid);
-    }
-
-    @Override
-    public Stream<WorldItem> findByPosition(CharacterInventoryPositionEnum position) {
-        return loadBagIfNeeded().findByPosition(position);
-    }
-
-    @Override
-    public Stream<WorldItem> getItemStream() {
-        return loadBagIfNeeded().getItemStream();
+    protected WorldItemBag delegate() {
+        return loadBagIfNeeded();
     }
 
     @Override
     public void add(WorldItem item) {
-        loadBagIfNeeded().add(item);
+        super.add(item);
         playerItems.persist(playerId, item);
     }
 
     @Override
     public void addAll(List<WorldItem> items) {
-        loadBagIfNeeded().addAll(items);
+        super.addAll(items);
         playerItems.persistAll(playerId, items.stream());
     }
 
     @Override
-    public void update(WorldItem item) {
-        loadBagIfNeeded().update(item);
-        // NOTE(Blackrush): update only, no need to insert/delete tho
-    }
-
-    @Override
     public void remove(WorldItem item) {
-        loadBagIfNeeded().remove(item);
+        super.remove(item);
         playerItems.remove(playerId, item);
     }
 
     @Override
     public Optional<WorldItem> tryRemove(int uid) {
-        Optional<WorldItem> opt = loadBagIfNeeded().tryRemove(uid);
+        Optional<WorldItem> opt = super.tryRemove(uid);
         opt.ifPresent(item -> playerItems.remove(playerId, item));
         return opt;
     }
