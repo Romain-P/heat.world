@@ -3,12 +3,25 @@ package org.heat.world.items;
 import com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
-public class HashItemBag implements WorldItemBag {
-    private final Map<Integer, WorldItem> map = new HashMap<>();
+public final class MapItemBag implements WorldItemBag {
+    private final Map<Integer, WorldItem> map;
+
+    private MapItemBag(Map<Integer, WorldItem> map) {
+        this.map = map;
+    }
+
+    public static MapItemBag newHashMapItemBag() {
+        return new MapItemBag(new HashMap<>());
+    }
+
+    public static MapItemBag newConcurrentHashMapItemBag() {
+        return new MapItemBag(new ConcurrentHashMap<>());
+    }
 
     @Override
     public Optional<WorldItem> findByUid(int uid) {

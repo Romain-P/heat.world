@@ -11,7 +11,7 @@ import org.heat.data.Datacenter;
 import org.heat.shared.Collections;
 import org.heat.shared.database.JdbcRepository;
 import org.heat.shared.stream.MoreCollectors;
-import org.heat.world.items.HashItemBag;
+import org.heat.world.items.MapItemBag;
 import org.heat.world.metrics.Experience;
 import org.heat.world.roleplay.WorldActorLook;
 import org.heat.world.roleplay.environment.WorldMapPoint;
@@ -204,7 +204,7 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
                 rset.getInt("kamas"),
                 id,
                 playerItems,
-                HashItemBag::new
+                MapItemBag::newHashMapItemBag
         );
     }
 
