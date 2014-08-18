@@ -87,25 +87,31 @@ public final class LazyPlayerItemWallet implements PlayerItemWallet {
     @Override
     public void add(WorldItem item) {
         loadBagIfNeeded().add(item);
+        playerItems.persist(playerId, item);
     }
 
     @Override
     public void addAll(List<WorldItem> items) {
         loadBagIfNeeded().addAll(items);
+        playerItems.persistAll(playerId, items.stream());
     }
 
     @Override
     public void update(WorldItem item) {
         loadBagIfNeeded().update(item);
+        // NOTE(Blackrush): update only, no need to insert/delete tho
     }
 
     @Override
     public void remove(WorldItem item) {
         loadBagIfNeeded().remove(item);
+        playerItems.remove(playerId, item);
     }
 
     @Override
     public Optional<WorldItem> tryRemove(int uid) {
-        return loadBagIfNeeded().tryRemove(uid);
+        Optional<WorldItem> opt = loadBagIfNeeded().tryRemove(uid);
+        opt.ifPresent(item -> playerItems.remove(playerId, item));
+        return opt;
     }
 }
