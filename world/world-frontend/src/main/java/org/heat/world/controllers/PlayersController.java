@@ -31,6 +31,8 @@ import org.heat.world.controllers.events.NewContextEvent;
 import org.heat.world.controllers.utils.Authenticated;
 import org.heat.world.controllers.utils.Idling;
 import org.heat.world.items.WorldItem;
+import org.heat.world.items.WorldItemFactory;
+import org.heat.world.items.WorldItemRepository;
 import org.heat.world.metrics.GameStats;
 import org.heat.world.metrics.RegularStat;
 import org.heat.world.players.*;
@@ -56,6 +58,8 @@ public class PlayersController {
     @Inject PlayerFactory playerFactory;
     @Inject Backend backend;
     @Inject @Named("pseudo") Random randomPseudo;
+    @Inject WorldItemRepository items;
+    @Inject WorldItemFactory itemFactory;
 
     List<Player> cached;
 
@@ -108,6 +112,14 @@ public class PlayersController {
             return client.write(new CharacterCreationResultMessage(reason.value));
         })
         ;
+    }
+
+    @Listener
+    public void onPlayerCreation(CreatePlayerEvent evt) {
+        // DEBUG(world/frontend)
+        items.save(itemFactory.create(39, 1)) // small owl amulet
+            .onSuccess(evt.getPlayer().getWallet()::add)
+            ;
     }
 
     @Receive
