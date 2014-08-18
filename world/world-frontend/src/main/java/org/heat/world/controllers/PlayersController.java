@@ -88,7 +88,7 @@ public class PlayersController {
     public void create(CharacterCreationRequestMessage msg) {
         playerFactory.create(user.get(), msg.name, msg.breed, msg.sex, msg.colors, msg.cosmeticId)
                 .onSuccess(player -> {
-                    players.save(player);
+                    players.create(player);
                     backend.setNrPlayers(user.get().getId(), getPlayers().size() + 1);
                 })
                 .flatMap(player -> client.write(new CharacterCreationResultMessage(OK.value))
