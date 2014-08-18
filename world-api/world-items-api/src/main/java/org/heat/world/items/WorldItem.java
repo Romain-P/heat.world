@@ -101,4 +101,22 @@ public final class WorldItem {
                 getQuantity()
         );
     }
+
+    public static int compare(WorldItem left, WorldItem right) {
+        if (left.getTemplate().getId() != right.getTemplate().getId()) {
+            return left.getTemplate().getId() - right.getTemplate().getId();
+        }
+
+        // take advantage of set characteristics to compare effects
+        ImmutableSet<WorldItemEffect> rightEffects = right.getEffects();
+        ImmutableSet<WorldItemEffect> leftEffects = left.getEffects();
+
+        for (WorldItemEffect effect : rightEffects) {
+            if (!leftEffects.contains(effect)) {
+                return -1;
+            }
+        }
+
+        return 0;
+    }
 }
