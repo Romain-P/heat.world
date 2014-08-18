@@ -40,7 +40,7 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
     @Inject
     public JdbcPlayerRepository(
             DataSource dataSource,
-            @Named("player-repository") Worker worker,
+            Worker worker,
             Datacenter datacenter,
             @Named("player") Experience experience,
             WorldPositioningSystem wps
