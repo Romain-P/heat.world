@@ -55,7 +55,7 @@ public class BackendController {
 
     @Receive
     public void getNrPlayers(GetNrPlayersNotif notif) {
-        List<Player> players = this.players.findByUserId(notif.userId);
+        List<Player> players = this.players.findByUserId(notif.userId).get(); // TODO(world/backend): player load timeout
         client.write(new SetNrPlayersReq(notif.userId, players.size()));
     }
 }

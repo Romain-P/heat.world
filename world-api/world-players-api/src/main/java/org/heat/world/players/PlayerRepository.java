@@ -1,17 +1,19 @@
 package org.heat.world.players;
 
-import org.heat.shared.database.MutableRepository;
+import org.fungsi.Unit;
+import org.fungsi.concurrent.Future;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public interface PlayerRepository extends MutableRepository<Player> {
-    Optional<Player> find(int id);
-    List<Player> findByUserId(int userId);
-    Optional<Player> findByName(String name);
+public interface PlayerRepository {
+    Future<AtomicInteger> createIdGenerator();
 
-    @Override
-    default Optional<Player> find(long id) {
-        return find((int) id);
-    }
+    Future<Player> find(int id);
+    Future<List<Player>> findByUserId(int userId);
+    Future<Player> findByName(String name);
+
+    Future<Unit> create(Player player);
+    Future<Unit> save(Player player);
+    Future<Unit> remove(Player player);
 }
