@@ -5,4 +5,5 @@ include 'world'
 
 include 'world-api'
     include 'world-api:world-backend-api'
+    include 'world-api:world-frontend-api'
     include 'world-api:world-players-api'
