@@ -24,6 +24,7 @@ import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.OptionalInt;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -307,6 +308,18 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
     @Override
     public Future<Unit> remove(Player o) {
         return worker.cast(() -> doDelete(o));
+    }
+
+    @Override
+    public Future<AtomicInteger> createIdGenerator() {
+        return worker.submit(() -> {
+            try (Connection co = dataSource.getConnection();
+                 Statement s = co.createStatement();
+                 ResultSet rset = s.executeQuery("select max(id) from players"))
+            {
+                return new AtomicInteger(uniqueInt(rset));
+            }
+        });
     }
 
     private Stream<Player> query(String field, UnsafeConsumer<PreparedStatement> fn) {
