@@ -6,14 +6,13 @@ import com.ankamagames.dofus.network.enums.DirectionsEnum;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import lombok.SneakyThrows;
-import org.fungsi.Throwables;
 import org.fungsi.concurrent.Worker;
 import org.heat.data.Datacenter;
 import org.heat.shared.Collections;
 import org.heat.shared.database.JdbcRepository;
 import org.heat.shared.stream.MoreCollectors;
+import org.heat.world.items.HashItemBag;
 import org.heat.world.items.WorldItem;
-import org.heat.world.items.WorldItemRepository;
 import org.heat.world.metrics.Experience;
 import org.heat.world.roleplay.WorldActorLook;
 import org.heat.world.roleplay.environment.WorldMapPoint;
@@ -23,11 +22,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.sql.DataSource;
 import java.sql.*;
-import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.heat.world.metrics.GameStats.*;
@@ -38,7 +35,7 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
     private final Datacenter datacenter;
     private final Experience experience;
     private final WorldPositioningSystem wps;
-    private final WorldItemRepository items;
+    private final PlayerItemRepository playerItems;
 
     private final Map<Integer, Player> cache = Maps.newConcurrentMap();
     private final Map<Integer, LinkedList<Player>> cacheByUserId = Maps.newConcurrentMap();
@@ -52,14 +49,14 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
             Datacenter datacenter,
             @Named("player") Experience experience,
             WorldPositioningSystem wps,
-            WorldItemRepository items
+            PlayerItemRepository playerItems
     ) {
         this.dataSource = dataSource;
         this.worker = worker;
         this.datacenter = datacenter;
         this.experience = experience;
         this.wps = wps;
-        this.items = items;
+        this.playerItems = playerItems;
         initIdGenerator();
     }
 
@@ -203,35 +200,18 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
     }
 
     @SneakyThrows
-    private List<WorldItem> importPlayerItems(Connection connection, int id) {
-        String sql =
-            "select item_uid " +
-            "from player_items " +
-            "where player_id=?";
-
-
-        IntStream.Builder uids = IntStream.builder();
-
-        PreparedStatement s = connection.prepareStatement(sql);
-        s.setInt(1, id);
-
-        try (ResultSet subrset = s.executeQuery()) {
-            while (subrset.next()) {
-                uids.add(subrset.getInt(1));
-            }
-        } catch (SQLException e) {
-            throw Throwables.propagate(e);
-        }
-
-        return items.find(uids.build()).get(Duration.ofMillis(1000));
-    }
-
-    @SneakyThrows
     private PlayerItemWallet buildWallet(ResultSet rset, int id) {
-        PlayerItemWallet wallet = new HashPlayerItemWallet();
-        wallet.setKamas(rset.getInt("kamas"));
-        wallet.addAll(importPlayerItems(rset.getStatement().getConnection(), id));
-        return wallet;
+        return new LazyPlayerItemWallet(
+                rset.getInt("kamas"),
+                () -> {
+                    // TODO(world/players): add player's items load timeout
+                    List<WorldItem> items = playerItems.findItemsByPlayer(id).get();
+
+                    HashItemBag bag = new HashItemBag();
+                    bag.addAll(items);
+                    return bag;
+                }
+        );
     }
 
     @SneakyThrows
