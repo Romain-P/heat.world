@@ -84,10 +84,11 @@ public class PlayersController {
     @Receive
     public void create(CharacterCreationRequestMessage msg) {
         playerFactory.create(user.get(), msg.name, msg.breed, msg.sex, msg.colors, msg.cosmeticId)
-                .onSuccess(player -> {
-                    players.create(player);
-                    backend.setNrPlayers(user.get().getId(), getPlayers().size() + 1);
-                })
+                // persist to database
+                .flatMap(player -> players.create(player).map(x -> player))
+                // notify backend
+                .onSuccess(player -> backend.setNrPlayers(user.get().getId(), getPlayers().size() + 1))
+                // notify client
                 .flatMap(player -> client.write(new CharacterCreationResultMessage(OK.value))
                         .flatMap(x -> doChoose(player)))
                 .mayRescue(cause -> {
