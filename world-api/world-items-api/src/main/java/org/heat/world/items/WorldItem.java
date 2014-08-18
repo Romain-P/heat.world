@@ -67,8 +67,8 @@ public final class WorldItem {
     }
 
     // shorthands
-    public short getGid() {
-        return (short) getTemplate().getId();
+    public int getGid() {
+        return getTemplate().getId();
     }
 
     public boolean isWeapon() {
@@ -95,7 +95,7 @@ public final class WorldItem {
     public ObjectItem toObjectItem() {
         return new ObjectItem(
                 getPosition().value,
-                getGid(),
+                (short) getGid(),
                 getEffects().stream().map(WorldItemEffect::toObjectEffect),
                 getUid(),
                 getQuantity()
