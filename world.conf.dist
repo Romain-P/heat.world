@@ -34,6 +34,7 @@ heat {
         direction = 1
 
         level = 1
+        kamas = 0
 
         life = 55
         max-energy = 10000
