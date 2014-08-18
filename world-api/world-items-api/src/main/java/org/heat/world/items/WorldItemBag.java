@@ -1,12 +1,12 @@
 package org.heat.world.items;
 
 import com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum;
+import org.fungsi.Either;
+import org.heat.shared.Pair;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-
-import static java.util.Objects.requireNonNull;
 
 public interface WorldItemBag {
     // read operations
@@ -76,14 +76,26 @@ public interface WorldItemBag {
     Optional<WorldItem> tryRemove(int uid);
 
     /**
-     * Find first same item
-     * @param item a non-null item
-     * @return a non-null option
+     * Fork an item with a given quantity
+     * @param item a non-null item that'll be forked
+     * @param quantity a positive quantity lower or equal to given item's quantity
+     * @return either forked items or same item if fork wasn't necessary
      */
-    default Optional<WorldItem> findFirstSame(WorldItem item) {
-        requireNonNull(item, "item");
-        return getItemStream()
-                .filter(x -> WorldItem.compare(item, x) == 0)
-                .findFirst();
-    }
+    Either<Pair<WorldItem, WorldItem>, WorldItem> fork(WorldItem item, int quantity);
+
+    /**
+     * Join an item
+     * @param item a non-null item
+     * @return either joint item or same item
+     */
+    WorldItem merge(WorldItem item, CharacterInventoryPositionEnum position);
+
+    /**
+     * Determine whether or not it is valid to move an item
+     * @param item a non-null item
+     * @param to a non-null position
+     * @param quantity a valid quantity
+     * @return a boolean
+     */
+    boolean isValidMove(WorldItem item, CharacterInventoryPositionEnum to, int quantity);
 }
