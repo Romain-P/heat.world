@@ -17,9 +17,11 @@ import org.heat.world.roleplay.environment.WorldPositioningSystem;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DefaultPlayerFactory implements PlayerFactory {
     private final Datacenter datacenter;
+    private final AtomicInteger idGenerator;
 
     // these properties are immutable therefore freely sharable
     private final WorldPosition startPosition;
@@ -37,11 +39,13 @@ public class DefaultPlayerFactory implements PlayerFactory {
     @Inject
     public DefaultPlayerFactory(
             Datacenter datacenter,
+            PlayerRepository players,
             Config config,
             @Named("player") Experience experience,
             WorldPositioningSystem wps
     ) {
         this.datacenter = datacenter;
+        this.idGenerator = players.createIdGenerator().get();
 
         Config startConfig = config.getConfig("heat.world.player.start");
 
@@ -67,6 +71,7 @@ public class DefaultPlayerFactory implements PlayerFactory {
     @Override
     public Future<Player> create(User user, String name, byte breed, boolean sex, int[] colors, int cosmeticId) {
         Player player = new Player();
+        player.setId(idGenerator.incrementAndGet());
         player.setUserId(user.getId());
         player.setName(name);
         player.setBreed(datacenter.find(Breed.class, breed).get());
@@ -108,6 +113,7 @@ public class DefaultPlayerFactory implements PlayerFactory {
         return new WorldActorLook(WorldActorLook.Bones.STANDING, lookId, headId, scale, WorldActorLook.toIndexedColors(colors));
     }
 
+    @SuppressWarnings("UnusedParameters")
     protected WorldPosition buildPosition(Breed breed) {
         return startPosition;
     }
