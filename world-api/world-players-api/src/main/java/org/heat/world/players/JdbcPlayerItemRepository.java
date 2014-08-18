@@ -25,6 +25,15 @@ public final class JdbcPlayerItemRepository implements PlayerItemRepository {
         this.items = items;
     }
 
+    private String batchInsertQuery(int rows) {
+        StringBuilder builder = new StringBuilder("insert into player_items(player_id, item_uid) values ");
+        builder.append("(?,?,?)");
+        for (int i = 1; i < rows; i++) {
+            builder.append(",(?,?,?)");
+        }
+        return builder.toString();
+    }
+
     @Override
     public Future<List<WorldItem>> findItemsByPlayer(int playerId) {
         try (Connection co = dataSource.getConnection()) {
@@ -54,6 +63,29 @@ public final class JdbcPlayerItemRepository implements PlayerItemRepository {
                 s.setInt(2, itemId);
 
                 s.executeUpdate();
+                return Futures.unit();
+            }
+        } catch (SQLException e) {
+            throw new Error(e);
+        }
+    }
+
+    @Override
+    public Future<Unit> persistAll(int playerId, IntStream itemIds) {
+        int[] uids = itemIds.toArray();
+
+        if (uids.length == 0) {
+            return Futures.unit();
+        }
+
+        try (Connection co = dataSource.getConnection()) {
+            try (PreparedStatement s = co.prepareStatement(batchInsertQuery(uids.length))) {
+                for (int i = 0, j = 1; i < uids.length; i++, j += 2) {
+                    s.setInt(j, playerId);
+                    s.setInt(j + 1, uids[i]);
+                }
+
+                s.execute();
                 return Futures.unit();
             }
         } catch (SQLException e) {
