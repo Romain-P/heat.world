@@ -6,6 +6,7 @@ import com.ankamagames.dofus.network.types.game.data.items.effects.ObjectEffect;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import lombok.SneakyThrows;
+import org.fungsi.Throwables;
 import org.fungsi.concurrent.Future;
 import org.fungsi.concurrent.Futures;
 import org.fungsi.concurrent.Worker;
@@ -21,10 +22,7 @@ import org.heat.shared.stream.MoreCollectors;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
-import java.sql.Blob;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
@@ -84,7 +82,7 @@ public final class JdbcItemRepository extends JdbcRepository implements WorldIte
             writer.write_ui16(e.getProtocolId());
             e.serialize(writer);
         }
-        s.setBlob(index, IO.asBlob(writer.toByteArray()));
+        s.setBytes(index, writer.toByteArray()); // TODO(world/items): convert AutoGrowingWriter to InputStream
     }
 
     @SneakyThrows
@@ -131,6 +129,32 @@ public final class JdbcItemRepository extends JdbcRepository implements WorldIte
         return sb.toString();
     }
 
+    void doExecute(WorldItem item, String query) {
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setAutoCommit(false);
+            try (PreparedStatement s = connection.prepareStatement(query)) {
+                exportToDb(item, s);
+                s.execute();
+            } catch (SQLException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.commit();
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    void doInsert(WorldItem item) {
+        doExecute(item, simpleInsert("items", columns));
+    }
+
+    void doUpdate(WorldItem item) {
+        doExecute(item, simpleUpdate("items", "uid", columns));
+    }
+
     @Override
     public Future<WorldItem> find(int uid) {
         return worker.submit(() -> {
@@ -163,13 +187,13 @@ public final class JdbcItemRepository extends JdbcRepository implements WorldIte
         if (item.getUid() == 0) {
             return worker.submit(() -> {
                 WorldItem newItem = item.withUid(idGenerator.incrementAndGet());
-                execute(simpleInsert("items", columns), newItem, this::exportToDb);
+                doInsert(newItem);
                 return newItem;
             });
         } else {
             return worker.submit(() -> {
                 WorldItem newItem = item.withNewVersion();
-                execute(simpleUpdate("items", "uid", columns), newItem, this::exportToDb);
+                doUpdate(newItem);
                 return newItem;
             });
         }
