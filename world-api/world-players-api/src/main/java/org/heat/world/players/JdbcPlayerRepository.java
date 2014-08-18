@@ -4,11 +4,9 @@ import com.ankamagames.dofus.datacenter.breeds.Breed;
 import com.ankamagames.dofus.datacenter.spells.Spell;
 import com.ankamagames.dofus.network.enums.DirectionsEnum;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
 import lombok.SneakyThrows;
 import org.fungsi.concurrent.Worker;
 import org.heat.data.Datacenter;
-import org.heat.shared.Collections;
 import org.heat.shared.database.JdbcRepository;
 import org.heat.shared.stream.MoreCollectors;
 import org.heat.world.metrics.Experience;
@@ -20,7 +18,10 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.sql.DataSource;
 import java.sql.*;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -34,9 +35,6 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
     private final Experience experience;
     private final WorldPositioningSystem wps;
 
-    private final Map<Integer, Player> cache = Maps.newConcurrentMap();
-    private final Map<Integer, LinkedList<Player>> cacheByUserId = Maps.newConcurrentMap();
-    private final Map<String, Player> cacheByName = Maps.newConcurrentMap();
     private final AtomicInteger idGenerator = new AtomicInteger();
 
     @Inject
@@ -287,36 +285,7 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
         s.setInt(index++, player.getId());
     }
 
-    private void addToCache(Player player) {
-        cache.put(player.getId(), player);
-        cacheByUserId.computeIfAbsent(player.getUserId(), x -> new LinkedList<>()).add(player);
-        cacheByName.put(player.getName(), player);
-    }
-
-    private void addToCacheWithCommonOwner(int userId, LinkedList<Player> players) {
-        LinkedList<Player> cached = cacheByUserId.get(userId);
-        if (cached == null) {
-            cacheByUserId.put(userId, Collections.cloneLinkedList(players));
-        } else {
-            Collections.addAllLinkedList(cached, players);
-        }
-        for (Player player : players) {
-            cache.put(player.getId(), player);
-            cacheByName.put(player.getName(), player);
-        }
-    }
-
-    private void removeFromCache(Player player) {
-        cache.remove(player.getId());
-        List<Player> byUserId = cacheByUserId.get(player.getUserId());
-        if (byUserId != null) {
-            byUserId.remove(player);
-        }
-        cacheByName.remove(player.getName());
-    }
-
     private void doInsert(Player player) {
-        addToCache(player);
         execute(simpleInsert("players", fields), player, this::insertToDb);
     }
 
@@ -325,7 +294,6 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
     }
 
     private void doDelete(Player player) {
-        removeFromCache(player);
         execute(simpleDelete("players", "id"), s -> s.setInt(1, player.getId()));
     }
 
@@ -349,52 +317,27 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
 
     @Override
     public void remove(Player o) {
-        if (cache.containsKey(o.getId())) {
-            worker.cast(() -> doDelete(o));
-        }
+        worker.cast(() -> doDelete(o));
     }
 
     @Override
     public Optional<Player> find(int id) {
-        Player player = cache.get(id);
-        if (player != null) {
-            return Optional.of(player);
-        }
-
-        Optional<Player> opt;
         try (Stream<Player> stream = query(simpleSelect("players", "id", fields), s -> s.setInt(1, id), this::importFromDb)) {
-            opt = stream.collect(MoreCollectors.uniqueOption());
+            return stream.collect(MoreCollectors.uniqueOption());
         }
-        opt.ifPresent(this::addToCache);
-        return opt;
     }
 
     @Override
     public List<Player> findByUserId(int userId) {
-        LinkedList<Player> players = cacheByUserId.get(userId);
-        if (players != null) {
-            return org.heat.shared.Collections.cloneLinkedList(players);
-        }
-
         try (Stream<Player> stream = query(simpleSelect("players", "userId", fields), s -> s.setInt(1, userId), this::importFromDb)) {
-            players = stream.collect(Collectors.toCollection(LinkedList::new));
+            return stream.collect(Collectors.toCollection(LinkedList::new));
         }
-        addToCacheWithCommonOwner(userId, players);
-        return players;
     }
 
     @Override
     public Optional<Player> findByName(String name) {
-        Player player = cacheByName.get(name);
-        if (player != null) {
-            return Optional.of(player);
-        }
-
-        Optional<Player> opt;
         try (Stream<Player> stream = query(simpleSelect("players", "name", fields), s -> s.setString(1, name), this::importFromDb)) {
-            opt = stream.collect(MoreCollectors.uniqueOption());
+            return stream.collect(MoreCollectors.uniqueOption());
         }
-        opt.ifPresent(this::addToCache);
-        return opt;
     }
 }
