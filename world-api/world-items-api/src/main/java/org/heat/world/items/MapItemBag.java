@@ -110,7 +110,7 @@ public final class MapItemBag implements WorldItemBag {
     }
 
     @Override
-    public WorldItem merge(WorldItem item, CharacterInventoryPositionEnum position) {
+    public Either<WorldItem, WorldItem> mergeOrMove(WorldItem item, CharacterInventoryPositionEnum position) {
         requireNonNull(item, "item");
 
         Optional<WorldItem> opt = findByPosition(position)
@@ -118,11 +118,11 @@ public final class MapItemBag implements WorldItemBag {
                 .findFirst();
 
         if (!opt.isPresent()) {
-            return item.withPosition(position);
+            return Either.right(item.withPosition(position));
         }
 
         WorldItem same = opt.get();
-        return same.plusQuantity(item.getQuantity());
+        return Either.left(same.plusQuantity(item.getQuantity()));
     }
 
 

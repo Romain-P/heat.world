@@ -84,11 +84,11 @@ public interface WorldItemBag {
     Either<Pair<WorldItem, WorldItem>, WorldItem> fork(WorldItem item, int quantity);
 
     /**
-     * Join an item
+     * Merge an item
      * @param item a non-null item
-     * @return either joint item or same item
+     * @return either merged or moved item
      */
-    WorldItem merge(WorldItem item, CharacterInventoryPositionEnum position);
+    Either<WorldItem, WorldItem> mergeOrMove(WorldItem item, CharacterInventoryPositionEnum position);
 
     /**
      * Determine whether or not it is valid to move an item
