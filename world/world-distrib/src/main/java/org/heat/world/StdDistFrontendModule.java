@@ -32,7 +32,7 @@ public class StdDistFrontendModule extends PrivateModule {
 
     @Provides
     NetworkComponentFactory<NetworkMessage> provideMessageFactory() {
-        return MessageReceiver.DEFAULT;
+        return MessageReceiver.createNewReceiver();
     }
 
     @Provides

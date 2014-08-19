@@ -17,7 +17,7 @@ public final class WorldMapPath {
 
         public static Node parse(short key) {
             WorldMapPoint pos = WorldMapPoint.of(key & 0xFFF).get();
-            DirectionsEnum dir = DirectionsEnum.valueOf((key >> 12) & 0xF).get();
+            DirectionsEnum dir = DirectionsEnum.valueOf((byte) ((key >> 12) & 0xF)).get();
             return new Node(pos, dir);
         }
 

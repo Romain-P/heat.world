@@ -1,12 +1,12 @@
 apply from: '../publishable.gradle'
 
 dependencies {
-    compile 'org.heat:util:0.2.1'
-    compile 'org.heat.dofus:d2vendor:2.21.3-2'
-    compile 'org.heat:shared:0.1-SNAPSHOT'
+    compile "org.heat:util:${ext.heatUtil}"
+    compile "org.heat.dofus:d2vendor:${ext.heatD2vendor}"
+    compile "org.heat:shared:${ext.heatShared}"
 
-    compile 'com.github.blackrush.acara:acara-api:1.3'
-    compile 'org.rocket:rocket-api:1.1-beta9'
+    compile "com.github.blackrush.acara:acara-api:${ext.acara}"
+    compile "org.rocket:rocket-api:${ext.rocket}"
 
-    testCompile 'org.heat:shared-distrib:0.1-SNAPSHOT'
+    testCompile "org.heat:shared-distrib:${ext.heatShared}"
 }
