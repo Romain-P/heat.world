@@ -6,6 +6,8 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import lombok.RequiredArgsConstructor;
 import org.heat.StdDataModule;
 import org.heat.data.Datacenter;
@@ -40,6 +42,7 @@ public class PlayersTest {
                 binder -> {
                     binder.bind(Config.class).toInstance(ConfigFactory.parseFileAnySyntax(configFile));
                     binder.bind(ExecutorService.class).toInstance(MoreExecutors.sameThreadExecutor());
+                    binder.bind(ByteBufAllocator.class).toInstance(UnpooledByteBufAllocator.DEFAULT);
                 }
         ).injectMembers(this);
     }

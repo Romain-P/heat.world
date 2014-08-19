@@ -52,7 +52,7 @@ public class DefaultPlayerFactory implements PlayerFactory {
         this.startPosition = wps.locate(
                 startConfig.getInt("map"),
                 WorldMapPoint.of(startConfig.getInt("cell")).get(),
-                DirectionsEnum.valueOf(startConfig.getInt("direction")).get()
+                DirectionsEnum.valueOf((byte) startConfig.getInt("direction")).get()
         );
 
         Experience startStep = experience.getNextUntilIsLevel(startConfig.getInt("level"));

@@ -7,6 +7,8 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.inject.Guice;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import org.heat.StdDataModule;
 import org.heat.shared.IntPair;
 import org.heat.world.StdWorldEnvironmentModule;
@@ -43,6 +45,7 @@ public class WorldPositioningSystemImplTest {
                     binder.bind(Config.class).toInstance(ConfigFactory.parseFileAnySyntax(configFile));
                     binder.bind(EventBusBuilder.class).toInstance(mock(EventBusBuilder.class));
                     binder.bind(ExecutorService.class).toInstance(MoreExecutors.sameThreadExecutor());
+                    binder.bind(ByteBufAllocator.class).toInstance(UnpooledByteBufAllocator.DEFAULT);
                 }
         ).injectMembers(this);
 

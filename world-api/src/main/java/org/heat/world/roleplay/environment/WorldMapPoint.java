@@ -67,7 +67,7 @@ public final class WorldMapPoint {
             dir += 8;
         }
 
-        return DirectionsEnum.valueOf(dir).get();
+        return DirectionsEnum.valueOf((byte) dir).get();
     }
 
     public DirectionsEnum ortientationTo(WorldMapPoint other) {

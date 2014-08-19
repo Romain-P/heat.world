@@ -200,7 +200,7 @@ public final class JdbcPlayerRepository extends JdbcRepository implements Player
         player.setPosition(wps.locate(
                 rset.getInt("mapId"),
                 WorldMapPoint.of(rset.getInt("cellId")).get(),
-                DirectionsEnum.valueOf(rset.getInt("directionId")).get()
+                DirectionsEnum.valueOf(rset.getByte("directionId")).get()
         ));
         player.setExperience(buildPlayerExperience(rset.getDouble("experience")));
         player.setStats(buildPlayerStats(player.getBreed(), rset));
