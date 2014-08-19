@@ -209,7 +209,7 @@ public class PlayersController {
         Player player = this.player.get();
         PlayerItemWallet wallet = player.getWallet();
 
-        CharacterInventoryPositionEnum position = CharacterInventoryPositionEnum.valueOf(msg.position).get();
+        CharacterInventoryPositionEnum position = CharacterInventoryPositionEnum.valueOf((byte) msg.position).get();
         int quantity = msg.quantity;
 
         // get item

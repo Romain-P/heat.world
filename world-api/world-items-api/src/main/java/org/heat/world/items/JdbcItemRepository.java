@@ -89,7 +89,7 @@ public final class JdbcItemRepository extends JdbcRepository implements WorldIte
                 0,
                 datacenter.find(Item.class, rset.getInt("gid")).get(),
                 importEffects(rset),
-                CharacterInventoryPositionEnum.valueOf(rset.getInt("position")).get(),
+                CharacterInventoryPositionEnum.valueOf(rset.getByte("position")).get(),
                 rset.getInt("quantity")
         );
     }

@@ -17,6 +17,7 @@ allprojects {
     ext.jbossMarshalling = '1.4.7.Final'
     ext.pgjdbc = '0.3'
     ext.hikari = '2.0.0'
+    ext.guice = '3.0'
     ext.heatUtil = '0.3.+'
     ext.heatShared = '0.1-SNAPSHOT'
     ext.heatD2vendor = '2.21.3-+'

@@ -26,7 +26,7 @@ public class StdItemsModule extends PrivateModule {
     @SuppressWarnings("unchecked")
     @Provides
     NetworkComponentFactory<ObjectEffect> provideObjectEffectFactory() {
-        return (NetworkComponentFactory) ProtocolTypeManager.DEFAULT;
+        return (NetworkComponentFactory) ProtocolTypeManager.createNewManager();
     }
 
     @Provides
