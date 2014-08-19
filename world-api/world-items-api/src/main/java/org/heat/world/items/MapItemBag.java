@@ -106,7 +106,7 @@ public final class MapItemBag implements WorldItemBag {
         }
 
         WorldItem forked = item.fork(quantity);
-        return Either.left(Pair.of(item, forked));
+        return Either.left(Pair.of(item.plusQuantity(-quantity), forked));
     }
 
     @Override
