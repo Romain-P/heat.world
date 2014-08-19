@@ -23,9 +23,11 @@ import com.ankamagames.dofus.network.messages.game.inventory.items.ObjectErrorMe
 import com.ankamagames.dofus.network.messages.game.inventory.items.ObjectSetPositionMessage;
 import com.ankamagames.dofus.network.messages.game.inventory.spells.SpellListMessage;
 import com.github.blackrush.acara.Listener;
+import org.fungsi.Either;
 import org.fungsi.Unit;
 import org.fungsi.concurrent.Future;
 import org.heat.User;
+import org.heat.shared.Pair;
 import org.heat.shared.Strings;
 import org.heat.shared.stream.MoreCollectors;
 import org.heat.world.backend.Backend;
@@ -219,28 +221,58 @@ public class PlayersController {
             return;
         }
 
-        // fork it
-        WorldItem forked = wallet.fork(item, quantity)
-            .foldLeft(pair -> pair.second) // actually forked item
-            .thenRight(x -> x);            // no fork needed
+        // fork!
+        Either<Pair<WorldItem, WorldItem>, WorldItem> fork = wallet.fork(item, quantity);
+        if (fork.isLeft()) {
+            // forked...
+            Pair<WorldItem, WorldItem> pair = fork.left();
+            WorldItem original = pair.first;
+            WorldItem forked = pair.second;
 
-        // merge it
-        WorldItem merged = wallet.merge(forked, position);
+            // merge or move!
+            Either<WorldItem, WorldItem> mergeOrMove = wallet.mergeOrMove(forked, position);
+            if (mergeOrMove.isLeft()) {
+                // merged...
+                WorldItem merged = mergeOrMove.left();
 
-        if (merged.getUid() != forked.getUid()) {
-            // actually merged it
+                Future<WorldItem> originalFuture = items.save(original);
+                Future<WorldItem> mergedFuture = items.save(merged);
+
+                // TODO update wallet
+                // TODO notify client
+            } else {
+                // moved...
+                WorldItem moved = mergeOrMove.right();
+
+                Future<WorldItem> originalFuture = items.save(original);
+                Future<WorldItem> movedFuture = items.save(moved);
+
+                // TODO add/update wallet
+                // TODO notify client
+            }
+        } else {
+            // not forked...
+
+            // merge or move!
+            Either<WorldItem, WorldItem> mergeOrMove = wallet.mergeOrMove(item, position);
+            if (mergeOrMove.isLeft()) {
+                // merged...
+                WorldItem merged = mergeOrMove.left();
+
+                Future<WorldItem> itemFuture = items.remove(item);
+                Future<WorldItem> mergedFuture = items.save(merged);
+
+                // TODO update/remove wallet
+                // TODO notify client
+            } else {
+                // moved...
+                WorldItem moved = mergeOrMove.right();
+
+                Future<WorldItem> movedFuture = items.save(moved);
+
+                // TODO update wallet
+                // TODO notify client
+            }
         }
-
-        // persist item
-        /**
-         * TODO(world/frontend): persist item
-         * create forked item if necessary
-         * update merged item (which is always new since we're always updating its position)
-         * collapse both operations if available
-         */
-
-
-        // notify client
-        // TODO(world/frontend): notify client of item movement
     }
 }
