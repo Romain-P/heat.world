@@ -17,16 +17,14 @@ import com.ankamagames.dofus.network.messages.game.context.roleplay.spell.SpellU
 import com.ankamagames.dofus.network.messages.game.context.roleplay.stats.StatsUpgradeRequestMessage;
 import com.ankamagames.dofus.network.messages.game.context.roleplay.stats.StatsUpgradeResultMessage;
 import com.ankamagames.dofus.network.messages.game.initialization.CharacterLoadingCompleteMessage;
-import com.ankamagames.dofus.network.messages.game.inventory.items.InventoryContentMessage;
-import com.ankamagames.dofus.network.messages.game.inventory.items.InventoryWeightMessage;
-import com.ankamagames.dofus.network.messages.game.inventory.items.ObjectErrorMessage;
-import com.ankamagames.dofus.network.messages.game.inventory.items.ObjectSetPositionMessage;
+import com.ankamagames.dofus.network.messages.game.inventory.items.*;
 import com.ankamagames.dofus.network.messages.game.inventory.spells.SpellListMessage;
 import com.github.blackrush.acara.Listener;
 import org.fungsi.Either;
 import org.fungsi.Unit;
 import org.fungsi.concurrent.Future;
 import org.heat.User;
+import org.heat.shared.MoreFutures;
 import org.heat.shared.Pair;
 import org.heat.shared.Strings;
 import org.heat.shared.stream.MoreCollectors;
@@ -225,9 +223,9 @@ public class PlayersController {
         Either<Pair<WorldItem, WorldItem>, WorldItem> fork = wallet.fork(item, quantity);
         if (fork.isLeft()) {
             // forked...
-            Pair<WorldItem, WorldItem> pair = fork.left();
-            WorldItem original = pair.first;
-            WorldItem forked = pair.second;
+            Pair<WorldItem, WorldItem> forkPair = fork.left();
+            WorldItem original = forkPair.first;
+            WorldItem forked = forkPair.second;
 
             // merge or move!
             Either<WorldItem, WorldItem> mergeOrMove = wallet.mergeOrMove(forked, position);
@@ -235,20 +233,30 @@ public class PlayersController {
                 // merged...
                 WorldItem merged = mergeOrMove.left();
 
-                Future<WorldItem> originalFuture = items.save(original);
-                Future<WorldItem> mergedFuture = items.save(merged);
+                MoreFutures.join(items.save(original), items.save(merged))
+                        .onSuccess(pair -> {
+                            wallet.update(pair.first);
+                            wallet.update(pair.second);
 
-                // TODO update wallet
-                // TODO notify client
+                            client.transaction(tx -> {
+                                tx.write(new ObjectQuantityMessage(pair.first.getUid(), pair.first.getQuantity()));
+                                tx.write(new ObjectQuantityMessage(pair.second.getUid(), pair.second.getQuantity()));
+                            });
+                        });
             } else {
                 // moved...
                 WorldItem moved = mergeOrMove.right();
 
-                Future<WorldItem> originalFuture = items.save(original);
-                Future<WorldItem> movedFuture = items.save(moved);
+                MoreFutures.join(items.save(original), items.save(moved))
+                        .onSuccess(pair -> {
+                            wallet.update(pair.first);
+                            wallet.add(pair.second);
 
-                // TODO add/update wallet
-                // TODO notify client
+                            client.transaction(tx -> {
+                                tx.write(new ObjectQuantityMessage(pair.first.getUid(), pair.first.getQuantity()));
+                                tx.write(new ObjectAddedMessage(pair.second.toObjectItem()));
+                            });
+                        });
             }
         } else {
             // not forked...
@@ -259,19 +267,25 @@ public class PlayersController {
                 // merged...
                 WorldItem merged = mergeOrMove.left();
 
-                Future<WorldItem> itemFuture = items.remove(item);
-                Future<WorldItem> mergedFuture = items.save(merged);
+                MoreFutures.join(items.remove(item), items.save(merged))
+                        .onSuccess(pair -> {
+                            wallet.remove(pair.first);
+                            wallet.update(pair.second);
 
-                // TODO update/remove wallet
-                // TODO notify client
+                            client.transaction(tx -> {
+                                tx.write(new ObjectDeletedMessage(pair.first.getUid()));
+                                tx.write(new ObjectQuantityMessage(pair.second.getUid(), pair.second.getQuantity()));
+                            });
+                        });
             } else {
                 // moved...
                 WorldItem moved = mergeOrMove.right();
 
-                Future<WorldItem> movedFuture = items.save(moved);
-
-                // TODO update wallet
-                // TODO notify client
+                items.save(moved)
+                        .onSuccess(x -> {
+                            wallet.update(x);
+                            client.write(new ObjectMovementMessage(x.getUid(), x.getPosition().value));
+                        });
             }
         }
     }
