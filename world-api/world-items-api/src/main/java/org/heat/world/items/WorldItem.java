@@ -75,6 +75,10 @@ public final class WorldItem {
         return getTemplate().getId();
     }
 
+    public WorldItemType getItemType() {
+        return WorldItemType.valueOf((byte) getTemplate().getTypeId());
+    }
+
     public boolean isWeapon() {
         return getTemplate() instanceof Weapon;
     }
