@@ -10,3 +10,7 @@ dependencies {
 
     testCompile "org.heat:shared-distrib:${ext.heatShared}"
 }
+
+test {
+    workingDir rootProject.projectDir
+}
