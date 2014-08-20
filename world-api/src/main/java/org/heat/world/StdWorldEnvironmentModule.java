@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 public class StdWorldEnvironmentModule extends AbstractModule {
     @Override
     protected void configure() {
-        bind(WorldPositioningSystem.class).to(WorldPositioningSystemImpl.class);
+        bind(WorldPositioningSystem.class).to(WorldPositioningSystemImpl.class).asEagerSingleton();
     }
 
     @Provides

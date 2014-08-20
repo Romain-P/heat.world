@@ -3,6 +3,8 @@ package org.heat.world.players;
 import com.ankamagames.dofus.datacenter.breeds.Breed;
 import com.ankamagames.dofus.datacenter.breeds.Head;
 import com.ankamagames.dofus.network.enums.DirectionsEnum;
+import com.google.inject.Key;
+import com.google.inject.name.Names;
 import com.typesafe.config.Config;
 import org.fungsi.concurrent.Future;
 import org.fungsi.concurrent.Futures;
@@ -15,20 +17,24 @@ import org.heat.world.roleplay.WorldActorLook;
 import org.heat.world.roleplay.environment.WorldMapPoint;
 import org.heat.world.roleplay.environment.WorldPosition;
 import org.heat.world.roleplay.environment.WorldPositioningSystem;
+import org.rocket.Service;
+import org.rocket.ServiceContext;
 
 import javax.inject.Inject;
-import javax.inject.Named;
+import javax.inject.Singleton;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class DefaultPlayerFactory implements PlayerFactory {
+@Singleton
+public class DefaultPlayerFactory implements PlayerFactory, Service {
     private final Datacenter datacenter;
     private final AtomicInteger idGenerator;
     private final PlayerItemRepository playerItems;
 
     // these properties are immutable therefore freely sharable
-    private final WorldPosition startPosition;
-    private final PlayerExperience startExperience;
-    private final short
+    private WorldPosition startPosition;
+    private PlayerExperience startExperience;
+    private short
             startLife,
             maxEnergy,
             startEnergy,
@@ -37,24 +43,28 @@ public class DefaultPlayerFactory implements PlayerFactory {
             startProspecting,
             startStatsPoints,
             startSpellsPoints;
-    private final int
+    private int
             startKamas
             ;
 
     @Inject
-    public DefaultPlayerFactory(
-            Datacenter datacenter,
-            PlayerRepository players,
-            PlayerItemRepository playerItems,
-            Config config,
-            @Named("player") Experience experience,
-            WorldPositioningSystem wps
-    ) {
+    public DefaultPlayerFactory(Datacenter datacenter, PlayerRepository players, PlayerItemRepository playerItems) {
         this.datacenter = datacenter;
         this.idGenerator = players.createIdGenerator().get();
         this.playerItems = playerItems;
+    }
 
-        Config startConfig = config.getConfig("heat.world.player.start");
+    @Override
+    public Optional<Class<? extends Service>> dependsOn() {
+        return Optional.of(WorldPositioningSystem.class);
+    }
+
+    @Override
+    public void start(ServiceContext ctx) {
+        Config startConfig = ctx.getConfig().getConfig("heat.world.player.start");
+
+        WorldPositioningSystem wps = ctx.getInjector().getInstance(WorldPositioningSystem.class);
+        Experience experience = ctx.getInjector().getInstance(Key.get(Experience.class, Names.named("player")));
 
         this.startPosition = wps.locate(
                 startConfig.getInt("map"),
@@ -62,8 +72,8 @@ public class DefaultPlayerFactory implements PlayerFactory {
                 DirectionsEnum.valueOf((byte) startConfig.getInt("direction")).get()
         );
 
-        Experience startStep = experience.getNextUntilIsLevel(startConfig.getInt("level"));
-        this.startExperience = new PlayerExperience(startStep.getTop(), startStep);
+        Experience playerExperience = experience.getNextUntilIsLevel(startConfig.getInt("level"));
+        this.startExperience = new PlayerExperience(playerExperience.getTop(), playerExperience);
 
         this.startLife         = (short) startConfig.getInt("life");
         this.maxEnergy         = (short) startConfig.getInt("max-energy");
@@ -75,6 +85,9 @@ public class DefaultPlayerFactory implements PlayerFactory {
         this.startSpellsPoints = (short) startConfig.getInt("spells-points");
         this.startKamas        =         startConfig.getInt("kamas");
     }
+
+    @Override
+    public void stop(ServiceContext ctx) { }
 
     @Override
     public Future<Player> create(User user, String name, byte breed, boolean sex, int[] colors, int cosmeticId) {
