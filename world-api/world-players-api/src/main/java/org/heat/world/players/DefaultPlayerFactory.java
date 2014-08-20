@@ -20,9 +20,11 @@ import org.rocket.Service;
 import org.rocket.ServiceContext;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Singleton
 public class DefaultPlayerFactory implements PlayerFactory, Service {
     private final Datacenter datacenter;
     private final AtomicInteger idGenerator;

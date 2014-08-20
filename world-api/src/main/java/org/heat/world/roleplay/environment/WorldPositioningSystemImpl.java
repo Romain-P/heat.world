@@ -13,10 +13,12 @@ import org.rocket.Service;
 import org.rocket.ServiceContext;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 
+@Singleton
 public class WorldPositioningSystemImpl implements WorldPositioningSystem {
     private final Datacenter datacenter;
     private final Repository<WorldMap> maps;

@@ -7,9 +7,11 @@ import org.heat.data.Datacenter;
 import org.rocket.Service;
 import org.rocket.ServiceContext;
 
+import javax.inject.Singleton;
 import java.util.List;
 import java.util.Optional;
 
+@Singleton
 public class SimpleUserCapabilities implements UserCapabilities, Service {
     private List<Breed> breeds;
 
