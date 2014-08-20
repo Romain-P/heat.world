@@ -5,15 +5,18 @@ import com.github.blackrush.acara.EventBus;
 import com.github.blackrush.acara.EventBusBuilder;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.inject.Guice;
+import com.google.inject.Injector;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.heat.StdDataModule;
+import org.heat.data.Datacenter;
 import org.heat.shared.IntPair;
 import org.heat.world.StdWorldEnvironmentModule;
 import org.junit.Before;
 import org.junit.Test;
+import org.rocket.ImmutableServiceContext;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -27,27 +30,35 @@ import static org.mockito.Mockito.when;
 
 public class WorldPositioningSystemImplTest {
 
-    @Inject WorldPositioningSystem wps;
+    @Inject Datacenter datacenter;
+    @Inject WorldPositioningSystemImpl wps;
     @Inject EventBusBuilder eventBusBuilder;
 
     @Before
     public void setUp() throws Exception {
-        File configFile = new File(System.getenv("PWD") + "/world.conf").getAbsoluteFile();
+        File configFile = new File("world.conf").getAbsoluteFile();
 
         if (!configFile.exists()) {
             throw new FileNotFoundException(configFile.toString());
         }
 
-        Guice.createInjector(
+        Config config = ConfigFactory.parseFileAnySyntax(configFile);
+
+        Injector injector = Guice.createInjector(
                 new StdDataModule(),
                 new StdWorldEnvironmentModule(),
                 binder -> {
-                    binder.bind(Config.class).toInstance(ConfigFactory.parseFileAnySyntax(configFile));
+                    binder.bind(Config.class).toInstance(config);
                     binder.bind(EventBusBuilder.class).toInstance(mock(EventBusBuilder.class));
                     binder.bind(ExecutorService.class).toInstance(MoreExecutors.sameThreadExecutor());
                     binder.bind(ByteBufAllocator.class).toInstance(UnpooledByteBufAllocator.DEFAULT);
                 }
-        ).injectMembers(this);
+        );
+        injector.injectMembers(this);
+
+        ImmutableServiceContext ctx = ImmutableServiceContext.of(config, ClassLoader.getSystemClassLoader(), injector);
+        datacenter.start(ctx);
+        wps.start(ctx);
 
         when(eventBusBuilder.build()).thenReturn(mock(EventBus.class));
     }

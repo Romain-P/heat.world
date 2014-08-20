@@ -4,6 +4,7 @@ import com.ankamagames.dofus.datacenter.breeds.Breed;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import io.netty.buffer.ByteBufAllocator;
@@ -14,6 +15,7 @@ import org.heat.data.Datacenter;
 import org.heat.shared.IntPair;
 import org.junit.Before;
 import org.junit.Test;
+import org.rocket.ImmutableServiceContext;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -37,14 +39,19 @@ public class PlayersTest {
             throw new FileNotFoundException(configFile.toString());
         }
 
-        Guice.createInjector(
+        Config config = ConfigFactory.parseFileAnySyntax(configFile);
+
+        Injector injector = Guice.createInjector(
                 new StdDataModule(),
                 binder -> {
-                    binder.bind(Config.class).toInstance(ConfigFactory.parseFileAnySyntax(configFile));
+                    binder.bind(Config.class).toInstance(config);
                     binder.bind(ExecutorService.class).toInstance(MoreExecutors.sameThreadExecutor());
                     binder.bind(ByteBufAllocator.class).toInstance(UnpooledByteBufAllocator.DEFAULT);
                 }
-        ).injectMembers(this);
+        );
+        injector.injectMembers(this);
+
+        datacenter.start(ImmutableServiceContext.of(config, ClassLoader.getSystemClassLoader(), injector));
     }
 
     @Test
