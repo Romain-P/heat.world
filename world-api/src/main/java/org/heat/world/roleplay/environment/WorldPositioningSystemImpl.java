@@ -17,7 +17,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 
-public class WorldPositioningSystemImpl implements WorldPositioningSystem, Service {
+public class WorldPositioningSystemImpl implements WorldPositioningSystem {
     private final Datacenter datacenter;
     private final Repository<WorldMap> maps;
     private final Map<Integer, MapPosition> positions;

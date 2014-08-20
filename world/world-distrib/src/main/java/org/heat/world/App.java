@@ -13,7 +13,13 @@ public final class App {
             RocketLauncher.run(new StdWorldRocket().getServiceContext());
         } catch (CreationException e) {
             for (Message message : e.getErrorMessages()) {
-                message.getCause().printStackTrace();
+                System.err.println(message.getMessage());
+                for (Object source : message.getSources()) {
+                    System.err.println("  -> " + source);
+                }
+                if (message.getCause() != null) {
+                    message.getCause().printStackTrace(System.err);
+                }
             }
         } catch (ProvisionException e) {
             for (Message message : e.getErrorMessages()) {

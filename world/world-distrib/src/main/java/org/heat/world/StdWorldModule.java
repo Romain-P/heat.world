@@ -6,6 +6,8 @@ import com.github.blackrush.acara.SupervisedEventModule;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.PooledByteBufAllocator;
 import org.fungsi.concurrent.Workers;
 import org.heat.StdDataModule;
 import org.rocket.network.acara.RocketAcara;
@@ -47,5 +49,11 @@ public class StdWorldModule extends AbstractModule {
                 .install(new SupervisedEventModule())
                 .install(RocketAcara.newContextfulModule())
                 ;
+    }
+
+    @Provides
+    @Singleton
+    ByteBufAllocator provideByteBufAllocator() {
+        return new PooledByteBufAllocator(true);
     }
 }
