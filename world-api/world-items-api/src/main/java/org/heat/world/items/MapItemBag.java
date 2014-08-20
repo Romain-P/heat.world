@@ -140,23 +140,26 @@ public final class MapItemBag implements WorldItemBag {
             return true;
         }
 
-        switch (item.getPosition()) {
-            case ACCESSORY_POSITION_HAT:
-            case ACCESSORY_POSITION_CAPE:
-            case ACCESSORY_POSITION_BELT:
-            case ACCESSORY_POSITION_BOOTS:
-            case ACCESSORY_POSITION_AMULET:
-            case ACCESSORY_POSITION_SHIELD:
-            case ACCESSORY_POSITION_WEAPON:
-            case INVENTORY_POSITION_RING_LEFT:
-            case INVENTORY_POSITION_RING_RIGHT:
-            case INVENTORY_POSITION_DOFUS_1:
-            case INVENTORY_POSITION_DOFUS_2:
-            case INVENTORY_POSITION_DOFUS_3:
-            case INVENTORY_POSITION_DOFUS_4:
-            case INVENTORY_POSITION_DOFUS_5:
-            case INVENTORY_POSITION_DOFUS_6:
-            case ACCESSORY_POSITION_PETS:
+        switch (item.getItemType()) {
+            case AMULET:
+            case BOW:
+            case WAND:
+            case STAFF:
+            case DAGGER:
+            case SWORD:
+            case HAMMER:
+            case SHOVEL:
+            case RING:
+            case BELT:
+            case BOOTS:
+            case HAT:
+            case CLOAK:
+            case PET:
+            case AXE:
+            case PICKAXE:
+            case SCYTHE:
+            case DOFUS:
+            //case TOOL:
                 return quantity == 1;
 
             default:
