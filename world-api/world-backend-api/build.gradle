@@ -1,7 +1,7 @@
 apply from: '../../publishable.gradle'
 
 dependencies {
-    compile "org.heat:util:${ext.heatUtil}"
-    compile "org.heat:shared-backend:${ext.heatShared}"
-    compile "org.rocket:rocket-network:${ext.rocket}"
+    compile "org.heat:util:$heatUtil"
+    compile "org.heat:shared-backend:$heatShared"
+    compile "org.rocket:rocket-network:$rocket"
 }

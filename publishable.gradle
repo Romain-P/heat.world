@@ -18,11 +18,11 @@ uploadArchives {
     repositories {
         mavenDeployer {
             if (project.version.endsWith('SNAPSHOT')) {
-                repository(url: 'http://archiva.gitlab.servers.loadlow.me/repository/snapshots') {
+                repository(url: archivaSnapshots) {
                     authentication(userName: archivaUsername, password: archivaPassword)
                 }
             } else {
-                repository(url: 'http://archiva.gitlab.servers.loadlow.me/repository/internal') {
+                repository(url: archivaInternal) {
                     authentication(userName: archivaUsername, password: archivaPassword)
                 }
             }
