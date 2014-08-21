@@ -27,6 +27,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -49,6 +50,12 @@ public final class JdbcItemRepository extends JdbcRepository implements WorldIte
     ImmutableList<String> columns = ImmutableList.of(
             "uid",
             "gid",
+            "effects",
+            "position",
+            "quantity"
+    );
+
+    ImmutableList<String> modifiableColumns = ImmutableList.of(
             "effects",
             "position",
             "quantity"
@@ -96,13 +103,23 @@ public final class JdbcItemRepository extends JdbcRepository implements WorldIte
 
     @SuppressWarnings("UnusedAssignment")
     @SneakyThrows
-    void exportToDb(WorldItem item, PreparedStatement s) {
+    void insertToDb(WorldItem item, PreparedStatement s) {
         int index = 1;
         s.setInt(index++, item.getUid());
         s.setInt(index++, item.getTemplate().getId());
         exportEffects(s, index++, item.getEffects());
         s.setInt(index++, item.getPosition().value);
         s.setInt(index++, item.getQuantity());
+    }
+
+    @SuppressWarnings("UnusedAssignment")
+    @SneakyThrows
+    void updateToDb(WorldItem item, PreparedStatement s) {
+        int index = 1;
+        exportEffects(s, index++, item.getEffects());
+        s.setInt(index++, item.getPosition().value);
+        s.setInt(index++, item.getQuantity());
+        s.setInt(index++, item.getUid());
     }
 
     @SneakyThrows
@@ -126,11 +143,11 @@ public final class JdbcItemRepository extends JdbcRepository implements WorldIte
         return sb.toString();
     }
 
-    void doExecute(WorldItem item, String query) {
+    void doExecute(WorldItem item, String query, BiConsumer<WorldItem, PreparedStatement> fn) {
         try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
             try (PreparedStatement s = connection.prepareStatement(query)) {
-                exportToDb(item, s);
+                fn.accept(item, s);
                 s.execute();
             } catch (SQLException e) {
                 connection.rollback();
@@ -145,11 +162,11 @@ public final class JdbcItemRepository extends JdbcRepository implements WorldIte
     }
 
     void doInsert(WorldItem item) {
-        doExecute(item, simpleInsert("items", columns));
+        doExecute(item, simpleInsert("items", columns), this::insertToDb);
     }
 
     void doUpdate(WorldItem item) {
-        doExecute(item, simpleUpdate("items", "uid", columns));
+        doExecute(item, simpleUpdate("items", "uid", modifiableColumns), this::updateToDb);
     }
 
     @Override
