@@ -2,6 +2,8 @@ package org.heat.world.controllers;
 
 import com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum;
 import com.ankamagames.dofus.network.enums.ObjectErrorEnum;
+import com.ankamagames.dofus.network.messages.game.basic.BasicNoOperationMessage;
+import com.ankamagames.dofus.network.messages.game.character.stats.CharacterStatsListMessage;
 import com.ankamagames.dofus.network.messages.game.inventory.items.*;
 import com.github.blackrush.acara.Listener;
 import org.fungsi.Either;
@@ -78,6 +80,9 @@ public class ItemsController {
                             client.transaction(tx -> {
                                 tx.write(new ObjectQuantityMessage(pair.first.getUid(), pair.first.getQuantity()));
                                 tx.write(new ObjectQuantityMessage(pair.second.getUid(), pair.second.getQuantity()));
+                                tx.write(new InventoryWeightMessage(player.getWallet().getWeight(), player.getStats().getMaxWeight()));
+                                tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
+                                tx.write(BasicNoOperationMessage.i);
                             });
                         });
             } else {
@@ -92,6 +97,9 @@ public class ItemsController {
                             client.transaction(tx -> {
                                 tx.write(new ObjectQuantityMessage(pair.first.getUid(), pair.first.getQuantity()));
                                 tx.write(new ObjectAddedMessage(pair.second.toObjectItem()));
+                                tx.write(new InventoryWeightMessage(player.getWallet().getWeight(), player.getStats().getMaxWeight()));
+                                tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
+                                tx.write(BasicNoOperationMessage.i);
                             });
                         });
             }
@@ -112,6 +120,9 @@ public class ItemsController {
                             client.transaction(tx -> {
                                 tx.write(new ObjectDeletedMessage(pair.first.getUid()));
                                 tx.write(new ObjectQuantityMessage(pair.second.getUid(), pair.second.getQuantity()));
+                                tx.write(new InventoryWeightMessage(player.getWallet().getWeight(), player.getStats().getMaxWeight()));
+                                tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
+                                tx.write(BasicNoOperationMessage.i);
                             });
                         });
             } else {
@@ -121,7 +132,12 @@ public class ItemsController {
                 items.save(moved)
                         .onSuccess(x -> {
                             wallet.update(x);
-                            client.write(new ObjectMovementMessage(x.getUid(), x.getPosition().value));
+                            client.transaction(tx -> {
+                                tx.write(new ObjectMovementMessage(x.getUid(), x.getPosition().value));
+                                tx.write(new InventoryWeightMessage(player.getWallet().getWeight(), player.getStats().getMaxWeight()));
+                                tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
+                                tx.write(BasicNoOperationMessage.i);
+                            });
                         });
             }
         }
