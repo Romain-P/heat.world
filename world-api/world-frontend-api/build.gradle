@@ -2,6 +2,6 @@ apply from: '../../publishable.gradle'
 
 dependencies {
     compile project(':world-api:world-players-api')
-    compile "org.heat.dofus:d2vendor:${ext.heatD2vendor}"
-    compile "org.rocket:rocket-network:${ext.rocket}"
+    compile "org.heat.dofus:d2vendor:$heatD2vendor"
+    compile "org.rocket:rocket-network:$rocket"
 }

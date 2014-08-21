@@ -17,9 +17,10 @@ allprojects {
     ext.jbossMarshalling = '1.4.7.Final'
     ext.pgjdbc = '0.3'
     ext.hikari = '2.0.0'
-    ext.heatUtil = '0.3.+'
+    ext.guice = '3.0'
+    ext.heatUtil = '0.4.+'
     ext.heatShared = '0.1-SNAPSHOT'
-    ext.heatD2vendor = '2.21.3-+'
+    ext.heatD2vendor = '2.21.3-4'
 
     repositories {
         maven {
@@ -47,11 +48,11 @@ allprojects {
     }
 
     dependencies {
-        provided "org.projectlombok:lombok:${ext.lombok}"
+        provided "org.projectlombok:lombok:$lombok"
 
-        testCompile "junit:junit:${ext.junit}"
-        testCompile "org.mockito:mockito-core:${ext.mockito}"
-        testCompile "org.heat:util-testing:${ext.heatUtil}"
+        testCompile "junit:junit:$junit"
+        testCompile "org.mockito:mockito-core:$mockito"
+        testCompile "org.heat:util-testing:$heatUtil"
     }
 
     sourceSets {
@@ -89,4 +90,8 @@ apply plugin: 'flyway'
 
 flyway {
     initVersion = 0
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.12'
 }

@@ -1,8 +1,8 @@
 apply from: '../../publishable.gradle'
 
 dependencies {
-    compile "org.heat:util:${ext.heatUtil}"
+    compile "org.heat:util:$heatUtil"
     compile project(':world-api')
 
-    testCompile "org.heat:shared-distrib:${ext.heatShared}"
+    testCompile "org.heat:shared-distrib:$heatShared"
 }
