@@ -24,14 +24,14 @@ allprojects {
 
     repositories {
         maven {
-            url 'http://archiva.gitlab.servers.loadlow.me/repository/internal'
+            url archivaInternal
             credentials {
                 username archivaUsername
                 password archivaPassword
             }
         }
         maven {
-            url 'http://archiva.gitlab.servers.loadlow.me/repository/snapshots'
+            url archivaSnapshots
             credentials {
                 username archivaUsername
                 password archivaPassword
@@ -72,7 +72,7 @@ allprojects {
 buildscript {
     repositories {
         maven {
-            url 'http://archiva.gitlab.servers.loadlow.me/repository/internal'
+            url archivaInternal
             credentials {
                 username archivaUsername
                 password archivaPassword
