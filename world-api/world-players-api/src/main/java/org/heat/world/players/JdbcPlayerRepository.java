@@ -7,6 +7,8 @@ import org.fungsi.concurrent.Worker;
 import org.heat.shared.database.JdbcRepositoryNG;
 import org.heat.shared.database.Table;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -14,9 +16,11 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Singleton
 public final class JdbcPlayerRepository extends JdbcRepositoryNG<Player> implements PlayerRepository {
     private final DataSource dataSource;
 
+    @Inject
     public JdbcPlayerRepository(Table<Player> table, DataSource dataSource, Worker worker) {
         super(table, worker);
         this.dataSource = dataSource;
