@@ -54,6 +54,6 @@ public class StdWorldModule extends AbstractModule {
     @Provides
     @Singleton
     ByteBufAllocator provideByteBufAllocator() {
-        return new PooledByteBufAllocator(true);
+        return new PooledByteBufAllocator(/*preferDirect*/false);
     }
 }
