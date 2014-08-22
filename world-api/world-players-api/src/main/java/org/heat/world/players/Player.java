@@ -158,7 +158,6 @@ public class Player
     public boolean canMoveItemTo(WorldItem item, CharacterInventoryPositionEnum to, int quantity) {
         /**
          * TODO(world/items): item movement validity
-         * you cannot equip a ring twice
          * you cannot equip a pet if there is a mount
          * you cannot equip a greater level item
          * you cannot equip if target position is already taken
@@ -172,6 +171,19 @@ public class Player
         // this item type can not be moved here
         if (!item.getItemType().canBeMovedTo(to)) {
             return false;
+        }
+
+        // make sure we do not equip a ring twice
+        if (item.getItemType() == WorldItemType.RING) {
+            CharacterInventoryPositionEnum backwards = to == INVENTORY_POSITION_RING_LEFT
+                    ? INVENTORY_POSITION_RING_RIGHT
+                    : INVENTORY_POSITION_RING_LEFT;
+
+            WorldItem otherRing = wallet.findByPosition(backwards).collect(MoreCollectors.unique());
+
+            if (otherRing.getGid() == item.getGid()) {
+                return false;
+            }
         }
 
         // we want to equip only *one* item
