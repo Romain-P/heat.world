@@ -4,7 +4,6 @@ import com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum;
 import com.ankamagames.dofus.network.enums.ObjectErrorEnum;
 import com.ankamagames.dofus.network.messages.game.basic.BasicNoOperationMessage;
 import com.ankamagames.dofus.network.messages.game.character.stats.CharacterStatsListMessage;
-import com.ankamagames.dofus.network.messages.game.context.roleplay.objects.ObjectGroundAddedMessage;
 import com.ankamagames.dofus.network.messages.game.inventory.items.*;
 import com.github.blackrush.acara.Listener;
 import org.fungsi.Either;
@@ -17,12 +16,16 @@ import org.heat.world.items.WorldItemFactory;
 import org.heat.world.items.WorldItemRepository;
 import org.heat.world.players.Player;
 import org.heat.world.players.items.PlayerItemWallet;
+import org.heat.world.roleplay.environment.WorldMap;
+import org.heat.world.roleplay.environment.WorldMapPoint;
 import org.rocket.network.Controller;
 import org.rocket.network.NetworkClient;
 import org.rocket.network.Prop;
 import org.rocket.network.Receive;
 
 import javax.inject.Inject;
+
+import static com.ankamagames.dofus.network.enums.ObjectErrorEnum.CANNOT_DROP_NO_PLACE;
 
 @Controller
 @Idling
@@ -150,16 +153,50 @@ public class ItemsController {
 
     @Receive
     public void dropItem(ObjectDropMessage msg) {
-        client.transaction(tx -> {
-            // if splitted do
-                tx.write(new ObjectQuantityMessage());
-            // else
-                tx.write(new ObjectDeletedMessage());
-            // end
-            tx.write(new ObjectGroundAddedMessage());
-            tx.write(new InventoryWeightMessage());
-            tx.write(new CharacterStatsListMessage());
-            tx.write(BasicNoOperationMessage.i);
-        });
+        Player player = this.player.get();
+        PlayerItemWallet wallet = player.getWallet();
+        WorldMap map = player.getPosition().getMap();
+        WorldMapPoint mapPoint = player.getPosition().getMapPoint();
+
+        WorldItem item = wallet.findByUid(msg.objectUID).get();
+        int quantity = msg.quantity;
+
+        Either<Pair<WorldItem, WorldItem>, WorldItem> fork = wallet.fork(item, quantity);
+        if (fork.isLeft()) {
+            Pair<WorldItem, WorldItem> forkPair = fork.left();
+            WorldItem original = forkPair.first;
+            WorldItem forked = forkPair.second;
+
+            if (!map.addItem(forked, mapPoint, false)) {
+                client.write(new ObjectErrorMessage(CANNOT_DROP_NO_PLACE.value));
+                return;
+            }
+
+            MoreFutures.join(items.save(original), items.save(forked))
+                .onSuccess(pair -> {
+                    wallet.update(pair.first);
+
+                    client.transaction(tx -> {
+                        client.write(new ObjectQuantityMessage(pair.first.getUid(), pair.first.getQuantity()));
+                        tx.write(new InventoryWeightMessage(wallet.getWeight(), player.getStats().getMaxWeight()));
+                        tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
+                        tx.write(BasicNoOperationMessage.i);
+                    });
+                });
+        } else {
+            if (!map.addItem(item, mapPoint, false)) {
+                client.write(new ObjectErrorMessage(CANNOT_DROP_NO_PLACE.value));
+                return;
+            }
+
+            wallet.remove(item);
+
+            client.transaction(tx -> {
+                tx.write(new ObjectDeletedMessage(item.getUid()));
+                tx.write(new InventoryWeightMessage(wallet.getWeight(), player.getStats().getMaxWeight()));
+                tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
+                tx.write(BasicNoOperationMessage.i);
+            });
+        }
     }
 }
