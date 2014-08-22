@@ -11,6 +11,7 @@ import org.heat.world.roleplay.WorldActor;
 import org.heat.world.roleplay.environment.events.*;
 
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static com.ankamagames.dofus.network.enums.DirectionsEnum.*;
@@ -148,20 +149,18 @@ public final class WorldMap {
     }
 
     /**
-     * Add an item on the map
-     * @param item a non-null item
+     * Try to add an item on the map
+     * @param itemSupplier a non-null supplier
      * @param mapPoint a non-null map point
      * @param exact if {@code false} will search first available adjacents cells
      * @return {@code true} there was enough room, {@code false} otherwise
      * @throws java.lang.IllegalArgumentException if item already has been added
      */
-    public boolean addItem(WorldItem item, WorldMapPoint mapPoint, boolean exact) {
-        requireNonNull(item, "item");
+    public boolean tryAddItem(Supplier<WorldItem> itemSupplier, WorldMapPoint mapPoint, boolean exact) {
+        requireNonNull(itemSupplier, "itemSupplier");
         requireNonNull(mapPoint, "mapPoint");
 
-        if (items.containsValue(item)) {
-            throw new IllegalArgumentException("map already contains " + item);
-        }
+        WorldItem item;
 
         synchronized (items) {
             if (!exact) {
@@ -176,6 +175,7 @@ public final class WorldMap {
                 return false;
             }
 
+            item = itemSupplier.get();
             items.put(mapPoint, item);
         }
 
@@ -184,14 +184,14 @@ public final class WorldMap {
     }
 
     /**
-     * Add an item on the map on the exact given map point
-     * @param item a non-null item
+     * Try to add an item on the map on the exact given map point
+     * @param itemSupplier a non-null item
      * @param mapPoint a non-null map point
      * @return {@code true} there was enough room, {@code false} otherwise
      * @throws java.lang.IllegalArgumentException if item already has been added
      */
-    public boolean addItem(WorldItem item, WorldMapPoint mapPoint) {
-        return addItem(item, mapPoint, true);
+    public boolean addItem(Supplier<WorldItem> itemSupplier, WorldMapPoint mapPoint) {
+        return tryAddItem(itemSupplier, mapPoint, true);
     }
 
     /**
