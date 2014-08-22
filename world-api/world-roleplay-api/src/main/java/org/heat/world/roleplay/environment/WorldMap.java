@@ -199,7 +199,7 @@ public final class WorldMap {
      * @param mapPoint a non-null map point
      * @return an optional item
      */
-    public Optional<WorldItem> removeItem(WorldMapPoint mapPoint) {
+    public Optional<WorldItem> tryRemoveItem(WorldMapPoint mapPoint) {
         requireNonNull(mapPoint, "mapPoint");
 
         synchronized (items) {
