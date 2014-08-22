@@ -7,10 +7,8 @@ import com.ankamagames.dofus.network.messages.game.context.roleplay.objects.Obje
 import com.ankamagames.dofus.network.messages.game.context.roleplay.objects.ObjectGroundRemovedMessage;
 import com.github.blackrush.acara.Listener;
 import lombok.extern.slf4j.Slf4j;
-import org.heat.world.controllers.events.CreateContextEvent;
-import org.heat.world.controllers.events.DestroyContextEvent;
-import org.heat.world.controllers.events.EnterContextEvent;
-import org.heat.world.controllers.events.QuitContextEvent;
+import org.heat.world.controllers.events.*;
+import org.heat.world.controllers.events.roleplay.StartPlayerMovementEvent;
 import org.heat.world.controllers.utils.Basics;
 import org.heat.world.controllers.utils.Idling;
 import org.heat.world.controllers.utils.RolePlaying;
@@ -105,8 +103,15 @@ public class RolePlayController {
             throw new InvalidMapPathException();
         }
 
-        currentAction.set(new WorldMovement(player, path));
-        player.getPosition().getMap().moveActor(player, path);
+        WorldMovement movement = new WorldMovement(player, path);
+
+        client.getEventBus().publish(new StartPlayerMovementEvent(movement))
+            .onSuccess(answers -> {
+                currentAction.set(movement);
+                player.getPosition().getMap().moveActor(player, path);
+            })
+            .onFailure(err -> log.debug("wasn't able to move", err))
+            ;
     }
 
     @Receive
