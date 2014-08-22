@@ -1,6 +1,7 @@
 package org.heat.world.players.shortcuts;
 
 import com.ankamagames.dofus.network.enums.ShortcutBarEnum;
+import org.heat.shared.Pair;
 
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -41,7 +42,7 @@ public interface PlayerShortcutBar {
      * @param bar a non-null shortcut bar type
      * @param from a valid integer slot
      * @param to a valid integer slot
-     * @return {@code true} if it has been swapped
+     * @return a non-null option containing the two swapped shortcuts
      */
-    boolean swap(ShortcutBarEnum bar, int from, int to);
+    Optional<Pair<PlayerShortcut, PlayerShortcut>> swap(ShortcutBarEnum bar, int from, int to);
 }

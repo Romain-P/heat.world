@@ -3,6 +3,7 @@ package org.heat.world.players.shortcuts;
 import com.ankamagames.dofus.network.enums.ShortcutBarEnum;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import org.heat.shared.Pair;
 
 import java.util.List;
 import java.util.Optional;
@@ -61,7 +62,7 @@ public final class LazyShortcutBar implements PlayerShortcutBar {
         repository.remove(shortcut);
     }
 
-    private void swap0(ShortcutBarEnum bar, PlayerShortcut from, PlayerShortcut to) {
+    private Pair<PlayerShortcut, PlayerShortcut> swap0(ShortcutBarEnum bar, PlayerShortcut from, PlayerShortcut to) {
         PlayerShortcut newFrom = from.withSlot(to.getSlot());
         PlayerShortcut newTo = to.withSlot(from.getSlot());
 
@@ -69,6 +70,8 @@ public final class LazyShortcutBar implements PlayerShortcutBar {
         remove0(bar, to);
         add0(bar, newFrom);
         add0(bar, newTo);
+
+        return Pair.of(newFrom, newTo);
     }
 
     @Override
@@ -111,22 +114,21 @@ public final class LazyShortcutBar implements PlayerShortcutBar {
     }
 
     @Override
-    public boolean swap(ShortcutBarEnum bar, int fromSlot, int toSlot) {
+    public Optional<Pair<PlayerShortcut, PlayerShortcut>> swap(ShortcutBarEnum bar, int fromSlot, int toSlot) {
         requireLoaded();
 
         Optional<PlayerShortcut> fromOption = findShortcut(bar, fromSlot);
         if (!fromOption.isPresent()) {
-            return false;
+            return Optional.empty();
         }
         PlayerShortcut from = fromOption.get();
 
         Optional<PlayerShortcut> toOption = findShortcut(bar, toSlot);
         if (!toOption.isPresent()) {
-            return false;
+            return Optional.empty();
         }
         PlayerShortcut to = toOption.get();
 
-        swap0(bar, from, to);
-        return true;
+        return Optional.of(swap0(bar, from, to));
     }
 }
