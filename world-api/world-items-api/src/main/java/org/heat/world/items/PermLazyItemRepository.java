@@ -67,7 +67,7 @@ public final class PermLazyItemRepository implements WorldItemRepository {
     public Future<WorldItem> save(WorldItem item) {
         if (item.getUid() != 0) {
             WorldItem cached = cache.get(item.getUid());
-            if (item.getVersion() < cached.getVersion()) {
+            if (cached != null && item.getVersion() < cached.getVersion()) {
                 throw new OutdatedItemException(item, cached);
             }
         }
@@ -78,7 +78,7 @@ public final class PermLazyItemRepository implements WorldItemRepository {
     @Override
     public Future<WorldItem> remove(WorldItem item) {
         WorldItem cached = cache.get(item.getUid());
-        if (item.getVersion() != cached.getVersion()) {
+        if (cached != null && item.getVersion() != cached.getVersion()) {
             throw new OutdatedItemException(item, cached);
         }
 
