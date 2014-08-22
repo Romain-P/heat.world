@@ -1,9 +1,11 @@
 apply from: '../../publishable.gradle'
 
 dependencies {
-    compile "org.heat:util:$heatUtil"
     compile project(':world-api')
     compile project(':world-api:world-items-api')
+    compile project(':world-api:world-roleplay-api')
+
+    compile "org.heat:util:$heatUtil"
 
     testCompile "org.heat:shared-distrib:$heatShared"
 }
