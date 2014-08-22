@@ -4,6 +4,8 @@ import com.ankamagames.dofus.network.enums.ShortcutBarEnum;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import org.fungsi.Either;
+import org.fungsi.Unit;
+import org.fungsi.concurrent.Future;
 import org.heat.shared.Pair;
 
 import java.util.List;
@@ -56,19 +58,21 @@ public final class LazyShortcutBar implements PlayerShortcutBar {
         repository.create(shortcut);
     }
 
-    private void remove0(ShortcutBarEnum bar, PlayerShortcut shortcut) {
+    private Future<Unit> remove0(ShortcutBarEnum bar, PlayerShortcut shortcut) {
         shortcuts.remove(bar, shortcut);
-        repository.remove(shortcut);
+        return repository.remove(shortcut).toUnit();
     }
 
     private Pair<PlayerShortcut, PlayerShortcut> swap0(ShortcutBarEnum bar, PlayerShortcut from, PlayerShortcut to) {
         PlayerShortcut newFrom = from.withSlot(to.getSlot());
         PlayerShortcut newTo = to.withSlot(from.getSlot());
 
-        remove0(bar, from);
-        remove0(bar, to);
-        add0(bar, newFrom);
-        add0(bar, newTo);
+        remove0(bar, from)
+        .flatMap(x -> remove0(bar, to))
+                .onSuccess(u -> {
+                    add0(bar, newFrom);
+                    add0(bar, newTo);
+                });
 
         return Pair.of(newFrom, newTo);
     }
