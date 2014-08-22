@@ -1,8 +1,10 @@
 package org.heat.world.items;
 
+import com.google.common.collect.ImmutableList;
 import lombok.SneakyThrows;
 import org.fungsi.Throwables;
 import org.fungsi.concurrent.Future;
+import org.fungsi.concurrent.Futures;
 import org.fungsi.concurrent.Worker;
 import org.heat.shared.database.JdbcRepositoryNG;
 import org.heat.shared.database.Table;
@@ -32,9 +34,9 @@ public final class JdbcItemRepository extends JdbcRepositoryNG<WorldItem> implem
         this.nextUid = new AtomicInteger(loadNextUid(dataSource));
     }
 
-    String createSelectMultipleQuery(IntStream stream) {
-        return stream.mapToObj(uid -> "uid=" + uid)
-                .collect(Collectors.joining(" OR ", getSelectQuery() + " ", ""));
+    String createSelectMultipleQuery(int[] uids) {
+        return IntStream.of(uids).mapToObj(uid -> "uid=" + uid)
+                .collect(Collectors.joining(" OR ", getSelectQuery() + " where ", ""));
     }
 
     @SneakyThrows
@@ -80,7 +82,11 @@ public final class JdbcItemRepository extends JdbcRepositoryNG<WorldItem> implem
     @Override
     public Future<List<WorldItem>> find(IntStream stream) {
         // TODO(world/items): split too much uids into sub-queries
-        return findList(createSelectMultipleQuery(stream), s -> {});
+        int[] uids = stream.toArray();
+        if (uids.length == 0) {
+            return Futures.success(ImmutableList.of());
+        }
+        return findList(createSelectMultipleQuery(uids), s -> {});
     }
 
     @Override

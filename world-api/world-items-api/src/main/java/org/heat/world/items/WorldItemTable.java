@@ -118,6 +118,14 @@ public class WorldItemTable implements Table<WorldItem> {
             writer.write_ui16(e.getProtocolId());
             e.serialize(writer);
         }
-        s.setBinaryStream("effects", writer.toInputStream());
+
+        ///////////////////////////
+        // NOTE(Blackrush):
+        //      pgjdbc-ng only supports a small subset of InputStream
+        //      thus forbidding AutoGrowingWriter's InputStream
+        //
+        //s.setBinaryStream("effects", writer.toInputStream());
+
+        s.setBytes("effects", writer.toByteArray());
     }
 }
