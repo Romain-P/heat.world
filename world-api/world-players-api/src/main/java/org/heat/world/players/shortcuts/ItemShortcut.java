@@ -22,6 +22,11 @@ public final class ItemShortcut extends PlayerShortcut {
     }
 
     @Override
+    protected PlayerShortcut copyShortcut(int playerId, int slot) {
+        return new ItemShortcut(playerId, slot, itemUid, itemGid);
+    }
+
+    @Override
     public String toString() {
         return "ItemShortcut(" +
                 "player_id=" + getPlayerId() +

@@ -20,6 +20,11 @@ public final class SpellShortcut extends PlayerShortcut {
     }
 
     @Override
+    protected PlayerShortcut copyShortcut(int playerId, int slot) {
+        return new SpellShortcut(playerId, slot, spellId);
+    }
+
+    @Override
     public String toString() {
         return "SpellShortcut(" +
                 "player_id=" + getPlayerId() +

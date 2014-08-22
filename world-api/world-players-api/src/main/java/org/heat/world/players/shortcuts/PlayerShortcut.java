@@ -15,4 +15,14 @@ public abstract class PlayerShortcut {
     }
 
     public abstract Shortcut toShortcut();
+
+    protected abstract PlayerShortcut copyShortcut(int playerId, int slot);
+
+    public PlayerShortcut withPlayerId(int playerId) {
+        return copyShortcut(playerId, slot);
+    }
+
+    public PlayerShortcut withSlot(int slot) {
+        return copyShortcut(playerId, slot);
+    }
 }
