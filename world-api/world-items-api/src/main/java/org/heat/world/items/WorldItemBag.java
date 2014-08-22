@@ -84,6 +84,13 @@ public interface WorldItemBag {
     Either<Pair<WorldItem, WorldItem>, WorldItem> fork(WorldItem item, int quantity);
 
     /**
+     * Try to merge a given item to another non-equiped item
+     * @param item a non-null item
+     * @return either merged or same item
+     */
+    Either<WorldItem, WorldItem> tryMerge(WorldItem item);
+
+    /**
      * Merge an item
      * @param item a non-null item
      * @return either merged or moved item

@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED;
 import static java.util.Objects.requireNonNull;
 
 public final class MapItemBag implements WorldItemBag {
@@ -106,6 +107,22 @@ public final class MapItemBag implements WorldItemBag {
 
         WorldItem forked = item.fork(quantity);
         return Either.left(Pair.of(item.plusQuantity(-quantity), forked));
+    }
+
+    @Override
+    public Either<WorldItem, WorldItem> tryMerge(WorldItem item) {
+        requireNonNull(item, "item");
+
+        Optional<WorldItem> opt = findByPosition(INVENTORY_POSITION_NOT_EQUIPED)
+                .filter(x -> WorldItem.compare(item, x) == 0)
+                .findFirst();
+
+        if (!opt.isPresent()) {
+            return Either.right(item);
+        }
+
+        WorldItem same = opt.get();
+        return Either.left(same.plusQuantity(item.getQuantity()));
     }
 
     @Override
