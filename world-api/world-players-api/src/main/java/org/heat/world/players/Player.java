@@ -1,6 +1,7 @@
 package org.heat.world.players;
 
 import com.ankamagames.dofus.datacenter.breeds.Breed;
+import com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum;
 import com.ankamagames.dofus.network.enums.DirectionsEnum;
 import com.ankamagames.dofus.network.types.game.character.alignment.ActorAlignmentInformations;
 import com.ankamagames.dofus.network.types.game.character.alignment.ActorExtendedAlignmentInformations;
@@ -13,6 +14,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.heat.world.items.WorldItem;
 import org.heat.world.players.items.PlayerItemWallet;
 import org.heat.world.players.metrics.PlayerExperience;
 import org.heat.world.players.metrics.PlayerSpellBook;
@@ -25,6 +27,8 @@ import org.heat.world.roleplay.environment.WorldPosition;
 
 import java.io.Serializable;
 import java.util.stream.Stream;
+
+import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED;
 
 @RequiredArgsConstructor
 @Getter
@@ -144,6 +148,46 @@ public class Player
         Players.populateCharacterCharacteristicsInformations(stats, res);
 
         return res;
+    }
+
+    public boolean canMoveItemTo(WorldItem item, CharacterInventoryPositionEnum to, int quantity) {
+        /**
+         * TODO(world/items): item movement validity
+         * you cannot equip a ring twice
+         * you cannot equip a pet if there is a mount
+         * you cannot equip a greater level item
+         * you cannot equip if target position is already taken
+         */
+
+        if (to == INVENTORY_POSITION_NOT_EQUIPED) {
+            return true;
+        }
+
+        switch (item.getItemType()) {
+            case AMULET:
+            case BOW:
+            case WAND:
+            case STAFF:
+            case DAGGER:
+            case SWORD:
+            case HAMMER:
+            case SHOVEL:
+            case RING:
+            case BELT:
+            case BOOTS:
+            case HAT:
+            case CLOAK:
+            case PET:
+            case AXE:
+            case PICKAXE:
+            case SCYTHE:
+            case DOFUS:
+                //case TOOL:
+                return quantity == 1;
+
+            default:
+                return false;
+        }
     }
 
     @Override

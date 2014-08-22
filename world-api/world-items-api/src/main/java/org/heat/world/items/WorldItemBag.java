@@ -89,13 +89,4 @@ public interface WorldItemBag {
      * @return either merged or moved item
      */
     Either<WorldItem, WorldItem> mergeOrMove(WorldItem item, CharacterInventoryPositionEnum position);
-
-    /**
-     * Determine whether or not it is valid to move an item
-     * @param item a non-null item
-     * @param to a non-null position
-     * @param quantity a valid quantity
-     * @return a boolean
-     */
-    boolean isValidMove(WorldItem item, CharacterInventoryPositionEnum to, int quantity);
 }

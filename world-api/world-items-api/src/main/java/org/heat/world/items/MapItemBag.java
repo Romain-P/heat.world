@@ -8,7 +8,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED;
 import static java.util.Objects.requireNonNull;
 
 public final class MapItemBag implements WorldItemBag {
@@ -123,47 +122,5 @@ public final class MapItemBag implements WorldItemBag {
 
         WorldItem same = opt.get();
         return Either.left(same.plusQuantity(item.getQuantity()));
-    }
-
-
-    @Override
-    public boolean isValidMove(WorldItem item, CharacterInventoryPositionEnum to, int quantity) {
-        /**
-         * TODO(world/items): item movement validity
-         * you cannot equip a ring twice
-         * you cannot equip a pet if there is a mount
-         * you cannot equip a greater level item
-         * you cannot equip if target position is already taken
-         */
-
-        if (to == INVENTORY_POSITION_NOT_EQUIPED) {
-            return true;
-        }
-
-        switch (item.getItemType()) {
-            case AMULET:
-            case BOW:
-            case WAND:
-            case STAFF:
-            case DAGGER:
-            case SWORD:
-            case HAMMER:
-            case SHOVEL:
-            case RING:
-            case BELT:
-            case BOOTS:
-            case HAT:
-            case CLOAK:
-            case PET:
-            case AXE:
-            case PICKAXE:
-            case SCYTHE:
-            case DOFUS:
-            //case TOOL:
-                return quantity == 1;
-
-            default:
-                return false;
-        }
     }
 }

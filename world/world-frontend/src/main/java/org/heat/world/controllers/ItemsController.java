@@ -58,7 +58,7 @@ public class ItemsController {
         WorldItem item = wallet.findByUid(msg.objectUID).get();
 
         // verify movement validity
-        if (!wallet.isValidMove(item, position, quantity)) {
+        if (!player.canMoveItemTo(item, position, quantity)) {
             client.write(new ObjectErrorMessage(ObjectErrorEnum.CANNOT_EQUIP_HERE.value));
             return;
         }
