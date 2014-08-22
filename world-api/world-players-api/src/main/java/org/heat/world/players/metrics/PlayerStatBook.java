@@ -3,6 +3,7 @@ package org.heat.world.players.metrics;
 import org.heat.world.metrics.GameStatBook;
 import org.heat.world.metrics.GameStats;
 import org.heat.world.metrics.RegularStat;
+import org.heat.world.players.Players;
 
 public interface PlayerStatBook extends GameStatBook {
     int getStatsPoints();
