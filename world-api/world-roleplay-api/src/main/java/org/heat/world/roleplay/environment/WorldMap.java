@@ -145,13 +145,7 @@ public final class WorldMap {
         }
 
         synchronized (items) {
-            if (exact) {
-                if (!isAvailable(mapPoint)) {
-                    return false;
-                }
-
-                items.put(mapPoint, item);
-            } else {
+            if (!exact) {
                 Optional<WorldMapPoint> option =
                     Stream.concat(Stream.of(mapPoint), mapPoint.adjacents(true))
                         .filter(this::isAvailable)
@@ -161,9 +155,12 @@ public final class WorldMap {
                     return false;
                 }
 
-                WorldMapPoint firstAvailable = option.get();
-                items.put(firstAvailable, item);
+                mapPoint = option.get(); // bad, but what the hell?
+            } else if (!isAvailable(mapPoint)) {
+                return false;
             }
+
+            items.put(mapPoint, item);
         }
 
         eventBus.publish(new MapItemAddEvent(this, item, mapPoint));
