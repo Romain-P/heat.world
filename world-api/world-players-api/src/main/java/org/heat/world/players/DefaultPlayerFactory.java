@@ -112,7 +112,7 @@ public class DefaultPlayerFactory implements PlayerFactory, Service {
         player.setStats(buildStats(player.getBreed()));
         player.setSpells(buildSpells(player.getBreed(), player.getExperience().getCurrentLevel()));
         player.setWallet(buildWallet(player.getId()));
-
+        player.setShortcutBar(buildShortcutBar(player.getId()));
         return Futures.success(player);
     }
 
