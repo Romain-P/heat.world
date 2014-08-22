@@ -229,4 +229,40 @@ public class ItemsController {
 
         client.write(new ObjectGroundListAddedMessage(cellIds, gids));
     }
+
+    @Listener
+    public void tryGetItemOnMap(EndPlayerMovementEvent evt) {
+        Player player = this.player.get();
+        PlayerItemWallet wallet = player.getWallet();
+        WorldPosition position = player.getPosition();
+
+        Optional<WorldItem> option = position.getMap().tryRemoveItem(position.getMapPoint());
+        if (!option.isPresent()) {
+            return;
+        }
+
+        WorldItem item = option.get();
+
+        wallet.tryMerge(item)
+                .ifLeft(merged -> {
+                    items.remove(item); // remove and just forget it, nobody needs it anymore
+
+                    items.save(merged)
+                            .onSuccess(newMerged -> {
+                                wallet.update(newMerged);
+                                client.transaction(tx -> {
+                                    tx.write(new ObjectQuantityMessage(newMerged.getUid(), newMerged.getQuantity()));
+                                    tx.write(new InventoryWeightMessage(wallet.getWeight(), player.getStats().getMaxWeight()));
+                                });
+                            });
+                })
+                .ifRight(nonMerged -> {
+                    wallet.add(nonMerged);
+
+                    client.transaction(tx -> {
+                        tx.write(new ObjectAddedMessage(nonMerged.toObjectItem()));
+                        tx.write(new InventoryWeightMessage(wallet.getWeight(), player.getStats().getMaxWeight()));
+                    });
+                });
+    }
 }
