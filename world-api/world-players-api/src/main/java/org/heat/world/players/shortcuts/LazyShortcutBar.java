@@ -22,9 +22,7 @@ public final class LazyShortcutBar implements PlayerShortcutBar {
     }
 
     private ShortcutBarEnum getShortcutType(PlayerShortcut shortcut) {
-        return shortcut instanceof SpellShortcut
-            ? ShortcutBarEnum.SPELL_SHORTCUT_BAR
-            : ShortcutBarEnum.GENERAL_SHORTCUT_BAR;
+        return shortcut.getBarType();
     }
 
     private Multimap<ShortcutBarEnum, PlayerShortcut> load() {

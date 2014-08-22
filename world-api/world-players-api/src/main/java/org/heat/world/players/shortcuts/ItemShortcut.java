@@ -1,5 +1,6 @@
 package org.heat.world.players.shortcuts;
 
+import com.ankamagames.dofus.network.enums.ShortcutBarEnum;
 import com.ankamagames.dofus.network.types.game.shortcut.Shortcut;
 import com.ankamagames.dofus.network.types.game.shortcut.ShortcutObjectItem;
 import lombok.EqualsAndHashCode;
@@ -14,6 +15,11 @@ public final class ItemShortcut extends PlayerShortcut {
         super(playerId, slot);
         this.itemUid = itemUid;
         this.itemGid = itemGid;
+    }
+
+    @Override
+    public ShortcutBarEnum getBarType() {
+        return ShortcutBarEnum.GENERAL_SHORTCUT_BAR;
     }
 
     @Override
