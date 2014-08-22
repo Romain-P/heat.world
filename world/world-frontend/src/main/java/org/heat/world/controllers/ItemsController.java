@@ -6,14 +6,11 @@ import com.ankamagames.dofus.network.messages.game.basic.BasicNoOperationMessage
 import com.ankamagames.dofus.network.messages.game.character.stats.CharacterStatsListMessage;
 import com.ankamagames.dofus.network.messages.game.context.roleplay.objects.ObjectGroundAddedMessage;
 import com.ankamagames.dofus.network.messages.game.inventory.items.*;
-import com.ankamagames.dofus.network.messages.game.shortcut.ShortcutBarAddRequestMessage;
-import com.ankamagames.dofus.network.messages.game.shortcut.ShortcutBarRefreshMessage;
 import com.github.blackrush.acara.Listener;
 import org.fungsi.Either;
 import org.heat.shared.MoreFutures;
 import org.heat.shared.Pair;
 import org.heat.world.controllers.events.CreatePlayerEvent;
-import org.heat.world.controllers.utils.Basics;
 import org.heat.world.controllers.utils.Idling;
 import org.heat.world.items.WorldItem;
 import org.heat.world.items.WorldItemFactory;
@@ -145,14 +142,6 @@ public class ItemsController {
                         });
             }
         }
-    }
-
-    @Receive
-    public void addToShortcut(ShortcutBarAddRequestMessage msg) {
-        client.transaction(tx -> {
-            tx.write(new ShortcutBarRefreshMessage());
-            tx.write(Basics.noop());
-        });
     }
 
     @Receive
