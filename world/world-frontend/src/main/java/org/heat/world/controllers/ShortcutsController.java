@@ -29,6 +29,20 @@ public class ShortcutsController {
     @Inject NetworkClient client;
     @Inject Prop<Player> player;
 
+    @Listener
+    public void showContent(NewContextEvent evt) {
+        if (evt.getContext() != GameContextEnum.ROLE_PLAY) return;
+
+        PlayerShortcutBar bar = player.get().getShortcutBar();
+
+        client.transaction(tx -> {
+            for (ShortcutBarEnum barType : ShortcutBarEnum.values()) {
+                tx.write(new ShortcutBarContentMessage(barType.value,
+                        bar.getShortcutsOf(barType).map(PlayerShortcut::toShortcut)));
+            }
+        });
+    }
+
     @Receive
     public void add(ShortcutBarAddRequestMessage msg) {
         Player player = this.player.get();
