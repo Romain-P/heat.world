@@ -1,4 +1,4 @@
-package org.heat.world.players;
+package org.heat.world.players.metrics;
 
 import com.ankamagames.dofus.datacenter.spells.Spell;
 import com.ankamagames.dofus.network.types.game.data.items.SpellItem;

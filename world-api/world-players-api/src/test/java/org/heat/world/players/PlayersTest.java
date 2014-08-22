@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.heat.StdDataModule;
 import org.heat.data.Datacenter;
 import org.heat.shared.IntPair;
+import org.heat.world.players.metrics.PlayerSpell;
 import org.junit.Before;
 import org.junit.Test;
 import org.rocket.ImmutableServiceContext;

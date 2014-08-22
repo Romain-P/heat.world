@@ -1,10 +1,11 @@
-package org.heat.world.players;
+package org.heat.world.players.metrics;
 
 import com.ankamagames.dofus.datacenter.spells.Spell;
 import com.ankamagames.dofus.network.types.game.data.items.SpellItem;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.heat.world.players.Players;
 
 import java.util.OptionalInt;
 

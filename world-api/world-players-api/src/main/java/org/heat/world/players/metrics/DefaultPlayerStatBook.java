@@ -1,4 +1,4 @@
-package org.heat.world.players;
+package org.heat.world.players.metrics;
 
 import com.ankamagames.dofus.datacenter.breeds.Breed;
 import com.google.common.collect.ImmutableMap;
@@ -8,6 +8,7 @@ import org.heat.shared.IntPair;
 import org.heat.world.metrics.GameStat;
 import org.heat.world.metrics.GameStats;
 import org.heat.world.metrics.RegularStat;
+import org.heat.world.players.Players;
 
 import java.util.Optional;
 

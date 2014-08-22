@@ -31,6 +31,7 @@ import org.heat.world.controllers.utils.Idling;
 import org.heat.world.metrics.GameStats;
 import org.heat.world.metrics.RegularStat;
 import org.heat.world.players.*;
+import org.heat.world.players.metrics.PlayerSpell;
 import org.rocket.network.*;
 
 import javax.inject.Inject;
