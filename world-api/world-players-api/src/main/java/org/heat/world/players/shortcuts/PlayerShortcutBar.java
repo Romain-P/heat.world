@@ -1,6 +1,7 @@
 package org.heat.world.players.shortcuts;
 
 import com.ankamagames.dofus.network.enums.ShortcutBarEnum;
+import org.fungsi.Either;
 import org.heat.shared.Pair;
 
 import java.util.Optional;
@@ -42,7 +43,8 @@ public interface PlayerShortcutBar {
      * @param bar a non-null shortcut bar type
      * @param from a valid integer slot
      * @param to a valid integer slot
-     * @return a non-null option containing the two swapped shortcuts
+     * @return either the moved shortcut or the two swapped shortcuts
+     * @throws java.util.NoSuchElementException if there is no shortcut on "from" slot
      */
-    Optional<Pair<PlayerShortcut, PlayerShortcut>> swap(ShortcutBarEnum bar, int from, int to);
+    Either<PlayerShortcut, Pair<PlayerShortcut, PlayerShortcut>> swap(ShortcutBarEnum bar, int from, int to);
 }
