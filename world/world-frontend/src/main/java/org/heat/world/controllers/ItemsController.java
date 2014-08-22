@@ -206,4 +206,27 @@ public class ItemsController {
             });
         }
     }
+
+    @Listener
+    public void showItemsOnMap(EnterContextEvent evt) {
+        if (evt.getContext() != GameContextEnum.ROLE_PLAY) return;
+
+        Player player = this.player.get();
+        WorldMap map = player.getPosition().getMap();
+
+        Map<WorldMapPoint, WorldItem> items = map.getItems();
+        if (items.isEmpty()) return;
+
+        // quick and dirty cellId-to-gid generation
+        short[] cellIds = new short[items.size()];
+        int[] gids = new int[items.size()];
+        int[] index = {0};
+        items.forEach((mapPoint, item) -> {
+            cellIds[index[0]] = mapPoint.cellId;
+            gids[index[0]] = item.getGid();
+            index[0]++;
+        });
+
+        client.write(new ObjectGroundListAddedMessage(cellIds, gids));
+    }
 }
