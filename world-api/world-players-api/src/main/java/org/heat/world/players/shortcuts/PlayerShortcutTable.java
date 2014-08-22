@@ -16,7 +16,7 @@ public final class PlayerShortcutTable implements Table<PlayerShortcut> {
 
     @Override
     public List<String> getPrimaryKeys() {
-        return ImmutableList.of("player_id", "slot");
+        return ImmutableList.of("player_id", "slot", "bar_type");
     }
 
     @Override
@@ -32,6 +32,7 @@ public final class PlayerShortcutTable implements Table<PlayerShortcut> {
     public void setPrimaryKeys(NamedPreparedStatement s, PlayerShortcut val) throws SQLException {
         s.setInt("player_id", val.getPlayerId());
         s.setInt("slot", val.getSlot());
+        s.setByte("bar_type", val.getBarType().value);
     }
 
     @Override
