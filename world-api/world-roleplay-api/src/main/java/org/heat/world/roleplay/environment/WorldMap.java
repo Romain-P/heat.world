@@ -10,10 +10,7 @@ import org.heat.world.items.WorldItem;
 import org.heat.world.roleplay.WorldActor;
 import org.heat.world.roleplay.environment.events.*;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static com.ankamagames.dofus.network.enums.DirectionsEnum.*;
@@ -34,9 +31,8 @@ public final class WorldMap {
         return actors.stream();
     }
 
-    // Map.Entry is mutable, do we need to return a copy instead?
-    public Stream<Map.Entry<WorldMapPoint, WorldItem>> getItems() {
-        return items.entrySet().stream();
+    public Map<WorldMapPoint, WorldItem> getItems() {
+        return Collections.unmodifiableMap(items);
     }
 
     /**
@@ -129,6 +125,29 @@ public final class WorldMap {
     }
 
     /**
+     * Return the first available same or adjacent map point
+     * @param mapPoint a non-null map point
+     * @return an optional map point
+     */
+    public Optional<WorldMapPoint> findFirstAvailableAdjacent(WorldMapPoint mapPoint) {
+        return Stream.concat(Stream.of(mapPoint), mapPoint.adjacents(true))
+                .filter(this::isAvailable)
+                .findAny();
+    }
+
+    /**
+     * Determine whether or not you can add an item
+     * @param mapPoint a non-null map point
+     * @param exact if {@code false} will search first available adjacents cells
+     * @return {@code true} if you can add an item, {@code false} otherwise
+     */
+    public boolean canAddItem(WorldMapPoint mapPoint, boolean exact) {
+        return exact
+                ? isAvailable(mapPoint)
+                : findFirstAvailableAdjacent(mapPoint).isPresent();
+    }
+
+    /**
      * Add an item on the map
      * @param item a non-null item
      * @param mapPoint a non-null map point
@@ -146,10 +165,7 @@ public final class WorldMap {
 
         synchronized (items) {
             if (!exact) {
-                Optional<WorldMapPoint> option =
-                    Stream.concat(Stream.of(mapPoint), mapPoint.adjacents(true))
-                        .filter(this::isAvailable)
-                        .findAny();
+                Optional<WorldMapPoint> option = findFirstAvailableAdjacent(mapPoint);
 
                 if (!option.isPresent()) {
                     return false;
