@@ -1,10 +1,12 @@
 package org.heat.world.controllers;
 
+import com.ankamagames.dofus.network.enums.GameContextEnum;
 import com.ankamagames.dofus.network.enums.ShortcutBarEnum;
 import com.ankamagames.dofus.network.messages.game.shortcut.*;
 import com.ankamagames.dofus.network.types.game.shortcut.ShortcutObjectItem;
 import com.ankamagames.dofus.network.types.game.shortcut.ShortcutSpell;
-import org.heat.shared.Pair;
+import com.github.blackrush.acara.Listener;
+import org.heat.world.controllers.events.NewContextEvent;
 import org.heat.world.controllers.utils.Basics;
 import org.heat.world.controllers.utils.Idling;
 import org.heat.world.items.WorldItem;
@@ -20,7 +22,6 @@ import org.rocket.network.Prop;
 import org.rocket.network.Receive;
 
 import javax.inject.Inject;
-import java.util.Optional;
 
 @Controller
 @Idling
@@ -84,17 +85,20 @@ public class ShortcutsController {
         int from = msg.firstSlot;
         int to = msg.secondSlot;
 
-        Optional<Pair<PlayerShortcut, PlayerShortcut>> option = bar.swap(barType, from, to);
-        if (option.isPresent()) {
-            Pair<PlayerShortcut, PlayerShortcut> pair = option.get();
-            client.transaction(tx -> {
-                tx.write(new ShortcutBarRefreshMessage(barType.value, pair.first.toShortcut()));
-                tx.write(new ShortcutBarRefreshMessage(barType.value, pair.second.toShortcut()));
-                tx.write(Basics.noop());
-            });
-        } else {
-            // TODO: shortcut swap error reason
-            client.write(new ShortcutBarSwapErrorMessage((byte) 0));
-        }
+        bar.swap(barType, from, to)
+                .ifLeft(shortcut ->
+                    client.transaction(tx -> {
+                        tx.write(new ShortcutBarRemovedMessage(barType.value, from));
+                        tx.write(new ShortcutBarRefreshMessage(barType.value, shortcut.toShortcut()));
+                        tx.write(Basics.noop());
+                    })
+                )
+                .ifRight(pair ->
+                    client.transaction(tx -> {
+                        tx.write(new ShortcutBarRefreshMessage(barType.value, pair.first.toShortcut()));
+                        tx.write(new ShortcutBarRefreshMessage(barType.value, pair.second.toShortcut()));
+                        tx.write(Basics.noop());
+                    })
+                );
     }
 }
