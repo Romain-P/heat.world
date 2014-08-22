@@ -17,6 +17,9 @@ import org.heat.world.players.items.LazyPlayerItemWallet;
 import org.heat.world.players.items.PlayerItemRepository;
 import org.heat.world.players.items.PlayerItemWallet;
 import org.heat.world.players.metrics.*;
+import org.heat.world.players.shortcuts.LazyShortcutBar;
+import org.heat.world.players.shortcuts.PlayerShortcutBar;
+import org.heat.world.players.shortcuts.PlayerShortcutRepository;
 import org.heat.world.roleplay.WorldActorLook;
 import org.heat.world.roleplay.environment.WorldMapPoint;
 import org.heat.world.roleplay.environment.WorldPosition;
@@ -34,6 +37,7 @@ public class DefaultPlayerFactory implements PlayerFactory, Service {
     private final Datacenter datacenter;
     private final AtomicInteger idGenerator;
     private final PlayerItemRepository playerItems;
+    private final PlayerShortcutRepository playerShortcuts;
 
     // these properties are immutable therefore freely sharable
     private WorldPosition startPosition;
@@ -52,10 +56,11 @@ public class DefaultPlayerFactory implements PlayerFactory, Service {
             ;
 
     @Inject
-    public DefaultPlayerFactory(Datacenter datacenter, PlayerRepository players, PlayerItemRepository playerItems) {
+    public DefaultPlayerFactory(Datacenter datacenter, PlayerRepository players, PlayerItemRepository playerItems, PlayerShortcutRepository playerShortcuts) {
         this.datacenter = datacenter;
         this.idGenerator = players.createIdGenerator().get();
         this.playerItems = playerItems;
+        this.playerShortcuts = playerShortcuts;
     }
 
     @Override
@@ -170,5 +175,9 @@ public class DefaultPlayerFactory implements PlayerFactory, Service {
 
     protected PlayerItemWallet buildWallet(int playerId) {
         return new LazyPlayerItemWallet(startKamas, playerId, playerItems, MapItemBag::newHashMapItemBag);
+    }
+
+    protected PlayerShortcutBar buildShortcutBar(int playerId) {
+        return new LazyShortcutBar(playerShortcuts, playerId);
     }
 }

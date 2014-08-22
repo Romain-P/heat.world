@@ -17,6 +17,7 @@ import org.heat.world.players.items.PlayerItemWallet;
 import org.heat.world.players.metrics.PlayerExperience;
 import org.heat.world.players.metrics.PlayerSpellBook;
 import org.heat.world.players.metrics.PlayerStatBook;
+import org.heat.world.players.shortcuts.PlayerShortcutBar;
 import org.heat.world.roleplay.WorldActorLook;
 import org.heat.world.roleplay.WorldHumanoidActor;
 import org.heat.world.roleplay.environment.WorldMapPoint;
@@ -44,6 +45,7 @@ public class Player
     PlayerStatBook stats;
     PlayerSpellBook spells;
     PlayerItemWallet wallet;
+    PlayerShortcutBar shortcutBar;
 
     // lombok auto-generates a #isSex() which is invalid here
     public boolean getSex() {
