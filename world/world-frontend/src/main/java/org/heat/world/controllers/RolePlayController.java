@@ -8,6 +8,7 @@ import com.ankamagames.dofus.network.messages.game.context.roleplay.objects.Obje
 import com.github.blackrush.acara.Listener;
 import lombok.extern.slf4j.Slf4j;
 import org.heat.world.controllers.events.*;
+import org.heat.world.controllers.events.roleplay.EndPlayerMovementEvent;
 import org.heat.world.controllers.events.roleplay.StartPlayerMovementEvent;
 import org.heat.world.controllers.utils.Basics;
 import org.heat.world.controllers.utils.Idling;
@@ -126,6 +127,7 @@ public class RolePlayController {
         movement.notifyEnd();
 
         client.write(Basics.noop());
+        client.getEventBus().publish(new EndPlayerMovementEvent(movement));
     }
 
     @Receive
@@ -145,6 +147,7 @@ public class RolePlayController {
         movement.notifyCancellation(cancellationPoint);
 
         client.write(Basics.noop());
+        client.getEventBus().publish(new EndPlayerMovementEvent(movement));
     }
 
     @Listener
