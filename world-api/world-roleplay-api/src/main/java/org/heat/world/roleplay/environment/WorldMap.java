@@ -111,6 +111,24 @@ public final class WorldMap {
     }
 
     /**
+     * Determine whether or not this map has an item on the given map point
+     * @param mapPoint a non-null map point
+     * @return {@code true} if it has an item on the given map point, {@code false} otherwise
+     */
+    public boolean hasItemOn(WorldMapPoint mapPoint) {
+        return items.containsKey(mapPoint);
+    }
+
+    /**
+     * Determine whether or not a map point is available
+     * @param mapPoint a non-null map point
+     * @return {@code true} if the given map point is available, {@code false} otherwise
+     */
+    public boolean isAvailable(WorldMapPoint mapPoint) {
+        return !hasActorOn(mapPoint) && !hasItemOn(mapPoint);
+    }
+
+    /**
      * Add an item on the map
      * @param item a non-null item
      * @param mapPoint a non-null map point
@@ -128,7 +146,7 @@ public final class WorldMap {
 
         synchronized (items) {
             if (exact) {
-                if (items.containsKey(mapPoint)) {
+                if (!isAvailable(mapPoint)) {
                     return false;
                 }
 
@@ -136,7 +154,7 @@ public final class WorldMap {
             } else {
                 Optional<WorldMapPoint> option =
                     Stream.concat(Stream.of(mapPoint), mapPoint.adjacents(true))
-                        .filter(x -> !hasActorOn(x) && items.containsKey(x))
+                        .filter(this::isAvailable)
                         .findAny();
 
                 if (!option.isPresent()) {
