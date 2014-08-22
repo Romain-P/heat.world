@@ -10,19 +10,29 @@ import org.heat.shared.database.Table;
 import org.heat.world.players.*;
 import org.heat.world.players.items.JdbcPlayerItemRepository;
 import org.heat.world.players.items.PlayerItemRepository;
+import org.heat.world.players.shortcuts.JdbcPlayerShortcutRepository;
+import org.heat.world.players.shortcuts.PlayerShortcut;
+import org.heat.world.players.shortcuts.PlayerShortcutRepository;
+import org.heat.world.players.shortcuts.PlayerShortcutTable;
 
 import java.util.concurrent.ExecutorService;
 
 public class StdJdbcPlayersModule extends PrivateModule {
     @Override
     protected void configure() {
-        bind(PlayerItemRepository.class).to(JdbcPlayerItemRepository.class).asEagerSingleton();
         bind(new TypeLiteral<Table<Player>>() {}).to(PlayerTable.class);
+        bind(new TypeLiteral<Table<PlayerShortcut>>() {}).to(PlayerShortcutTable.class);
+
+        bind(PlayerItemRepository.class).to(JdbcPlayerItemRepository.class).asEagerSingleton();
+
+        bind(PlayerShortcutRepository.class).to(JdbcPlayerShortcutRepository.class).asEagerSingleton();
+
         bind(PlayerRepository.class).annotatedWith(Names.named("base")).to(JdbcPlayerRepository.class).asEagerSingleton();
         bind(PlayerRepository.class).to(PermLazyPlayerRepository.class).asEagerSingleton();
 
         expose(PlayerRepository.class);
         expose(PlayerItemRepository.class);
+        expose(PlayerShortcutRepository.class);
     }
 
     @Provides
