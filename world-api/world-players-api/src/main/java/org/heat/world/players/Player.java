@@ -159,12 +159,16 @@ public class Player
         /**
          * TODO(world/items): item movement validity
          * you cannot equip a pet if there is a mount
-         * you cannot equip if target position is already taken
          */
 
         // we only worry if we want to equip an item
         if (to == INVENTORY_POSITION_NOT_EQUIPED) {
             return true;
+        }
+
+        // you cannot equip if target position is already taken
+        if (wallet.findByPosition(to).findAny().isPresent()) {
+            return false;
         }
 
         // you cannot equip a greater level item
