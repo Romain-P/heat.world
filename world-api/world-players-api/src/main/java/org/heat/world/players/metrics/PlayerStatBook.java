@@ -1,4 +1,4 @@
-package org.heat.world.players;
+package org.heat.world.players.metrics;
 
 import org.heat.world.metrics.GameStatBook;
 import org.heat.world.metrics.GameStats;

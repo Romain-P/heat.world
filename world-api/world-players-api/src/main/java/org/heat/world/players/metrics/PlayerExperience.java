@@ -1,4 +1,4 @@
-package org.heat.world.players;
+package org.heat.world.players.metrics;
 
 import lombok.Value;
 import lombok.experimental.Wither;
@@ -37,7 +37,7 @@ public final class PlayerExperience {
     /**
      * Add a strictly positive amount of levels
      * @param levels a strictly positive integer
-     * @return the resulting {@link org.heat.world.players.PlayerExperience}
+     * @return the resulting {@link PlayerExperience}
      */
     public PlayerExperience plusLevels(int levels) {
         if (levels < 0) {
@@ -63,7 +63,7 @@ public final class PlayerExperience {
     /**
      * Add a strictly positive amount of experience. This may add one or more levels.
      * @param experience a strictly positive floating number
-     * @return the resulting {@link org.heat.world.players.PlayerExperience}
+     * @return the resulting {@link PlayerExperience}
      */
     public PlayerExperience plusExperience(double experience) {
         if (experience < 0.0) {

@@ -1,8 +1,9 @@
-package org.heat.world.players;
+package org.heat.world.players.metrics;
 
 import com.ankamagames.dofus.datacenter.breeds.Breed;
 import com.ankamagames.dofus.datacenter.spells.Spell;
 import org.heat.data.Datacenter;
+import org.heat.world.players.Players;
 
 import java.util.ArrayList;
 import java.util.List;
