@@ -159,13 +159,17 @@ public class Player
         /**
          * TODO(world/items): item movement validity
          * you cannot equip a pet if there is a mount
-         * you cannot equip a greater level item
          * you cannot equip if target position is already taken
          */
 
         // we only worry if we want to equip an item
         if (to == INVENTORY_POSITION_NOT_EQUIPED) {
             return true;
+        }
+
+        // you cannot equip a greater level item
+        if (item.getTemplate().getLevel() > getExperience().getCurrentLevel()) {
+            return false;
         }
 
         // this item type can not be moved here
