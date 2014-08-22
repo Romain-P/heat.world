@@ -102,24 +102,65 @@ public final class WorldMap {
     }
 
     /**
+     * Determine whether or not this map has an actor on the given map point
+     * @param mapPoint a non-null map point
+     * @return {@code true} if it has an actor on the given map point, {@code false} otherwise
+     */
+    public boolean hasActorOn(WorldMapPoint mapPoint) {
+        return actors.stream().anyMatch(x -> x.getActorPosition().getMapPoint().equals(mapPoint));
+    }
+
+    /**
      * Add an item on the map
      * @param item a non-null item
      * @param mapPoint a non-null map point
-     * @throws java.lang.IllegalArgumentException if the map already contains the item
+     * @param exact if {@code false} will search first available adjacents cells
+     * @return {@code true} there was enough room, {@code false} otherwise
+     * @throws java.lang.IllegalArgumentException if item already has been added
      */
-    public void addItem(WorldItem item, WorldMapPoint mapPoint) {
+    public boolean addItem(WorldItem item, WorldMapPoint mapPoint, boolean exact) {
         requireNonNull(item, "item");
         requireNonNull(mapPoint, "mapPoint");
 
-        synchronized (items) {
-            if (items.containsKey(mapPoint)) {
-                throw new IllegalArgumentException();
-            }
+        if (items.containsValue(item)) {
+            throw new IllegalArgumentException("map already contains " + item);
+        }
 
-            items.put(mapPoint, item);
+        synchronized (items) {
+            if (exact) {
+                if (items.containsKey(mapPoint)) {
+                    return false;
+                }
+
+                items.put(mapPoint, item);
+            } else {
+                Optional<WorldMapPoint> option =
+                    Stream.concat(Stream.of(mapPoint), mapPoint.adjacents(true))
+                        .filter(x -> !hasActorOn(x) && items.containsKey(x))
+                        .findAny();
+
+                if (!option.isPresent()) {
+                    return false;
+                }
+
+                WorldMapPoint firstAvailable = option.get();
+                items.put(firstAvailable, item);
+            }
         }
 
         eventBus.publish(new MapItemAddEvent(this, item, mapPoint));
+        return true;
+    }
+
+    /**
+     * Add an item on the map on the exact given map point
+     * @param item a non-null item
+     * @param mapPoint a non-null map point
+     * @return {@code true} there was enough room, {@code false} otherwise
+     * @throws java.lang.IllegalArgumentException if item already has been added
+     */
+    public boolean addItem(WorldItem item, WorldMapPoint mapPoint) {
+        return addItem(item, mapPoint, true);
     }
 
     /**
@@ -130,17 +171,15 @@ public final class WorldMap {
     public Optional<WorldItem> removeItem(WorldMapPoint mapPoint) {
         requireNonNull(mapPoint, "mapPoint");
 
-        WorldItem item;
-
         synchronized (items) {
+            WorldItem item;
             item = items.remove(mapPoint);
             if (item == null) {
                 return Optional.empty();
             }
+            eventBus.publish(new MapItemRemoveEvent(this, item, mapPoint));
+            return Optional.of(item);
         }
-
-        eventBus.publish(new MapItemRemoveEvent(this, item, mapPoint));
-        return Optional.of(item);
     }
 
     public Optional<DirectionsEnum> tryOrientationTo(WorldMap other) {
