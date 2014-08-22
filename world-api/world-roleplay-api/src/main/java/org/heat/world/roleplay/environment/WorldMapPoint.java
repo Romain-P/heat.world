@@ -91,17 +91,26 @@ public final class WorldMapPoint {
         }
     }
 
-    public Stream<WorldMapPoint> adjacents() {
+    public Stream<WorldMapPoint> adjacents(boolean fourDir) {
         Stream.Builder<WorldMapPoint> res = Stream.builder();
-        of(x + 1, y + 1).ifPresent(res); // DIRECTION_EAST
+
         of(x + 1, y    ).ifPresent(res); // DIRECTION_SOUTH_EAST
-        of(x + 1, y - 1).ifPresent(res); // DIRECTION_SOUTH
         of(x    , y - 1).ifPresent(res); // DIRECTION_SOUTH_WEST
-        of(x - 1, y - 1).ifPresent(res); // DIRECTION_WEST
         of(x - 1, y    ).ifPresent(res); // DIRECTION_NORTH_WEST
-        of(x - 1, y + 1).ifPresent(res); // DIRECTION_NORTH
         of(x    , y + 1).ifPresent(res); // DIRECTION_NORTH_EAST
+
+        if (!fourDir) {
+            of(x + 1, y + 1).ifPresent(res); // DIRECTION_EAST
+            of(x + 1, y - 1).ifPresent(res); // DIRECTION_SOUTH
+            of(x - 1, y - 1).ifPresent(res); // DIRECTION_WEST
+            of(x - 1, y + 1).ifPresent(res); // DIRECTION_NORTH
+        }
+
         return res.build();
+    }
+
+    public Stream<WorldMapPoint> adjacents() {
+        return adjacents(false);
     }
 
     public boolean isAdjacentTo(WorldMapPoint other) {
