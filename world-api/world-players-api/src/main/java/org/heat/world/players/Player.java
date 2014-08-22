@@ -14,7 +14,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.heat.shared.stream.MoreCollectors;
 import org.heat.world.items.WorldItem;
+import org.heat.world.items.WorldItemType;
 import org.heat.world.players.items.PlayerItemWallet;
 import org.heat.world.players.metrics.PlayerExperience;
 import org.heat.world.players.metrics.PlayerSpellBook;
@@ -29,6 +31,8 @@ import java.io.Serializable;
 import java.util.stream.Stream;
 
 import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED;
+import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum.INVENTORY_POSITION_RING_LEFT;
+import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum.INVENTORY_POSITION_RING_RIGHT;
 
 @RequiredArgsConstructor
 @Getter
@@ -150,6 +154,7 @@ public class Player
         return res;
     }
 
+    @SuppressWarnings({"SimplifiableIfStatement", "RedundantIfStatement"})
     public boolean canMoveItemTo(WorldItem item, CharacterInventoryPositionEnum to, int quantity) {
         /**
          * TODO(world/items): item movement validity
@@ -159,35 +164,22 @@ public class Player
          * you cannot equip if target position is already taken
          */
 
+        // we only worry if we want to equip an item
         if (to == INVENTORY_POSITION_NOT_EQUIPED) {
             return true;
         }
 
-        switch (item.getItemType()) {
-            case AMULET:
-            case BOW:
-            case WAND:
-            case STAFF:
-            case DAGGER:
-            case SWORD:
-            case HAMMER:
-            case SHOVEL:
-            case RING:
-            case BELT:
-            case BOOTS:
-            case HAT:
-            case CLOAK:
-            case PET:
-            case AXE:
-            case PICKAXE:
-            case SCYTHE:
-            case DOFUS:
-                //case TOOL:
-                return quantity == 1;
-
-            default:
-                return false;
+        // this item type can not be moved here
+        if (!item.getItemType().canBeMovedTo(to)) {
+            return false;
         }
+
+        // we want to equip only *one* item
+        if (item.getItemType().isEquipment() && quantity != 1) {
+            return false;
+        }
+
+        return true;
     }
 
     @Override

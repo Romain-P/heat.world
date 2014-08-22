@@ -1,5 +1,7 @@
 package org.heat.world.items;
 
+import com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum;
+
 import java.util.NoSuchElementException;
 
 public enum WorldItemType {
@@ -179,6 +181,88 @@ public enum WorldItemType {
 
     WorldItemType(byte value) {
         this.value = value;
+    }
+
+    public boolean isEquipment() {
+        if (this.isWeapon()) return true;
+
+        switch (this) {
+            case AMULET:
+            case SHOVEL:
+            case RING:
+            case BELT:
+            case BOOTS:
+            case HAT:
+            case CLOAK:
+            case PET:
+            case DOFUS:
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    public boolean isWeapon() {
+        switch (this) {
+            case AXE:
+            case PICKAXE:
+            case SCYTHE:
+            case BOW:
+            case WAND:
+            case STAFF:
+            case DAGGER:
+            case SWORD:
+            case HAMMER:
+            case SHOVEL:
+          //case TOOL:
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    public boolean canBeMovedTo(CharacterInventoryPositionEnum position) {
+        switch (position) {
+            // everyone can be unequiped
+            case INVENTORY_POSITION_NOT_EQUIPED: return true;
+            // nobody can go on mount position
+            case INVENTORY_POSITION_MOUNT: return false;
+
+            case ACCESSORY_POSITION_WEAPON: return this.isWeapon();
+
+            case ACCESSORY_POSITION_HAT:        return this == HAT;
+            case ACCESSORY_POSITION_CAPE:       return this == CLOAK;
+            case ACCESSORY_POSITION_BELT:       return this == BELT;
+            case ACCESSORY_POSITION_BOOTS:      return this == BOOTS;
+            case ACCESSORY_POSITION_AMULET:     return this == AMULET;
+            case ACCESSORY_POSITION_SHIELD:     return this == SHIELD;
+            case ACCESSORY_POSITION_PETS:       return this == PET;
+            case INVENTORY_POSITION_RING_LEFT:
+            case INVENTORY_POSITION_RING_RIGHT: return this == RING;
+            case INVENTORY_POSITION_DOFUS_1:
+            case INVENTORY_POSITION_DOFUS_2:
+            case INVENTORY_POSITION_DOFUS_3:
+            case INVENTORY_POSITION_DOFUS_4:
+            case INVENTORY_POSITION_DOFUS_5:
+            case INVENTORY_POSITION_DOFUS_6:    return this == DOFUS;
+
+
+            // TODO(world/items): not sure here where they can be moved
+            case INVENTORY_POSITION_MUTATION:
+            case INVENTORY_POSITION_BOOST_FOOD:
+            case INVENTORY_POSITION_FIRST_BONUS:
+            case INVENTORY_POSITION_SECOND_BONUS:
+            case INVENTORY_POSITION_FIRST_MALUS:
+            case INVENTORY_POSITION_SECOND_MALUS:
+            case INVENTORY_POSITION_ROLEPLAY_BUFFER:
+            case INVENTORY_POSITION_FOLLOWER:
+            case INVENTORY_POSITION_COMPANION:
+
+            default:
+                return false;
+        }
     }
 
     public static WorldItemType valueOf(byte value) {
