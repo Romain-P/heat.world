@@ -40,6 +40,10 @@ public class ItemsController {
         items.save(itemFactory.create(39, 1)) // small owl amulet
                 .onSuccess(evt.getPlayer().getWallet()::add)
                 ;
+
+        items.save(itemFactory.create(100, 2)) // small wisdom ring
+                .onSuccess(evt.getPlayer().getWallet()::add)
+                ;
     }
 
     @Receive
