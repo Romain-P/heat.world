@@ -6,11 +6,12 @@ import com.google.common.collect.Sets;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.heat.dofus.data.MapData;
+import org.heat.world.items.WorldItem;
 import org.heat.world.roleplay.WorldActor;
-import org.heat.world.roleplay.environment.events.ActorEntranceEvent;
-import org.heat.world.roleplay.environment.events.ActorMovementEvent;
-import org.heat.world.roleplay.environment.events.ActorRefreshEvent;
+import org.heat.world.roleplay.environment.events.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -23,6 +24,7 @@ public final class WorldMap {
     @Getter final EventBus eventBus;
     @Getter final MapData data;
     final Set<WorldActor> actors = Sets.newConcurrentHashSet();
+    final Map<WorldMapPoint, WorldItem> items = new HashMap<>();
 
     public int getId() {
         return (int) data.getId();
@@ -30,6 +32,11 @@ public final class WorldMap {
 
     public Stream<WorldActor> getActorStream() {
         return actors.stream();
+    }
+
+    // Map.Entry is mutable, do we need to return a copy instead?
+    public Stream<Map.Entry<WorldMapPoint, WorldItem>> getItems() {
+        return items.entrySet().stream();
     }
 
     /**
@@ -92,6 +99,48 @@ public final class WorldMap {
         }
 
         eventBus.publish(new ActorMovementEvent(this, actor, path));
+    }
+
+    /**
+     * Add an item on the map
+     * @param item a non-null item
+     * @param mapPoint a non-null map point
+     * @throws java.lang.IllegalArgumentException if the map already contains the item
+     */
+    public void addItem(WorldItem item, WorldMapPoint mapPoint) {
+        requireNonNull(item, "item");
+        requireNonNull(mapPoint, "mapPoint");
+
+        synchronized (items) {
+            if (items.containsKey(mapPoint)) {
+                throw new IllegalArgumentException();
+            }
+
+            items.put(mapPoint, item);
+        }
+
+        eventBus.publish(new MapItemAddEvent(this, item, mapPoint));
+    }
+
+    /**
+     * Remove an item on the map given a map point
+     * @param mapPoint a non-null map point
+     * @return an optional item
+     */
+    public Optional<WorldItem> removeItem(WorldMapPoint mapPoint) {
+        requireNonNull(mapPoint, "mapPoint");
+
+        WorldItem item;
+
+        synchronized (items) {
+            item = items.remove(mapPoint);
+            if (item == null) {
+                return Optional.empty();
+            }
+        }
+
+        eventBus.publish(new MapItemRemoveEvent(this, item, mapPoint));
+        return Optional.of(item);
     }
 
     public Optional<DirectionsEnum> tryOrientationTo(WorldMap other) {
