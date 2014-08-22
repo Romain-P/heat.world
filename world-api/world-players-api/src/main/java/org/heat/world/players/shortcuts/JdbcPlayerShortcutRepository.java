@@ -11,6 +11,7 @@ import javax.inject.Singleton;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Singleton
 public final class JdbcPlayerShortcutRepository extends JdbcRepositoryNG<PlayerShortcut> implements PlayerShortcutRepository {
@@ -27,6 +28,17 @@ public final class JdbcPlayerShortcutRepository extends JdbcRepositoryNG<PlayerS
         return "select i.gid as item_gid, ps.* " +
                 "from player_shortcuts ps " +
                 "left join items i on i.uid=ps.item_uid";
+    }
+
+    @Override
+    protected String createDeleteQuery() {
+        return
+            "delete from " + getTable().getTableName() + " " +
+            "where " +
+            getTable().getPrimaryKeys().stream()
+                    .map(column -> column + "=:" + column)
+                    .collect(Collectors.joining(" AND "))
+            ;
     }
 
     @SneakyThrows
