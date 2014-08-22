@@ -190,7 +190,7 @@ public final class WorldMap {
      * @return {@code true} there was enough room, {@code false} otherwise
      * @throws java.lang.IllegalArgumentException if item already has been added
      */
-    public boolean addItem(Supplier<WorldItem> itemSupplier, WorldMapPoint mapPoint) {
+    public boolean tryAddItem(Supplier<WorldItem> itemSupplier, WorldMapPoint mapPoint) {
         return tryAddItem(itemSupplier, mapPoint, true);
     }
 
