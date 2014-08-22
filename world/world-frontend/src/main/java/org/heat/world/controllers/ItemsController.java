@@ -19,7 +19,7 @@ import org.heat.world.items.WorldItem;
 import org.heat.world.items.WorldItemFactory;
 import org.heat.world.items.WorldItemRepository;
 import org.heat.world.players.Player;
-import org.heat.world.players.PlayerItemWallet;
+import org.heat.world.players.items.PlayerItemWallet;
 import org.rocket.network.Controller;
 import org.rocket.network.NetworkClient;
 import org.rocket.network.Prop;

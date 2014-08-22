@@ -1,4 +1,4 @@
-package org.heat.world.players;
+package org.heat.world.players.items;
 
 import org.heat.world.items.WorldItemWallet;
 

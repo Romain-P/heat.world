@@ -8,6 +8,8 @@ import org.fungsi.concurrent.Worker;
 import org.fungsi.concurrent.Workers;
 import org.heat.shared.database.Table;
 import org.heat.world.players.*;
+import org.heat.world.players.items.JdbcPlayerItemRepository;
+import org.heat.world.players.items.PlayerItemRepository;
 
 import java.util.concurrent.ExecutorService;
 

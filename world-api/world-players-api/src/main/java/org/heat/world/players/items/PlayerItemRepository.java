@@ -1,4 +1,4 @@
-package org.heat.world.players;
+package org.heat.world.players.items;
 
 import org.fungsi.Unit;
 import org.fungsi.concurrent.Future;
