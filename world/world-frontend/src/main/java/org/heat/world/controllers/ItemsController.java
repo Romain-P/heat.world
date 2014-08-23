@@ -64,16 +64,19 @@ public class ItemsController {
         client.getEventBus().publish(new EquipItemEvent(after, apply));
     }
 
+    private void give(Player player, int gid, int quantity) {
+        items.save(itemFactory.create(gid, quantity))
+                .onSuccess(player.getWallet()::add);
+    }
+
     @Listener
     public void onPlayerCreation(CreatePlayerEvent evt) {
         // DEBUG(world/frontend)
-        items.save(itemFactory.create(39, 1)) // small owl amulet
-                .onSuccess(evt.getPlayer().getWallet()::add)
-                ;
-
-        items.save(itemFactory.create(100, 2)) // small wisdom ring
-                .onSuccess(evt.getPlayer().getWallet()::add)
-                ;
+        give(evt.getPlayer(), 39, 1); // small owl amulet
+        give(evt.getPlayer(), 100, 2); // small wisdom ring
+        give(evt.getPlayer(), 2474, 1); // adventurer hat
+        give(evt.getPlayer(), 6801, 1); // winter cloak
+        give(evt.getPlayer(), 9002, 1); // phtalmo
     }
 
     @Receive
