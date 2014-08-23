@@ -16,13 +16,9 @@ public final class IntegerItemEffect implements WorldItemEffect {
     @Getter final short actionId;
     @Getter final short value;
 
-    private ObjectEffect cache;
     @Override
     public ObjectEffect toObjectEffect() {
-        if (cache == null) {
-            cache = new ObjectEffectInteger(actionId, value);
-        }
-        return cache;
+        return new ObjectEffectInteger(actionId, value);
     }
 
     @Override
