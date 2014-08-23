@@ -76,11 +76,13 @@ public class PlayersController {
     Future<Unit> doChoose(Player player) {
         return client.getEventBus().publish(new ChoosePlayerEvent(player)).toUnit()
                 .flatMap(u -> players.save(player))
-                .onSuccess(x -> this.player.set(player))
-                .flatMap(x -> client.transaction(tx -> {
-                    tx.write(new NotificationListMessage(new int[0])); // TODO(world/players): notifications
-                    tx.write(new CharacterSelectedSuccessMessage(player.toCharacterBaseInformations()));
-                }))
+                .flatMap(x -> {
+                    this.player.set(player);
+                    return client.transaction(tx -> {
+                        tx.write(new NotificationListMessage(new int[0])); // TODO(world/players): notifications
+                        tx.write(new CharacterSelectedSuccessMessage(player.toCharacterBaseInformations()));
+                    });
+                })
                 .flatMap(x -> client.getEventBus().publish(new NewContextEvent(GameContextEnum.ROLE_PLAY)).toUnit())
                 .flatMap(x -> client.write(CharacterLoadingCompleteMessage.i))
                 ;
