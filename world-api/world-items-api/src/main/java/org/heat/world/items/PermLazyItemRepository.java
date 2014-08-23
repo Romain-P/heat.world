@@ -30,6 +30,11 @@ public final class PermLazyItemRepository implements WorldItemRepository {
     }
 
     @Override
+    public void backdoor(List<WorldItem> items) {
+        items.forEach(this::store);
+    }
+
+    @Override
     public Future<WorldItem> find(int uid) {
         WorldItem item = cache.get(uid);
         if (item != null) {

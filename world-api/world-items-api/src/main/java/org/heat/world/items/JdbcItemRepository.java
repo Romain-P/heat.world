@@ -88,6 +88,11 @@ public final class JdbcItemRepository extends JdbcRepositoryNG<WorldItem> implem
     }
 
     @Override
+    public void backdoor(List<WorldItem> items) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public Future<WorldItem> find(int uid) {
         return findFirstByIntColumn("uid", uid);
     }
