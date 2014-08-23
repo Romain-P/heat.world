@@ -5,7 +5,7 @@ import org.heat.world.items.effects.IntegerItemEffect;
 public class NullWorldItemEffectVisitor<R> implements WorldItemEffectVisitor<R> {
     @Override
     public R visitInteger(IntegerItemEffect effect) {
-        return null;
+        return otherwise(effect);
     }
 
     @Override
