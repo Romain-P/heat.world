@@ -20,7 +20,7 @@ public class StdItemsModule extends PrivateModule {
 
     @Override
     protected void configure() {
-        bind(ITEM_TABLE).to(WorldItemTable.class);
+        bind(ITEM_TABLE).to(WorldItemTable.class).asEagerSingleton();
         bind(WorldItemFactory.class).to(DefaultItemFactory.class).asEagerSingleton();
         bind(WorldItemRepository.class).annotatedWith(Names.named("base")).to(JdbcItemRepository.class).asEagerSingleton();
         bind(WorldItemRepository.class).to(PermLazyItemRepository.class).asEagerSingleton();
