@@ -27,6 +27,7 @@ import org.fungsi.Unit;
 import org.fungsi.concurrent.Future;
 import org.heat.User;
 import org.heat.shared.Strings;
+import org.heat.shared.function.UnsafeFunctions;
 import org.heat.shared.stream.MoreCollectors;
 import org.heat.world.backend.Backend;
 import org.heat.world.controllers.events.ChoosePlayerEvent;
@@ -42,16 +43,18 @@ import org.heat.world.metrics.RegularStat;
 import org.heat.world.players.*;
 import org.heat.world.players.metrics.PlayerSpell;
 import org.heat.world.players.metrics.PlayerStatBook;
+import org.rocket.InjectConfig;
 import org.rocket.network.*;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.*;
 
 import static com.ankamagames.dofus.network.enums.CharacterCreationResultEnum.ERR_NO_REASON;
 import static com.ankamagames.dofus.network.enums.CharacterCreationResultEnum.OK;
-import static com.ankamagames.dofus.network.enums.CharacterDeletionErrorEnum.DEL_ERR_NO_REASON;
+import static com.ankamagames.dofus.network.enums.CharacterDeletionErrorEnum.DEL_ERR_BAD_SECRET_ANSWER;
 
 @Controller
 @Authenticated
@@ -66,6 +69,9 @@ public class PlayersController {
     @Inject PlayerFactory playerFactory;
     @Inject Backend backend;
     @Inject @Named("pseudo") Random randomPseudo;
+
+    @InjectConfig("heat.world.player.remove-required-answer-min-level")
+    int removeRequiredAnswerMinLevel;
 
     List<Player> cached;
 
@@ -136,18 +142,41 @@ public class PlayersController {
         ;
     }
 
+    private Future<Unit> remove0(Player player) {
+        return players.remove(player)
+                .flatMap(u -> {
+                    cached.remove(player);
+                    return writePlayerList();
+                });
+    }
+
+    public static MessageDigest md5 = UnsafeFunctions.apply( () -> MessageDigest.getInstance("MD5") ).left(); // fucking checked exceptions
+
+    public static String hash(int playerId, String secretAnswer) {
+        String concat = Integer.toString(playerId, 10) + "~" + secretAnswer;
+        byte[] digest = md5.digest(concat.getBytes());
+        return Strings.toHexBytes(digest);
+    }
+
     @Receive
     public void remove(CharacterDeletionRequestMessage msg) {
         Player player = findPlayer(msg.characterId).left();
 
-        players.remove(player)
-            .flatMap(u -> {
-                cached.remove(player);
-                return writePlayerList();
-            })
-            .mayRescue(err -> {
-                return client.write(new CharacterDeletionErrorMessage(DEL_ERR_NO_REASON.value));
-            });
+        if (player.getExperience().getCurrentLevel() < removeRequiredAnswerMinLevel) {
+            remove0(player);
+            return;
+        }
+
+        String hash = hash(player.getId(), user.get().getSecretAnswer());
+
+        if (!msg.secretAnswerHash.equalsIgnoreCase(hash)) {
+            client.write(new CharacterDeletionErrorMessage(DEL_ERR_BAD_SECRET_ANSWER.value));
+            return;
+        }
+
+        // TODO DEL_ERR_TOO_MANY_CHAR_DELETION
+
+        remove0(player);
     }
 
     @Receive
