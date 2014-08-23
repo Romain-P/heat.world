@@ -31,9 +31,7 @@ import org.heat.world.roleplay.environment.WorldPosition;
 import java.io.Serializable;
 import java.util.stream.Stream;
 
-import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED;
-import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum.INVENTORY_POSITION_RING_LEFT;
-import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum.INVENTORY_POSITION_RING_RIGHT;
+import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum.*;
 
 @RequiredArgsConstructor
 @Getter
@@ -188,9 +186,9 @@ public class Player
                     ? INVENTORY_POSITION_RING_RIGHT
                     : INVENTORY_POSITION_RING_LEFT;
 
-            WorldItem otherRing = wallet.findByPosition(backwards).collect(MoreCollectors.unique());
+            WorldItem otherRing = wallet.findByPosition(backwards).collect(MoreCollectors.uniqueOption()).orElse(null);
 
-            if (otherRing.getGid() == item.getGid()) {
+            if (otherRing != null && otherRing.getGid() == item.getGid()) {
                 return false;
             }
         }
