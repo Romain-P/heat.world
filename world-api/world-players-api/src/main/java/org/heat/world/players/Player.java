@@ -10,6 +10,7 @@ import com.ankamagames.dofus.network.types.game.character.choice.CharacterBaseIn
 import com.ankamagames.dofus.network.types.game.character.restriction.ActorRestrictionsInformations;
 import com.ankamagames.dofus.network.types.game.context.roleplay.GameRolePlayCharacterInformations;
 import com.ankamagames.dofus.network.types.game.context.roleplay.HumanInformations;
+import com.github.blackrush.acara.EventBus;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -42,6 +43,7 @@ public class Player
         implements Serializable,
             WorldHumanoidActor
 {
+    EventBus eventBus;
     int id;
     int userId;
     String name;

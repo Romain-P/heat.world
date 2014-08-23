@@ -3,6 +3,7 @@ package org.heat.world.players;
 import com.ankamagames.dofus.datacenter.breeds.Breed;
 import com.ankamagames.dofus.datacenter.spells.Spell;
 import com.ankamagames.dofus.network.enums.DirectionsEnum;
+import com.github.blackrush.acara.EventBusBuilder;
 import com.google.common.collect.ImmutableList;
 import lombok.SneakyThrows;
 import org.heat.data.Datacenter;
@@ -36,14 +37,23 @@ public final class PlayerTable implements Table<Player> {
     private final Experience experience;
     private final PlayerItemRepository playerItems;
     private final PlayerShortcutRepository playerShortcuts;
+    private final EventBusBuilder eventBusBuilder;
 
     @Inject
-    public PlayerTable(Datacenter datacenter, WorldPositioningSystem wps, @Named("player") Experience experience, PlayerItemRepository playerItems, PlayerShortcutRepository playerShortcuts) {
+    public PlayerTable(
+            Datacenter datacenter,
+            WorldPositioningSystem wps,
+            @Named("player") Experience experience,
+            PlayerItemRepository playerItems,
+            PlayerShortcutRepository playerShortcuts,
+            @Named("player") EventBusBuilder eventBusBuilder
+    ) {
         this.datacenter = datacenter;
         this.wps = wps;
         this.experience = experience;
         this.playerItems = playerItems;
         this.playerShortcuts = playerShortcuts;
+        this.eventBusBuilder = eventBusBuilder;
     }
 
     @Override
@@ -172,6 +182,7 @@ public final class PlayerTable implements Table<Player> {
     @Override
     public Player importFromDb(ResultSet rset) throws SQLException {
         Player player = new Player();
+        player.setEventBus(eventBusBuilder.build());
         player.setId(rset.getInt("id"));
         player.setUserId(rset.getInt("userId"));
         player.setName(rset.getString("name"));

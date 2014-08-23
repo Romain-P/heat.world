@@ -1,5 +1,6 @@
 package org.heat.world;
 
+import com.github.blackrush.acara.EventBusBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -20,6 +21,7 @@ public class StdPlayersModule extends AbstractModule {
     protected void configure() {
         bind(PlayerFactory.class).to(DefaultPlayerFactory.class).asEagerSingleton();
         bind(Random.class).annotatedWith(Names.named("pseudo")).toInstance(new Random());
+        bind(EventBusBuilder.class).annotatedWith(Names.named("player")).to(EventBusBuilder.class);
     }
 
     @Provides
