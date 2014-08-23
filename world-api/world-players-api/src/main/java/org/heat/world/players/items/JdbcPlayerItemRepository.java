@@ -4,29 +4,40 @@ import org.fungsi.Unit;
 import org.fungsi.concurrent.Future;
 import org.fungsi.concurrent.Futures;
 import org.fungsi.concurrent.Worker;
+import org.heat.shared.database.Table;
 import org.heat.world.items.WorldItem;
 import org.heat.world.items.WorldItemRepository;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
 public final class JdbcPlayerItemRepository implements PlayerItemRepository {
     private final DataSource dataSource;
-    private final WorldItemRepository items;
+    private final Table<WorldItem> itemTable;
+    private final WorldItemRepository itemRepository;
     private final Worker worker;
 
     @Inject
-    public JdbcPlayerItemRepository(DataSource dataSource, WorldItemRepository items, Worker worker) {
+    public JdbcPlayerItemRepository(DataSource dataSource, @Named("backdoor") Table<WorldItem> itemTable, WorldItemRepository itemRepository, Worker worker) {
         this.dataSource = dataSource;
-        this.items = items;
+        this.itemTable = itemTable;
+        this.itemRepository = itemRepository;
         this.worker = worker;
     }
+
+    public static final String FIND_ITEMS_BY_PLAYER_SQL =
+            "select i.* " +
+            "from player_items pi " +
+            "inner join items i on i.uid=pi.item_uid " +
+            "where pi.player_id=?"
+            ;
 
     private String batchInsertQuery(int rows) {
         StringBuilder builder = new StringBuilder("insert into player_items(player_id, item_uid) values ");
@@ -37,31 +48,27 @@ public final class JdbcPlayerItemRepository implements PlayerItemRepository {
         return builder.toString();
     }
 
-    private Future<IntStream> findItemUids(int playerId) {
-        return worker.submit(() -> {
-            try (Connection co = dataSource.getConnection()) {
-                try (PreparedStatement s = co.prepareStatement("select item_uid from player_items where player_id=?")) {
-                    s.setInt(1, playerId);
-
-                    IntStream.Builder uids = IntStream.builder();
-                    try (ResultSet rset = s.executeQuery()) {
-                        while (rset.next()) {
-                            int uid = rset.getInt(1);
-                            uids.add(uid);
-                        }
-                    }
-
-                    return uids.build();
-                }
-            } catch (SQLException e) {
-                throw new Error(e);
-            }
-        });
-    }
-
+    @SuppressWarnings("deprecation")
     @Override
     public Future<List<WorldItem>> findItemsByPlayer(int playerId) {
-        return findItemUids(playerId).flatMap(items::find);
+        return worker.submit(() -> {
+            try (Connection connection = dataSource.getConnection();
+                 PreparedStatement statement = connection.prepareStatement(FIND_ITEMS_BY_PLAYER_SQL))
+            {
+                statement.setInt(1, playerId);
+
+                List<WorldItem> items = new ArrayList<>();
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        items.add(itemTable.importFromDb(resultSet));
+                    }
+                }
+
+                this.itemRepository.transferOwnership(items);
+
+                return items;
+            }
+        });
     }
 
     @Override
