@@ -29,10 +29,24 @@ public interface PlayerStatBook extends GameStatBook {
     void apply(WorldItem item);
 
     /**
+     * Unapply item's effects from this stat book
+     * @param item a non-null item
+     */
+    void unapply(WorldItem item);
+
+    /**
      * Apply one by one items' effects to this stat book
      * @param items a non-null, non-leaking stream
      */
     default void apply(Stream<WorldItem> items) {
         items.forEach(this::apply);
+    }
+
+    /**
+     * Unapply one by one items' effects to this stat book
+     * @param items a non-null, non-leaking stream
+     */
+    default void unapply(Stream<WorldItem> items) {
+        items.forEach(this::unapply);
     }
 }
