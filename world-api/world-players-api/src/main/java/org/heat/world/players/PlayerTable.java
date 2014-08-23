@@ -29,8 +29,6 @@ import java.util.List;
 import java.util.OptionalInt;
 
 import static org.heat.world.metrics.GameStats.*;
-import static org.heat.world.metrics.GameStats.PROSPECTING;
-import static org.heat.world.metrics.GameStats.SUMMONABLE_CREATURES;
 
 public final class PlayerTable implements Table<Player> {
     private final Datacenter datacenter;
@@ -166,6 +164,9 @@ public final class PlayerTable implements Table<Player> {
         player.setSpells(buildPlayerSpells(rset));
         player.setWallet(buildWallet(rset, player.getId()));
         player.setShortcutBar(buildShortcutBar(player.getId()));
+
+        player.getStats().apply(player.getWallet().getEquipedStream());
+
         return player;
     }
 
