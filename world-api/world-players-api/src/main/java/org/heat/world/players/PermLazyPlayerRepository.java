@@ -7,6 +7,7 @@ import org.fungsi.concurrent.Futures;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -77,7 +78,7 @@ public final class PermLazyPlayerRepository implements PlayerRepository {
     public Future<List<Player>> findByUserId(int userId) {
         List<Player> players = cacheByUserId.get(userId);
         if (players != null) {
-            return Futures.success(players);
+            return Futures.success(Collections.unmodifiableList(players));
         }
 
         return repository.findByUserId(userId)
