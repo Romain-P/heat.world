@@ -280,4 +280,41 @@ public class ItemsController {
                     });
                 });
     }
+
+    @Receive
+    public void removeItem(ObjectDeleteMessage msg) {
+        Player player = this.player.get();
+        PlayerItemWallet wallet = player.getWallet();
+
+        WorldItem item = wallet.findByUid(msg.objectUID).get();
+        int quantity = msg.quantity;
+
+        wallet.fork(item, quantity)
+            .ifLeft(forkPair -> {
+                WorldItem original = forkPair.first;
+
+                // NOTE(Blackrush): we fork this item but never use the forked item to virtually delete it
+                //WorldItem forked = forkPair.second;
+
+                items.save(original)
+                    .onSuccess(newOriginal -> {
+                        wallet.update(newOriginal);
+
+                        client.transaction(tx -> {
+                            tx.write(new ObjectQuantityMessage(newOriginal.getUid(), newOriginal.getQuantity()));
+                            tx.write(new InventoryWeightMessage(wallet.getWeight(), player.getStats().getMaxWeight()));
+                        });
+                    });
+            })
+            .ifRight(nonForked -> {
+                removeAnyShortcut(nonForked.getUid());
+                wallet.remove(nonForked);
+                items.remove(nonForked);
+
+                client.transaction(tx -> {
+                    tx.write(new ObjectDeletedMessage(item.getUid()));
+                    tx.write(new InventoryWeightMessage(wallet.getWeight(), player.getStats().getMaxWeight()));
+                });
+            });
+    }
 }
