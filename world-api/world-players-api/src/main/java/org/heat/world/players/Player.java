@@ -17,6 +17,7 @@ import lombok.ToString;
 import org.heat.shared.stream.MoreCollectors;
 import org.heat.world.items.WorldItem;
 import org.heat.world.items.WorldItemType;
+import org.heat.world.metrics.GameStats;
 import org.heat.world.players.items.PlayerItemWallet;
 import org.heat.world.players.metrics.PlayerExperience;
 import org.heat.world.players.metrics.PlayerSpellBook;
@@ -200,6 +201,25 @@ public class Player
         }
 
         return true;
+    }
+
+    /**
+     * Get max transportable weight. See http://dofuswiki.wikia.com/wiki/Characteristic#Pods_.28Carrying_Capacity.29
+     *
+     * <p>
+     * This statistic determines the number of items you can carry. The base value is 1000.
+     * Each profession level of the character gives +5 pods, and each level 100 profession gives an additional +1000 pods.
+     * Strength also affects carrying capacity, at the rate of 5 pods per strength point.
+     * Pods can also be obtained from Pods equipment.
+     *
+     * @return an integer
+     */
+    public int getMaxWeight() {
+        return Players.BASE_TRANSPORTABLE_WEIGHT
+                + stats.get(GameStats.STRENGTH).getSafeTotal() * 5
+                + stats.get(GameStats.PODS).getTotal()
+                // TODO(world/players): jobs affect transportable weight
+                ;
     }
 
     @Override

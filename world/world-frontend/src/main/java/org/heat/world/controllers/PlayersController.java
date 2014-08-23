@@ -142,7 +142,7 @@ public class PlayersController {
             ));
             tx.write(new InventoryWeightMessage(
                     player.getWallet().getWeight(),
-                    player.getStats().getMaxWeight()
+                    player.getMaxWeight()
             ));
         });
     }

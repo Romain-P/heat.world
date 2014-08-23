@@ -107,7 +107,7 @@ public class ItemsController {
                             client.transaction(tx -> {
                                 tx.write(new ObjectQuantityMessage(pair.first.getUid(), pair.first.getQuantity()));
                                 tx.write(new ObjectQuantityMessage(pair.second.getUid(), pair.second.getQuantity()));
-                                tx.write(new InventoryWeightMessage(player.getWallet().getWeight(), player.getStats().getMaxWeight()));
+                                tx.write(new InventoryWeightMessage(player.getWallet().getWeight(), player.getMaxWeight()));
                                 tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
                                 tx.write(BasicNoOperationMessage.i);
                             });
@@ -124,7 +124,7 @@ public class ItemsController {
                             client.transaction(tx -> {
                                 tx.write(new ObjectQuantityMessage(pair.first.getUid(), pair.first.getQuantity()));
                                 tx.write(new ObjectAddedMessage(pair.second.toObjectItem()));
-                                tx.write(new InventoryWeightMessage(player.getWallet().getWeight(), player.getStats().getMaxWeight()));
+                                tx.write(new InventoryWeightMessage(player.getWallet().getWeight(), player.getMaxWeight()));
                                 tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
                                 tx.write(BasicNoOperationMessage.i);
                             });
@@ -149,7 +149,7 @@ public class ItemsController {
                             client.transaction(tx -> {
                                 tx.write(new ObjectDeletedMessage(pair.first.getUid()));
                                 tx.write(new ObjectQuantityMessage(pair.second.getUid(), pair.second.getQuantity()));
-                                tx.write(new InventoryWeightMessage(player.getWallet().getWeight(), player.getStats().getMaxWeight()));
+                                tx.write(new InventoryWeightMessage(player.getWallet().getWeight(), player.getMaxWeight()));
                                 tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
                                 tx.write(BasicNoOperationMessage.i);
                             });
@@ -163,7 +163,7 @@ public class ItemsController {
                             wallet.update(x);
                             client.transaction(tx -> {
                                 tx.write(new ObjectMovementMessage(x.getUid(), x.getPosition().value));
-                                tx.write(new InventoryWeightMessage(player.getWallet().getWeight(), player.getStats().getMaxWeight()));
+                                tx.write(new InventoryWeightMessage(player.getWallet().getWeight(), player.getMaxWeight()));
                                 tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
                                 tx.write(BasicNoOperationMessage.i);
                             });
@@ -199,7 +199,7 @@ public class ItemsController {
 
                     client.transaction(tx -> {
                         client.write(new ObjectQuantityMessage(newOriginal.getUid(), newOriginal.getQuantity()));
-                        tx.write(new InventoryWeightMessage(wallet.getWeight(), player.getStats().getMaxWeight()));
+                        tx.write(new InventoryWeightMessage(wallet.getWeight(), player.getMaxWeight()));
                         tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
                         tx.write(BasicNoOperationMessage.i);
                     });
@@ -215,7 +215,7 @@ public class ItemsController {
 
             client.transaction(tx -> {
                 tx.write(new ObjectDeletedMessage(item.getUid()));
-                tx.write(new InventoryWeightMessage(wallet.getWeight(), player.getStats().getMaxWeight()));
+                tx.write(new InventoryWeightMessage(wallet.getWeight(), player.getMaxWeight()));
                 tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
                 tx.write(BasicNoOperationMessage.i);
             });
@@ -267,7 +267,7 @@ public class ItemsController {
                                 wallet.update(newMerged);
                                 client.transaction(tx -> {
                                     tx.write(new ObjectQuantityMessage(newMerged.getUid(), newMerged.getQuantity()));
-                                    tx.write(new InventoryWeightMessage(wallet.getWeight(), player.getStats().getMaxWeight()));
+                                    tx.write(new InventoryWeightMessage(wallet.getWeight(), player.getMaxWeight()));
                                 });
                             });
                 })
@@ -276,7 +276,7 @@ public class ItemsController {
 
                     client.transaction(tx -> {
                         tx.write(new ObjectAddedMessage(nonMerged.toObjectItem()));
-                        tx.write(new InventoryWeightMessage(wallet.getWeight(), player.getStats().getMaxWeight()));
+                        tx.write(new InventoryWeightMessage(wallet.getWeight(), player.getMaxWeight()));
                     });
                 });
     }
@@ -302,7 +302,7 @@ public class ItemsController {
 
                         client.transaction(tx -> {
                             tx.write(new ObjectQuantityMessage(newOriginal.getUid(), newOriginal.getQuantity()));
-                            tx.write(new InventoryWeightMessage(wallet.getWeight(), player.getStats().getMaxWeight()));
+                            tx.write(new InventoryWeightMessage(wallet.getWeight(), player.getMaxWeight()));
                         });
                     });
             })
@@ -313,7 +313,7 @@ public class ItemsController {
 
                 client.transaction(tx -> {
                     tx.write(new ObjectDeletedMessage(item.getUid()));
-                    tx.write(new InventoryWeightMessage(wallet.getWeight(), player.getStats().getMaxWeight()));
+                    tx.write(new InventoryWeightMessage(wallet.getWeight(), player.getMaxWeight()));
                 });
             });
     }
