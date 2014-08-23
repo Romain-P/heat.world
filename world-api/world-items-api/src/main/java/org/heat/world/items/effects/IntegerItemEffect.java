@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import org.heat.world.items.WorldItemEffect;
+import org.heat.world.items.WorldItemEffectVisitor;
 
 @ToString(of = {"actionId", "value"})
 @EqualsAndHashCode(of = {"actionId", "value"})
@@ -22,5 +23,10 @@ public final class IntegerItemEffect implements WorldItemEffect {
             cache = new ObjectEffectInteger(actionId, value);
         }
         return cache;
+    }
+
+    @Override
+    public <R> R visit(WorldItemEffectVisitor<R> visitor) {
+        return visitor.visitInteger(this);
     }
 }
