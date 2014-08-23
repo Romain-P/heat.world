@@ -19,6 +19,7 @@ import com.ankamagames.dofus.network.messages.game.inventory.items.InventoryCont
 import com.ankamagames.dofus.network.messages.game.inventory.items.InventoryWeightMessage;
 import com.ankamagames.dofus.network.messages.game.inventory.spells.SpellListMessage;
 import com.github.blackrush.acara.Listener;
+import lombok.extern.slf4j.Slf4j;
 import org.fungsi.Unit;
 import org.fungsi.concurrent.Future;
 import org.heat.User;
@@ -52,6 +53,7 @@ import static com.ankamagames.dofus.network.enums.CharacterCreationResultEnum.OK
 @Controller
 @Authenticated
 @PropValidation(value = Player.class, present = false)
+@Slf4j
 public class PlayersController {
     @Inject NetworkClient client;
     @Inject Prop<User> user;
@@ -125,10 +127,13 @@ public class PlayersController {
 
     @Receive
     public void choose(CharacterSelectionMessage msg) {
-        getPlayers().stream().filter(x -> x.getId() == msg.id).collect(MoreCollectors.uniqueMaybe())
-                .ifLeft(this::doChoose)
-                .ifRight(x -> client.write(CharacterSelectedErrorMessage.i))
-        ;
+        getPlayers().stream()
+            .filter(x -> x.getId() == msg.id)
+            .collect(MoreCollectors.uniqueMaybe())
+            .foldLeft(this::doChoose)
+            .thenRight(x -> client.write(CharacterSelectedErrorMessage.i))
+            .onFailure(err -> log.error("cannot choose player", err))
+            ;
     }
 
     @Listener
