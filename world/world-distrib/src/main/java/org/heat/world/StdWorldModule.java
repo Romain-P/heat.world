@@ -3,9 +3,11 @@ package org.heat.world;
 import com.github.blackrush.acara.CoreEventBus;
 import com.github.blackrush.acara.EventBusBuilder;
 import com.github.blackrush.acara.SupervisedEventModule;
+import com.github.blackrush.acara.supervisor.Supervisor;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.PooledByteBufAllocator;
 import org.fungsi.concurrent.Workers;
@@ -44,9 +46,16 @@ public class StdWorldModule extends AbstractModule {
     }
 
     @Provides
-    EventBusBuilder provideEventBusBuilder(ExecutorService executor) {
+    @Named("main")
+    Supervisor provideMainSupervisor() {
+        return new StdWorldSupervisor();
+    }
+
+    @Provides
+    EventBusBuilder provideEventBusBuilder(ExecutorService executor, @Named("main") Supervisor supervisor) {
         return CoreEventBus.builder()
                 .setWorker(Workers.wrap(executor))
+                .setSupervisor(supervisor)
                 .install(new SupervisedEventModule())
                 .install(RocketAcara.newContextfulModule())
                 ;
