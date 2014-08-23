@@ -15,15 +15,22 @@ import org.heat.world.items.*;
 import java.util.concurrent.ExecutorService;
 
 public class StdItemsModule extends PrivateModule {
+
+    public static final TypeLiteral<Table<WorldItem>> ITEM_TABLE = new TypeLiteral<Table<WorldItem>>(){};
+
     @Override
     protected void configure() {
-        bind(new TypeLiteral<Table<WorldItem>>() {}).to(WorldItemTable.class);
+        bind(ITEM_TABLE).to(WorldItemTable.class);
         bind(WorldItemFactory.class).to(DefaultItemFactory.class).asEagerSingleton();
         bind(WorldItemRepository.class).annotatedWith(Names.named("base")).to(JdbcItemRepository.class).asEagerSingleton();
         bind(WorldItemRepository.class).to(PermLazyItemRepository.class).asEagerSingleton();
 
         expose(WorldItemFactory.class);
         expose(WorldItemRepository.class);
+
+        // items might be externally loaded
+        bind(ITEM_TABLE).annotatedWith(Names.named("backdoor")).to(ITEM_TABLE);
+        expose(ITEM_TABLE).annotatedWith(Names.named("backdoor"));
     }
 
     @SuppressWarnings("unchecked")
