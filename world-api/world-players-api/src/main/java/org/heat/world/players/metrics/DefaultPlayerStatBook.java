@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import lombok.Getter;
 import lombok.Setter;
 import org.heat.shared.IntPair;
+import org.heat.world.items.WorldItem;
 import org.heat.world.metrics.GameStat;
 import org.heat.world.metrics.GameStats;
 import org.heat.world.metrics.RegularStat;
@@ -84,5 +85,14 @@ public final class DefaultPlayerStatBook implements PlayerStatBook {
         stat.plusBase((short) boost.first);
         this.statsPoints -= boost.second;
         return boost.first;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void apply(WorldItem item) {
+        // TODO(world/players): apply item to stat book
+        throw new UnsupportedOperationException("not implemented");
     }
 }
