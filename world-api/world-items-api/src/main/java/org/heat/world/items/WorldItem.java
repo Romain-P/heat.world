@@ -127,4 +127,16 @@ public final class WorldItem {
 
         return 0;
     }
+
+    @Override
+    public String toString() {
+        return "WorldItem{" +
+                "uid=" + uid +
+                ", gid=" + template.getId() +
+                ", version=" + version +
+                ", effects=" + effects +
+                ", position=" + position +
+                ", quantity=" + quantity +
+                '}';
+    }
 }
