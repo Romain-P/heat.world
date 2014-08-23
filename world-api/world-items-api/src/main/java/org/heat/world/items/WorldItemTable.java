@@ -12,7 +12,7 @@ import org.heat.shared.database.NamedPreparedStatement;
 import org.heat.shared.database.Table;
 import org.heat.shared.io.AutoGrowingWriter;
 import org.heat.shared.io.DataReader;
-import org.heat.shared.io.HeapDataReader;
+import org.heat.shared.io.InputStreamReader;
 
 import javax.inject.Inject;
 import java.sql.ResultSet;
@@ -98,7 +98,7 @@ public class WorldItemTable implements Table<WorldItem> {
         ImmutableSet.Builder<WorldItemEffect> effects = ImmutableSet.builder();
 
         byte[] bytes = rset.getBytes("effects");
-        DataReader reader = new HeapDataReader(bytes, 0, bytes.length);
+        DataReader reader = InputStreamReader.of(bytes);
         while (reader.canRead(2)) {
             int typeId = reader.read_ui16();
             ObjectEffect effect = effectFactory.create(typeId).get();
