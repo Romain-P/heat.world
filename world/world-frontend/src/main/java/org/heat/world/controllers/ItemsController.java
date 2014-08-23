@@ -153,7 +153,7 @@ public class ItemsController {
 
                 MoreFutures.join(items.remove(item), items.save(merged))
                     .onSuccess(pair -> {
-                        wallet.remove(pair.first);
+                        wallet.remove(item);
                         wallet.update(pair.second);
 
                         client.transaction(tx -> {
