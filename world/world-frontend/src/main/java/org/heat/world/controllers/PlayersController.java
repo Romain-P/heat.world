@@ -44,8 +44,7 @@ import org.rocket.network.*;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.time.Instant;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import static com.ankamagames.dofus.network.enums.CharacterCreationResultEnum.ERR_NO_REASON;
 import static com.ankamagames.dofus.network.enums.CharacterCreationResultEnum.OK;
@@ -68,7 +67,10 @@ public class PlayersController {
 
     List<Player> getPlayers() {
         if (cached == null) {
-            cached = players.findByUserId(user.get().getId()).get(); // TODO(world/frontend): player load timeout
+            // TODO(world/frontend): player load timeout
+            cached = players.findByUserId(user.get().getId()).get();
+            cached = new ArrayList<>(cached);
+            Collections.sort(cached, Comparator.comparing(Player::getLastUsedAt).reversed());
         }
         return cached;
     }
