@@ -16,6 +16,8 @@ public class StdFrontendControllerModule extends ControllerModule {
         newController().to(RolePlayController.class);
         newController().to(SecurityController.class);
         newController().to(NotificationsController.class);
+        newController().to(ItemsController.class);
+        newController().to(ShortcutsController.class);
 
         newProp(User.class);
         newProp(Player.class);

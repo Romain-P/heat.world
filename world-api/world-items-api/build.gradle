@@ -1,0 +1,11 @@
+apply from: '../../publishable.gradle'
+
+dependencies {
+    compile "org.heat:util:$heatUtil"
+    compile "org.heat:shared:$heatShared"
+    compile "com.google.inject:guice:$guice"
+
+    compile("org.heat.dofus:d2vendor:$heatD2vendor") {
+        exclude group: 'io.netty'
+    }
+}

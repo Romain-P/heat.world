@@ -8,8 +8,15 @@ import lombok.SneakyThrows;
 import org.heat.data.Datacenter;
 import org.heat.shared.database.NamedPreparedStatement;
 import org.heat.shared.database.Table;
+import org.heat.world.items.MapItemBag;
 import org.heat.world.metrics.Experience;
+import org.heat.world.players.items.LazyPlayerItemWallet;
+import org.heat.world.players.items.PlayerItemRepository;
+import org.heat.world.players.items.PlayerItemWallet;
 import org.heat.world.players.metrics.*;
+import org.heat.world.players.shortcuts.LazyShortcutBar;
+import org.heat.world.players.shortcuts.PlayerShortcutBar;
+import org.heat.world.players.shortcuts.PlayerShortcutRepository;
 import org.heat.world.roleplay.WorldActorLook;
 import org.heat.world.roleplay.environment.WorldMapPoint;
 import org.heat.world.roleplay.environment.WorldPositioningSystem;
@@ -29,12 +36,16 @@ public final class PlayerTable implements Table<Player> {
     private final Datacenter datacenter;
     private final WorldPositioningSystem wps;
     private final Experience experience;
+    private final PlayerItemRepository playerItems;
+    private final PlayerShortcutRepository playerShortcuts;
 
     @Inject
-    public PlayerTable(Datacenter datacenter, WorldPositioningSystem wps, @Named("player") Experience experience) {
+    public PlayerTable(Datacenter datacenter, WorldPositioningSystem wps, @Named("player") Experience experience, PlayerItemRepository playerItems, PlayerShortcutRepository playerShortcuts) {
         this.datacenter = datacenter;
         this.wps = wps;
         this.experience = experience;
+        this.playerItems = playerItems;
+        this.playerShortcuts = playerShortcuts;
     }
 
     @Override
@@ -76,7 +87,8 @@ public final class PlayerTable implements Table<Player> {
                 "movements",
                 "prospecting",
                 "summonableCreatures",
-                "spells"
+                "spells",
+                "kamas"
         );
     }
 
@@ -117,7 +129,8 @@ public final class PlayerTable implements Table<Player> {
                 "movements",
                 "prospecting",
                 "summonableCreatures",
-                "spells"
+                "spells",
+                "kamas"
         );
     }
 
@@ -151,6 +164,8 @@ public final class PlayerTable implements Table<Player> {
         player.setExperience(buildPlayerExperience(rset.getDouble("experience")));
         player.setStats(buildPlayerStats(player.getBreed(), rset));
         player.setSpells(buildPlayerSpells(rset));
+        player.setWallet(buildWallet(rset, player.getId()));
+        player.setShortcutBar(buildShortcutBar(player.getId()));
         return player;
     }
 
@@ -189,6 +204,7 @@ public final class PlayerTable implements Table<Player> {
         s.setShort("prospecting", player.getStats().get(PROSPECTING).getBase());
         s.setShort("summonableCreatures", player.getStats().get(SUMMONABLE_CREATURES).getBase());
         s.setArray("spells", exportPlayerSpells(s.getConnection(), player.getSpells()));
+        s.setInt("kamas", player.getWallet().getKamas());
     }
     private PlayerExperience buildPlayerExperience(double experience) {
         Experience step = this.experience.getNextUntilEnoughExperience(experience);
@@ -214,6 +230,20 @@ public final class PlayerTable implements Table<Player> {
         stats.get(PROSPECTING).setBase(rset.getShort("prospecting"));
         stats.get(SUMMONABLE_CREATURES).setBase(rset.getShort("summonableCreatures"));
         return stats;
+    }
+
+    @SneakyThrows
+    private PlayerItemWallet buildWallet(ResultSet rset, int id) {
+        return new LazyPlayerItemWallet(
+                rset.getInt("kamas"),
+                id,
+                playerItems,
+                MapItemBag::newHashMapItemBag
+        );
+    }
+
+    private PlayerShortcutBar buildShortcutBar(int playerId) {
+        return new LazyShortcutBar(playerShortcuts, playerId);
     }
 
     private PlayerSpellBook buildPlayerSpells(ResultSet rset) throws SQLException {

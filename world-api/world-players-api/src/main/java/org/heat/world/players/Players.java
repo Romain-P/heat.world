@@ -35,6 +35,8 @@ public final class Players {
 
     public static final int NEW_SPELL_DEFAULT_MIN_LEVEL = 1;
 
+    public static final int BASE_TRANSPORTABLE_WEIGHT = 1000;
+
     public static Optional<long[][]> getStatsPoints(Breed breed, GameStats<?> id) {
         if (id == STRENGTH) return Optional.of(breed.getStatsPointsForStrength());
         if (id == INTELLIGENCE) return Optional.of(breed.getStatsPointsForIntelligence());

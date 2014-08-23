@@ -3,12 +3,13 @@ package org.heat.world.controllers;
 import com.ankamagames.dofus.network.messages.game.character.stats.LifePointsRegenBeginMessage;
 import com.ankamagames.dofus.network.messages.game.context.*;
 import com.ankamagames.dofus.network.messages.game.context.roleplay.*;
+import com.ankamagames.dofus.network.messages.game.context.roleplay.objects.ObjectGroundAddedMessage;
+import com.ankamagames.dofus.network.messages.game.context.roleplay.objects.ObjectGroundRemovedMessage;
 import com.github.blackrush.acara.Listener;
 import lombok.extern.slf4j.Slf4j;
-import org.heat.world.controllers.events.CreateContextEvent;
-import org.heat.world.controllers.events.DestroyContextEvent;
-import org.heat.world.controllers.events.EnterContextEvent;
-import org.heat.world.controllers.events.QuitContextEvent;
+import org.heat.world.controllers.events.*;
+import org.heat.world.controllers.events.roleplay.EndPlayerMovementEvent;
+import org.heat.world.controllers.events.roleplay.StartPlayerMovementEvent;
 import org.heat.world.controllers.utils.Basics;
 import org.heat.world.controllers.utils.Idling;
 import org.heat.world.controllers.utils.RolePlaying;
@@ -16,9 +17,7 @@ import org.heat.world.players.Player;
 import org.heat.world.roleplay.WorldAction;
 import org.heat.world.roleplay.WorldActor;
 import org.heat.world.roleplay.environment.*;
-import org.heat.world.roleplay.environment.events.ActorEntranceEvent;
-import org.heat.world.roleplay.environment.events.ActorMovementEvent;
-import org.heat.world.roleplay.environment.events.ActorRefreshEvent;
+import org.heat.world.roleplay.environment.events.*;
 import org.rocket.network.*;
 
 import javax.inject.Inject;
@@ -105,8 +104,15 @@ public class RolePlayController {
             throw new InvalidMapPathException();
         }
 
-        currentAction.set(new WorldMovement(player, path));
-        player.getPosition().getMap().moveActor(player, path);
+        WorldMovement movement = new WorldMovement(player, path);
+
+        client.getEventBus().publish(new StartPlayerMovementEvent(movement))
+            .onSuccess(answers -> {
+                currentAction.set(movement);
+                player.getPosition().getMap().moveActor(player, path);
+            })
+            .onFailure(err -> log.debug("wasn't able to move", err))
+            ;
     }
 
     @Receive
@@ -121,6 +127,7 @@ public class RolePlayController {
         movement.notifyEnd();
 
         client.write(Basics.noop());
+        client.getEventBus().publish(new EndPlayerMovementEvent(movement));
     }
 
     @Receive
@@ -140,6 +147,7 @@ public class RolePlayController {
         movement.notifyCancellation(cancellationPoint);
 
         client.write(Basics.noop());
+        client.getEventBus().publish(new EndPlayerMovementEvent(movement));
     }
 
     @Listener
@@ -195,5 +203,15 @@ public class RolePlayController {
     @Listener
     public void actorMovementOnMap(ActorMovementEvent evt) {
         client.write(new GameMapMovementMessage(evt.getPath().export(), evt.getActor().getActorId()));
+    }
+
+    @Listener
+    public void addItemOnMap(MapItemAddEvent evt) {
+        client.write(new ObjectGroundAddedMessage(evt.getMapPoint().cellId, (short) evt.getItem().getGid()));
+    }
+
+    @Listener
+    public void removeItemFromMap(MapItemRemoveEvent evt) {
+        client.write(new ObjectGroundRemovedMessage(evt.getMapPoint().cellId));
     }
 }

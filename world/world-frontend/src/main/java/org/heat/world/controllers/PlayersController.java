@@ -15,6 +15,8 @@ import com.ankamagames.dofus.network.messages.game.context.roleplay.spell.SpellU
 import com.ankamagames.dofus.network.messages.game.context.roleplay.stats.StatsUpgradeRequestMessage;
 import com.ankamagames.dofus.network.messages.game.context.roleplay.stats.StatsUpgradeResultMessage;
 import com.ankamagames.dofus.network.messages.game.initialization.CharacterLoadingCompleteMessage;
+import com.ankamagames.dofus.network.messages.game.inventory.items.InventoryContentMessage;
+import com.ankamagames.dofus.network.messages.game.inventory.items.InventoryWeightMessage;
 import com.ankamagames.dofus.network.messages.game.inventory.spells.SpellListMessage;
 import com.github.blackrush.acara.Listener;
 import org.fungsi.Unit;
@@ -28,6 +30,7 @@ import org.heat.world.controllers.events.CreatePlayerEvent;
 import org.heat.world.controllers.events.NewContextEvent;
 import org.heat.world.controllers.utils.Authenticated;
 import org.heat.world.controllers.utils.Idling;
+import org.heat.world.items.WorldItem;
 import org.heat.world.metrics.GameStats;
 import org.heat.world.metrics.RegularStat;
 import org.heat.world.players.*;
@@ -127,8 +130,21 @@ public class PlayersController {
         if (evt.getContext() != GameContextEnum.ROLE_PLAY) return;
 
         Player player = this.player.get();
-        client.write(new SpellListMessage(false, player.getSpells().toSpellItem()));
-        client.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
+
+        client.transaction(tx -> {
+            tx.write(new SpellListMessage(false, player.getSpells().toSpellItem()));
+
+            tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
+
+            tx.write(new InventoryContentMessage(
+                    player.getWallet().getItemStream().map(WorldItem::toObjectItem),
+                    player.getWallet().getKamas()
+            ));
+            tx.write(new InventoryWeightMessage(
+                    player.getWallet().getWeight(),
+                    player.getStats().getMaxWeight()
+            ));
+        });
     }
 
     @Receive

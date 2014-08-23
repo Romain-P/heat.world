@@ -28,6 +28,7 @@ public class StdWorldModule extends AbstractModule {
         install(new StdUsersModule());
         install(new StdPlayersModule());
         install(new StdWorldEnvironmentModule());
+        install(new StdItemsModule());
     }
 
     @Provides
@@ -54,6 +55,6 @@ public class StdWorldModule extends AbstractModule {
     @Provides
     @Singleton
     ByteBufAllocator provideByteBufAllocator() {
-        return new PooledByteBufAllocator(/*preferDirect*/false);
+        return new PooledByteBufAllocator(/*preferDirect*/true);
     }
 }

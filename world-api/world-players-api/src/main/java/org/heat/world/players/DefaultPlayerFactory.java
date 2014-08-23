@@ -10,9 +10,16 @@ import org.fungsi.concurrent.Future;
 import org.fungsi.concurrent.Futures;
 import org.heat.User;
 import org.heat.data.Datacenter;
+import org.heat.world.items.MapItemBag;
 import org.heat.world.metrics.Experience;
 import org.heat.world.metrics.GameStats;
+import org.heat.world.players.items.LazyPlayerItemWallet;
+import org.heat.world.players.items.PlayerItemRepository;
+import org.heat.world.players.items.PlayerItemWallet;
 import org.heat.world.players.metrics.*;
+import org.heat.world.players.shortcuts.LazyShortcutBar;
+import org.heat.world.players.shortcuts.PlayerShortcutBar;
+import org.heat.world.players.shortcuts.PlayerShortcutRepository;
 import org.heat.world.roleplay.WorldActorLook;
 import org.heat.world.roleplay.environment.WorldMapPoint;
 import org.heat.world.roleplay.environment.WorldPosition;
@@ -29,6 +36,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DefaultPlayerFactory implements PlayerFactory, Service {
     private final Datacenter datacenter;
     private final AtomicInteger idGenerator;
+    private final PlayerItemRepository playerItems;
+    private final PlayerShortcutRepository playerShortcuts;
 
     // these properties are immutable therefore freely sharable
     private WorldPosition startPosition;
@@ -42,11 +51,16 @@ public class DefaultPlayerFactory implements PlayerFactory, Service {
             startProspecting,
             startStatsPoints,
             startSpellsPoints;
+    private int
+            startKamas
+            ;
 
     @Inject
-    public DefaultPlayerFactory(Datacenter datacenter, PlayerRepository players) {
+    public DefaultPlayerFactory(Datacenter datacenter, PlayerRepository players, PlayerItemRepository playerItems, PlayerShortcutRepository playerShortcuts) {
         this.datacenter = datacenter;
         this.idGenerator = players.createIdGenerator().get();
+        this.playerItems = playerItems;
+        this.playerShortcuts = playerShortcuts;
     }
 
     @Override
@@ -78,6 +92,7 @@ public class DefaultPlayerFactory implements PlayerFactory, Service {
         this.startProspecting  = (short) startConfig.getInt("prospecting");
         this.startStatsPoints  = (short) startConfig.getInt("stats-points");
         this.startSpellsPoints = (short) startConfig.getInt("spells-points");
+        this.startKamas        =         startConfig.getInt("kamas");
     }
 
     @Override
@@ -96,7 +111,8 @@ public class DefaultPlayerFactory implements PlayerFactory, Service {
         player.setExperience(buildExperience());
         player.setStats(buildStats(player.getBreed()));
         player.setSpells(buildSpells(player.getBreed(), player.getExperience().getCurrentLevel()));
-
+        player.setWallet(buildWallet(player.getId()));
+        player.setShortcutBar(buildShortcutBar(player.getId()));
         return Futures.success(player);
     }
 
@@ -155,5 +171,13 @@ public class DefaultPlayerFactory implements PlayerFactory, Service {
 
     protected PlayerSpellBook buildSpells(Breed breed, int level) {
         return DefaultPlayerSpellBook.create(datacenter, breed, level);
+    }
+
+    protected PlayerItemWallet buildWallet(int playerId) {
+        return new LazyPlayerItemWallet(startKamas, playerId, playerItems, MapItemBag::newHashMapItemBag);
+    }
+
+    protected PlayerShortcutBar buildShortcutBar(int playerId) {
+        return new LazyShortcutBar(playerShortcuts, playerId);
     }
 }

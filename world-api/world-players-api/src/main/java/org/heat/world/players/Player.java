@@ -1,6 +1,7 @@
 package org.heat.world.players;
 
 import com.ankamagames.dofus.datacenter.breeds.Breed;
+import com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum;
 import com.ankamagames.dofus.network.enums.DirectionsEnum;
 import com.ankamagames.dofus.network.types.game.character.alignment.ActorAlignmentInformations;
 import com.ankamagames.dofus.network.types.game.character.alignment.ActorExtendedAlignmentInformations;
@@ -13,9 +14,14 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.heat.shared.stream.MoreCollectors;
+import org.heat.world.items.WorldItem;
+import org.heat.world.items.WorldItemType;
+import org.heat.world.players.items.PlayerItemWallet;
 import org.heat.world.players.metrics.PlayerExperience;
 import org.heat.world.players.metrics.PlayerSpellBook;
 import org.heat.world.players.metrics.PlayerStatBook;
+import org.heat.world.players.shortcuts.PlayerShortcutBar;
 import org.heat.world.roleplay.WorldActorLook;
 import org.heat.world.roleplay.WorldHumanoidActor;
 import org.heat.world.roleplay.environment.WorldMapPoint;
@@ -23,6 +29,10 @@ import org.heat.world.roleplay.environment.WorldPosition;
 
 import java.io.Serializable;
 import java.util.stream.Stream;
+
+import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED;
+import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum.INVENTORY_POSITION_RING_LEFT;
+import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum.INVENTORY_POSITION_RING_RIGHT;
 
 @RequiredArgsConstructor
 @Getter
@@ -42,6 +52,8 @@ public class Player
     PlayerExperience experience;
     PlayerStatBook stats;
     PlayerSpellBook spells;
+    PlayerItemWallet wallet;
+    PlayerShortcutBar shortcutBar;
 
     // lombok auto-generates a #isSex() which is invalid here
     public boolean getSex() {
@@ -140,6 +152,54 @@ public class Player
         Players.populateCharacterCharacteristicsInformations(stats, res);
 
         return res;
+    }
+
+    @SuppressWarnings({"SimplifiableIfStatement", "RedundantIfStatement"})
+    public boolean canMoveItemTo(WorldItem item, CharacterInventoryPositionEnum to, int quantity) {
+        /**
+         * TODO(world/items): item movement validity
+         * you cannot equip a pet if there is a mount
+         */
+
+        // we only worry if we want to equip an item
+        if (to == INVENTORY_POSITION_NOT_EQUIPED) {
+            return true;
+        }
+
+        // you cannot equip if target position is already taken
+        if (wallet.findByPosition(to).findAny().isPresent()) {
+            return false;
+        }
+
+        // you cannot equip a greater level item
+        if (item.getTemplate().getLevel() > getExperience().getCurrentLevel()) {
+            return false;
+        }
+
+        // this item type can not be moved here
+        if (!item.getItemType().canBeMovedTo(to)) {
+            return false;
+        }
+
+        // make sure we do not equip a ring twice
+        if (item.getItemType() == WorldItemType.RING) {
+            CharacterInventoryPositionEnum backwards = to == INVENTORY_POSITION_RING_LEFT
+                    ? INVENTORY_POSITION_RING_RIGHT
+                    : INVENTORY_POSITION_RING_LEFT;
+
+            WorldItem otherRing = wallet.findByPosition(backwards).collect(MoreCollectors.unique());
+
+            if (otherRing.getGid() == item.getGid()) {
+                return false;
+            }
+        }
+
+        // we want to equip only *one* item
+        if (item.getItemType().isEquipment() && quantity != 1) {
+            return false;
+        }
+
+        return true;
     }
 
     @Override
