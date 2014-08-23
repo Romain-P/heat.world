@@ -5,7 +5,6 @@ import org.heat.world.metrics.GameStats;
 import java.util.NoSuchElementException;
 
 import static org.heat.world.metrics.GameStats.*;
-import static org.heat.world.metrics.GameStats.STRENGTH;
 
 /**
  * Last build 23 aug 2014 04:02 AM
@@ -585,7 +584,7 @@ public enum WorldItemEffectAction {
                 return val;
             }
         }
-        throw new NoSuchElementException();
+        throw new NoSuchElementException("unknown action " + value);
     }
     //</editor-fold>
 }
