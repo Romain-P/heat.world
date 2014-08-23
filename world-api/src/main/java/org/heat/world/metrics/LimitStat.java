@@ -1,5 +1,6 @@
 package org.heat.world.metrics;
 
+import com.google.common.primitives.Shorts;
 import lombok.Data;
 import org.heat.shared.Arithmetics;
 
@@ -62,5 +63,14 @@ public final class LimitStat implements GameStat {
     public void setCurrentAndMax(short current, short max) {
         setMax(max);
         setCurrent(current);
+    }
+
+    @Override
+    public void plusEquipment(short equipment) {
+        // i'm sure here
+        setMax(Shorts.checkedCast(getMax() + equipment));
+
+        // less here
+        plus(equipment);
     }
 }

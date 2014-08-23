@@ -4,7 +4,10 @@ import com.ankamagames.dofus.datacenter.breeds.Breed;
 import com.google.common.collect.ImmutableMap;
 import lombok.Getter;
 import lombok.Setter;
+import org.fungsi.Unit;
 import org.heat.shared.IntPair;
+import org.heat.world.items.WorldItem;
+import org.heat.world.items.WorldItemEffectApplier;
 import org.heat.world.metrics.GameStat;
 import org.heat.world.metrics.GameStats;
 import org.heat.world.metrics.RegularStat;
@@ -84,5 +87,23 @@ public final class DefaultPlayerStatBook implements PlayerStatBook {
         stat.plusBase((short) boost.first);
         this.statsPoints -= boost.second;
         return boost.first;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void apply(WorldItem item) {
+        WorldItemEffectApplier applier = new WorldItemEffectApplier(this, item, true);
+        item.getEffects().forEach(e -> e.<Unit>visit(applier));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void unapply(WorldItem item) {
+        WorldItemEffectApplier applier = new WorldItemEffectApplier(this, item, false);
+        item.getEffects().forEach(e -> e.<Unit>visit(applier));
     }
 }

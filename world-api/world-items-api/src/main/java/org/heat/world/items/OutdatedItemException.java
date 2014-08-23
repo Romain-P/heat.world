@@ -5,7 +5,6 @@ public class OutdatedItemException extends RuntimeException {
     private final WorldItem updated;
 
     public OutdatedItemException(WorldItem left, WorldItem right) {
-        super("an item is outdated");
         if (left.getVersion() < right.getVersion()) {
             this.outdated = left;
             this.updated = right;
@@ -21,5 +20,10 @@ public class OutdatedItemException extends RuntimeException {
 
     public WorldItem getUpdated() {
         return updated;
+    }
+
+    @Override
+    public String getMessage() {
+        return outdated + " is a outdated\nhere is its updated version " + updated;
     }
 }

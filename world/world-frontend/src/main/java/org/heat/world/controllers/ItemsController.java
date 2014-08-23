@@ -4,7 +4,6 @@ import com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum;
 import com.ankamagames.dofus.network.enums.GameContextEnum;
 import com.ankamagames.dofus.network.enums.ObjectErrorEnum;
 import com.ankamagames.dofus.network.messages.game.basic.BasicNoOperationMessage;
-import com.ankamagames.dofus.network.messages.game.character.stats.CharacterStatsListMessage;
 import com.ankamagames.dofus.network.messages.game.context.roleplay.objects.ObjectGroundListAddedMessage;
 import com.ankamagames.dofus.network.messages.game.inventory.items.*;
 import com.ankamagames.dofus.network.messages.game.shortcut.ShortcutBarRemovedMessage;
@@ -15,6 +14,7 @@ import org.heat.shared.Pair;
 import org.heat.world.controllers.events.CreatePlayerEvent;
 import org.heat.world.controllers.events.EnterContextEvent;
 import org.heat.world.controllers.events.roleplay.EndPlayerMovementEvent;
+import org.heat.world.controllers.events.roleplay.EquipItemEvent;
 import org.heat.world.controllers.utils.Idling;
 import org.heat.world.items.WorldItem;
 import org.heat.world.items.WorldItemFactory;
@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED;
 import static com.ankamagames.dofus.network.enums.ObjectErrorEnum.CANNOT_DROP_NO_PLACE;
 
 @Controller
@@ -54,6 +55,13 @@ public class ItemsController {
         client.transaction(tx -> {
             shortcuts.forEach(s -> tx.write(new ShortcutBarRemovedMessage(s.getBarType().value, s.getSlot())));
         });
+    }
+
+    private void publishEquipItemEvent(WorldItem before, WorldItem after) {
+        if (!before.getItemType().isEquipment()) return;
+
+        boolean apply = after.getPosition() != INVENTORY_POSITION_NOT_EQUIPED;
+        client.getEventBus().publish(new EquipItemEvent(after, apply));
     }
 
     @Listener
@@ -100,35 +108,37 @@ public class ItemsController {
                 WorldItem merged = mergeOrMove.left();
 
                 MoreFutures.join(items.save(original), items.save(merged))
-                        .onSuccess(pair -> {
-                            wallet.update(pair.first);
-                            wallet.update(pair.second);
+                    .onSuccess(pair -> {
+                        wallet.update(pair.first);
+                        wallet.update(pair.second);
 
-                            client.transaction(tx -> {
-                                tx.write(new ObjectQuantityMessage(pair.first.getUid(), pair.first.getQuantity()));
-                                tx.write(new ObjectQuantityMessage(pair.second.getUid(), pair.second.getQuantity()));
-                                tx.write(new InventoryWeightMessage(player.getWallet().getWeight(), player.getMaxWeight()));
-                                tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
-                                tx.write(BasicNoOperationMessage.i);
-                            });
+                        client.transaction(tx -> {
+                            tx.write(new ObjectQuantityMessage(pair.first.getUid(), pair.first.getQuantity()));
+                            tx.write(new ObjectQuantityMessage(pair.second.getUid(), pair.second.getQuantity()));
+                            tx.write(new InventoryWeightMessage(player.getWallet().getWeight(), player.getMaxWeight()));
+                            tx.write(BasicNoOperationMessage.i);
                         });
+
+                        publishEquipItemEvent(item, pair.second);
+                    });
             } else {
                 // moved...
                 WorldItem moved = mergeOrMove.right();
 
                 MoreFutures.join(items.save(original), items.save(moved))
-                        .onSuccess(pair -> {
-                            wallet.update(pair.first);
-                            wallet.add(pair.second);
+                    .onSuccess(pair -> {
+                        wallet.update(pair.first);
+                        wallet.add(pair.second);
 
-                            client.transaction(tx -> {
-                                tx.write(new ObjectQuantityMessage(pair.first.getUid(), pair.first.getQuantity()));
-                                tx.write(new ObjectAddedMessage(pair.second.toObjectItem()));
-                                tx.write(new InventoryWeightMessage(player.getWallet().getWeight(), player.getMaxWeight()));
-                                tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
-                                tx.write(BasicNoOperationMessage.i);
-                            });
+                        client.transaction(tx -> {
+                            tx.write(new ObjectQuantityMessage(pair.first.getUid(), pair.first.getQuantity()));
+                            tx.write(new ObjectAddedMessage(pair.second.toObjectItem()));
+                            tx.write(new InventoryWeightMessage(player.getWallet().getWeight(), player.getMaxWeight()));
+                            tx.write(BasicNoOperationMessage.i);
                         });
+
+                        publishEquipItemEvent(item, pair.second);
+                    });
             }
         } else {
             // not forked...
@@ -142,32 +152,34 @@ public class ItemsController {
                 removeAnyShortcut(item.getUid());
 
                 MoreFutures.join(items.remove(item), items.save(merged))
-                        .onSuccess(pair -> {
-                            wallet.remove(pair.first);
-                            wallet.update(pair.second);
+                    .onSuccess(pair -> {
+                        wallet.remove(item);
+                        wallet.update(pair.second);
 
-                            client.transaction(tx -> {
-                                tx.write(new ObjectDeletedMessage(pair.first.getUid()));
-                                tx.write(new ObjectQuantityMessage(pair.second.getUid(), pair.second.getQuantity()));
-                                tx.write(new InventoryWeightMessage(player.getWallet().getWeight(), player.getMaxWeight()));
-                                tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
-                                tx.write(BasicNoOperationMessage.i);
-                            });
+                        client.transaction(tx -> {
+                            tx.write(new ObjectDeletedMessage(pair.first.getUid()));
+                            tx.write(new ObjectQuantityMessage(pair.second.getUid(), pair.second.getQuantity()));
+                            tx.write(new InventoryWeightMessage(player.getWallet().getWeight(), player.getMaxWeight()));
+                            tx.write(BasicNoOperationMessage.i);
                         });
+
+                        publishEquipItemEvent(item, pair.second);
+                    });
             } else {
                 // moved...
                 WorldItem moved = mergeOrMove.right();
 
                 items.save(moved)
-                        .onSuccess(x -> {
-                            wallet.update(x);
-                            client.transaction(tx -> {
-                                tx.write(new ObjectMovementMessage(x.getUid(), x.getPosition().value));
-                                tx.write(new InventoryWeightMessage(player.getWallet().getWeight(), player.getMaxWeight()));
-                                tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
-                                tx.write(BasicNoOperationMessage.i);
-                            });
+                    .onSuccess(x -> {
+                        wallet.update(x);
+                        client.transaction(tx -> {
+                            tx.write(new ObjectMovementMessage(x.getUid(), x.getPosition().value));
+                            tx.write(new InventoryWeightMessage(player.getWallet().getWeight(), player.getMaxWeight()));
+                            tx.write(BasicNoOperationMessage.i);
                         });
+
+                        publishEquipItemEvent(item, x);
+                    });
             }
         }
     }
@@ -200,7 +212,6 @@ public class ItemsController {
                     client.transaction(tx -> {
                         client.write(new ObjectQuantityMessage(newOriginal.getUid(), newOriginal.getQuantity()));
                         tx.write(new InventoryWeightMessage(wallet.getWeight(), player.getMaxWeight()));
-                        tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
                         tx.write(BasicNoOperationMessage.i);
                     });
                 });
@@ -216,7 +227,6 @@ public class ItemsController {
             client.transaction(tx -> {
                 tx.write(new ObjectDeletedMessage(item.getUid()));
                 tx.write(new InventoryWeightMessage(wallet.getWeight(), player.getMaxWeight()));
-                tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
                 tx.write(BasicNoOperationMessage.i);
             });
         }
