@@ -4,6 +4,8 @@ public interface GameStat {
     GameStats<?> getId();
     short getTotal();
 
+    void plusEquipment(short equipment);
+
     default short getSafeTotal() {
         short total = getTotal();
         return total >= 0 ? total : (short) 0;

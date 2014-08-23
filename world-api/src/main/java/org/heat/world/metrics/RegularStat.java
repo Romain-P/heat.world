@@ -34,4 +34,9 @@ public final class RegularStat implements GameStat {
     public CharacterBaseCharacteristic toCharacterBaseCharacteristic() {
         return new CharacterBaseCharacteristic(base, objectsAndMountBonus, alignGiftBonus, contextModif);
     }
+
+    @Override
+    public void plusEquipment(short equipment) {
+        plusObjectsAndMountBonus(equipment);
+    }
 }

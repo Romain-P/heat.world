@@ -17,4 +17,9 @@ public final class SingleStat implements GameStat {
     public void plus(short current) {
         this.current = Arithmetics.addShorts(this.current, current);
     }
+
+    @Override
+    public void plusEquipment(short equipment) {
+        plus(equipment);
+    }
 }
