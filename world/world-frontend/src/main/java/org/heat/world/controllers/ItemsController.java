@@ -15,6 +15,7 @@ import org.heat.shared.Pair;
 import org.heat.world.controllers.events.CreatePlayerEvent;
 import org.heat.world.controllers.events.EnterContextEvent;
 import org.heat.world.controllers.events.roleplay.EndPlayerMovementEvent;
+import org.heat.world.controllers.events.roleplay.EquipItemEvent;
 import org.heat.world.controllers.utils.Idling;
 import org.heat.world.items.WorldItem;
 import org.heat.world.items.WorldItemFactory;
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED;
 import static com.ankamagames.dofus.network.enums.ObjectErrorEnum.CANNOT_DROP_NO_PLACE;
 
 @Controller
@@ -54,6 +56,13 @@ public class ItemsController {
         client.transaction(tx -> {
             shortcuts.forEach(s -> tx.write(new ShortcutBarRemovedMessage(s.getBarType().value, s.getSlot())));
         });
+    }
+
+    private void publishEquipItemEvent(WorldItem before, WorldItem after) {
+        if (!before.getItemType().isEquipment()) return;
+
+        boolean apply = after.getPosition() != INVENTORY_POSITION_NOT_EQUIPED;
+        client.getEventBus().publish(new EquipItemEvent(after, apply));
     }
 
     @Listener
@@ -111,6 +120,8 @@ public class ItemsController {
                                 tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
                                 tx.write(BasicNoOperationMessage.i);
                             });
+
+                            publishEquipItemEvent(item, pair.second);
                         });
             } else {
                 // moved...
@@ -128,6 +139,8 @@ public class ItemsController {
                                 tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
                                 tx.write(BasicNoOperationMessage.i);
                             });
+
+                            publishEquipItemEvent(item, pair.second);
                         });
             }
         } else {
@@ -153,6 +166,8 @@ public class ItemsController {
                                 tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
                                 tx.write(BasicNoOperationMessage.i);
                             });
+
+                            publishEquipItemEvent(item, pair.second);
                         });
             } else {
                 // moved...
@@ -167,6 +182,8 @@ public class ItemsController {
                                 tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
                                 tx.write(BasicNoOperationMessage.i);
                             });
+
+                            publishEquipItemEvent(item, x);
                         });
             }
         }
