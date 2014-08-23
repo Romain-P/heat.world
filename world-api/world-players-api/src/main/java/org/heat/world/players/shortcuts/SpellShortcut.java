@@ -8,6 +8,8 @@ import lombok.Getter;
 
 @EqualsAndHashCode(callSuper = true, of = "spellId")
 public final class SpellShortcut extends PlayerShortcut {
+    public static final ShortcutBarEnum BAR_TYPE = ShortcutBarEnum.SPELL_SHORTCUT_BAR;
+
     @Getter private final short spellId;
 
     public SpellShortcut(int playerId, int slot, short spellId) {
@@ -17,7 +19,7 @@ public final class SpellShortcut extends PlayerShortcut {
 
     @Override
     public ShortcutBarEnum getBarType() {
-        return ShortcutBarEnum.SPELL_SHORTCUT_BAR;
+        return BAR_TYPE;
     }
 
     @Override

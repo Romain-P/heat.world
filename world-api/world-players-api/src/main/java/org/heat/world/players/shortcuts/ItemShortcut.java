@@ -8,6 +8,8 @@ import lombok.Getter;
 
 @EqualsAndHashCode(callSuper = true, of = {"itemUid", "itemGid"})
 public final class ItemShortcut extends PlayerShortcut {
+    public static final ShortcutBarEnum BAR_TYPE = ShortcutBarEnum.GENERAL_SHORTCUT_BAR;
+
     @Getter private final int itemUid;
     @Getter private final int itemGid;
 
@@ -19,7 +21,7 @@ public final class ItemShortcut extends PlayerShortcut {
 
     @Override
     public ShortcutBarEnum getBarType() {
-        return ShortcutBarEnum.GENERAL_SHORTCUT_BAR;
+        return BAR_TYPE;
     }
 
     @Override
