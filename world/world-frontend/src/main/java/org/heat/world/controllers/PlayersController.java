@@ -25,6 +25,7 @@ import org.heat.User;
 import org.heat.shared.Strings;
 import org.heat.shared.stream.MoreCollectors;
 import org.heat.world.backend.Backend;
+import org.heat.world.controllers.events.ChoosePlayerEvent;
 import org.heat.world.controllers.events.CreateContextEvent;
 import org.heat.world.controllers.events.CreatePlayerEvent;
 import org.heat.world.controllers.events.NewContextEvent;
@@ -70,11 +71,13 @@ public class PlayersController {
     }
 
     Future<Unit> doChoose(Player player) {
-        this.player.set(player);
-        return client.transaction(tx -> {
+        return client.getEventBus().publish(new ChoosePlayerEvent(player)).toUnit()
+                .flatMap(u -> players.save(player))
+                .onSuccess(x -> this.player.set(player))
+                .flatMap(x -> client.transaction(tx -> {
                     tx.write(new NotificationListMessage(new int[0])); // TODO(world/players): notifications
                     tx.write(new CharacterSelectedSuccessMessage(player.toCharacterBaseInformations()));
-                })
+                }))
                 .flatMap(x -> client.getEventBus().publish(new NewContextEvent(GameContextEnum.ROLE_PLAY)).toUnit())
                 .flatMap(x -> client.write(CharacterLoadingCompleteMessage.i))
                 ;
