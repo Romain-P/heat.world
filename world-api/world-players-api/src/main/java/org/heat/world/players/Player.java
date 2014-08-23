@@ -17,6 +17,7 @@ import lombok.ToString;
 import org.heat.shared.stream.MoreCollectors;
 import org.heat.world.items.WorldItem;
 import org.heat.world.items.WorldItemType;
+import org.heat.world.items.WorldItemWallet;
 import org.heat.world.metrics.GameStats;
 import org.heat.world.players.items.PlayerItemWallet;
 import org.heat.world.players.metrics.PlayerExperience;
@@ -27,6 +28,7 @@ import org.heat.world.roleplay.WorldActorLook;
 import org.heat.world.roleplay.WorldHumanoidActor;
 import org.heat.world.roleplay.environment.WorldMapPoint;
 import org.heat.world.roleplay.environment.WorldPosition;
+import org.heat.world.trading.impl.player.PlayerTrader;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -40,7 +42,8 @@ import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum
 @ToString
 public class Player
         implements Serializable,
-            WorldHumanoidActor
+            WorldHumanoidActor,
+            PlayerTrader
 {
     int id;
     int userId;
@@ -135,6 +138,11 @@ public class Player
                 userId,
                 toActorAlignmentInformations()
         );
+    }
+
+    @Override
+    public WorldItemWallet getTraderBag() {
+        return wallet;
     }
 
     public CharacterCharacteristicsInformations toCharacterCharacteristicsInformations() {
