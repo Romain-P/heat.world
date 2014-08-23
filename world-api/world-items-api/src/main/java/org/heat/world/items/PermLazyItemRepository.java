@@ -30,7 +30,7 @@ public final class PermLazyItemRepository implements WorldItemRepository {
     }
 
     @Override
-    public void backdoor(List<WorldItem> items) {
+    public void transferOwnership(List<WorldItem> items) {
         items.forEach(this::store);
     }
 

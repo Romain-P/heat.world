@@ -17,5 +17,5 @@ public interface WorldItemRepository {
      * @param items a non-null list of items
      */
     @Deprecated
-    void backdoor(List<WorldItem> items);
+    void transferOwnership(List<WorldItem> items);
 }

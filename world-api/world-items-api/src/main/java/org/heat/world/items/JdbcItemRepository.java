@@ -88,7 +88,7 @@ public final class JdbcItemRepository extends JdbcRepositoryNG<WorldItem> implem
     }
 
     @Override
-    public void backdoor(List<WorldItem> items) {
+    public void transferOwnership(List<WorldItem> items) {
         throw new UnsupportedOperationException();
     }
 
