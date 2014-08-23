@@ -53,35 +53,35 @@ public final class LazyShortcutBar implements PlayerShortcutBar {
         return shortcuts.get(bar).stream();
     }
 
-    private void add0(ShortcutBarEnum bar, PlayerShortcut shortcut) {
-        shortcuts.put(bar, shortcut);
+    private void add0(PlayerShortcut shortcut) {
+        shortcuts.put(shortcut.getBarType(), shortcut);
         repository.create(shortcut);
     }
 
-    private Future<Unit> remove0(ShortcutBarEnum bar, PlayerShortcut shortcut) {
-        shortcuts.remove(bar, shortcut);
+    private Future<Unit> remove0(PlayerShortcut shortcut) {
+        shortcuts.remove(shortcut.getBarType(), shortcut);
         return repository.remove(shortcut).toUnit();
     }
 
-    private Pair<PlayerShortcut, PlayerShortcut> swap0(ShortcutBarEnum bar, PlayerShortcut from, PlayerShortcut to) {
+    private Pair<PlayerShortcut, PlayerShortcut> swap0(PlayerShortcut from, PlayerShortcut to) {
         PlayerShortcut newFrom = from.withSlot(to.getSlot());
         PlayerShortcut newTo = to.withSlot(from.getSlot());
 
-        remove0(bar, from)
-        .flatMap(x -> remove0(bar, to))
+        remove0(from)
+        .flatMap(x -> remove0(to))
                 .onSuccess(u -> {
-                    add0(bar, newFrom);
-                    add0(bar, newTo);
+                    add0(newFrom);
+                    add0(newTo);
                 });
 
         return Pair.of(newFrom, newTo);
     }
 
-    private PlayerShortcut move0(ShortcutBarEnum bar, PlayerShortcut shortcut, int newSlot) {
+    private PlayerShortcut move0(PlayerShortcut shortcut, int newSlot) {
         PlayerShortcut newShortcut = shortcut.withSlot(newSlot);
 
-        remove0(bar, shortcut);
-        add0(bar, newShortcut);
+        remove0(shortcut);
+        add0(newShortcut);
 
         return newShortcut;
     }
@@ -106,7 +106,7 @@ public final class LazyShortcutBar implements PlayerShortcutBar {
         boolean alreadyTaken = getShortcutsOf0(bar).anyMatch(x -> x.getSlot() == shortcut.getSlot());
 
         if (!alreadyTaken) {
-            add0(bar, shortcut);
+            add0(shortcut);
         }
 
         return alreadyTaken;
@@ -119,7 +119,7 @@ public final class LazyShortcutBar implements PlayerShortcutBar {
         Optional<PlayerShortcut> option = findShortcut(bar, slot);
         if (option.isPresent()) {
             PlayerShortcut shortcut = option.get();
-            remove0(bar, shortcut);
+            remove0(shortcut);
         }
 
         return option.isPresent();
@@ -133,9 +133,9 @@ public final class LazyShortcutBar implements PlayerShortcutBar {
         Optional<PlayerShortcut> toOption = findShortcut(bar, toSlot);
 
         if (toOption.isPresent()) {
-            return Either.right(swap0(bar, from, toOption.get()));
+            return Either.right(swap0(from, toOption.get()));
         } else {
-            return Either.left(move0(bar, from, toSlot));
+            return Either.left(move0(from, toSlot));
         }
     }
 }
