@@ -107,6 +107,7 @@ public class PlayersController {
         // notify it to client
         .flatMap(player -> client.write(new CharacterCreationResultMessage(OK.value))
                 .flatMap(x -> doChoose(player)))
+        .onFailure(err -> log.error("cannot create player", err))
         .mayRescue(cause -> {
             CharacterCreationResultEnum reason;
             if (cause instanceof PlayerCreationException) {
