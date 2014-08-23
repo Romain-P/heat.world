@@ -17,6 +17,7 @@ import org.heat.shared.io.InputStreamReader;
 import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.List;
 
 public class WorldItemTable implements Table<WorldItem> {
@@ -51,7 +52,13 @@ public class WorldItemTable implements Table<WorldItem> {
 
     @Override
     public List<String> getInsertableColumns() {
-        return getSelectableColumns();
+        return ImmutableList.of(
+                "gid",
+                "effects",
+                "position",
+                "quantity",
+                "updated_at"
+        );
     }
 
     @Override
@@ -59,7 +66,8 @@ public class WorldItemTable implements Table<WorldItem> {
         return ImmutableList.of(
                 "effects",
                 "position",
-                "quantity"
+                "quantity",
+                "updated_at"
         );
     }
 
@@ -91,6 +99,7 @@ public class WorldItemTable implements Table<WorldItem> {
         exportEffects(s, item.getEffects());
         s.setInt("position", item.getPosition().value);
         s.setInt("quantity", item.getQuantity());
+        s.setTimestamp("updated_at", new Timestamp(System.currentTimeMillis()));
     }
 
     @SneakyThrows

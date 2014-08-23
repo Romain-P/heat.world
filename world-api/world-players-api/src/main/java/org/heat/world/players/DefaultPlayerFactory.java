@@ -29,6 +29,7 @@ import org.rocket.ServiceContext;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -113,6 +114,7 @@ public class DefaultPlayerFactory implements PlayerFactory, Service {
         player.setSpells(buildSpells(player.getBreed(), player.getExperience().getCurrentLevel()));
         player.setWallet(buildWallet(player.getId()));
         player.setShortcutBar(buildShortcutBar(player.getId()));
+        player.setLastUsedAt(Instant.now());
         return Futures.success(player);
     }
 

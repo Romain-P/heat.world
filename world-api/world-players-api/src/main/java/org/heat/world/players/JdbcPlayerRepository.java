@@ -33,6 +33,21 @@ public final class JdbcPlayerRepository extends JdbcRepositoryNG<Player> impleme
     }
 
     @Override
+    protected String createDeleteQuery() {
+        return "UPDATE players SET deleted_at=CURRENT_TIMESTAMP WHERE id=:id";
+    }
+
+    @Override
+    protected String createSelectQuery() {
+        return super.createSelectQuery() + " where deleted_at is null";
+    }
+
+    @Override
+    protected String createSelectWhereQuery(String column) {
+        return this.createSelectQuery() + " and " + column + "=:" + column;
+    }
+
+    @Override
     public Future<AtomicInteger> createIdGenerator() {
         return getWorker().submit(() -> {
             try (Connection connection = getConnection();

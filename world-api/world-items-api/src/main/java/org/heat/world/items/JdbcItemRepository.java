@@ -18,7 +18,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Singleton
@@ -34,11 +33,6 @@ public final class JdbcItemRepository extends JdbcRepositoryNG<WorldItem> implem
         this.nextUid = new AtomicInteger(loadNextUid(dataSource));
     }
 
-    String createSelectMultipleQuery(int[] uids) {
-        return IntStream.of(uids).mapToObj(uid -> "uid=" + uid)
-                .collect(Collectors.joining(" OR ", getSelectQuery() + " where ", ""));
-    }
-
     @SneakyThrows
     static int loadNextUid(DataSource dataSource) {
         try (Connection connection = dataSource.getConnection();
@@ -51,6 +45,25 @@ public final class JdbcItemRepository extends JdbcRepositoryNG<WorldItem> implem
         } catch (SQLException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    @Override
+    protected String createDeleteQuery() {
+        return "UPDATE items SET deleted_at=CURRENT_TIMESTAMP WHERE uid=:uid";
+    }
+
+    @Override
+    protected String createSelectQuery() {
+        return super.createSelectQuery() + " where deleted_at is null";
+    }
+
+    @Override
+    protected String createSelectWhereQuery(String column) {
+        return this.createSelectQuery() + " and " + column + "=:" + column;
+    }
+
+    String createSelectMultipleQuery() {
+        return this.createSelectQuery() + " AND uid IN :uids";
     }
 
     @Override
@@ -81,12 +94,11 @@ public final class JdbcItemRepository extends JdbcRepositoryNG<WorldItem> implem
 
     @Override
     public Future<List<WorldItem>> find(IntStream stream) {
-        // TODO(world/items): split too much uids into sub-queries
         int[] uids = stream.toArray();
         if (uids.length == 0) {
             return Futures.success(ImmutableList.of());
         }
-        return findList(createSelectMultipleQuery(uids), s -> {});
+        return findList(createSelectMultipleQuery(), s -> s.setObject("uids", uids));
     }
 
     @Override

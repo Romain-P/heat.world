@@ -56,8 +56,10 @@ public final class PlayerTable implements Table<Player> {
         return ImmutableList.of("id");
     }
 
-    public List<String> getAllColumns() {
+    @Override
+    public List<String> getSelectableColumns() {
         return ImmutableList.of(
+                "last_used_at",
                 "userId",
                 "name",
                 "breedId",
@@ -91,18 +93,46 @@ public final class PlayerTable implements Table<Player> {
     }
 
     @Override
-    public List<String> getSelectableColumns() {
-        return getAllColumns();
-    }
-
-    @Override
     public List<String> getInsertableColumns() {
-        return getAllColumns();
+        return ImmutableList.of(
+                "updated_at",
+                "last_used_at",
+                "userId",
+                "name",
+                "breedId",
+                "sex",
+                "lookId",
+                "headId",
+                "scale",
+                "colors",
+                "mapId",
+                "cellId",
+                "directionId",
+                "experience",
+                "statsPoints",
+                "spellsPoints",
+                "strength",
+                "vitality",
+                "wisdom",
+                "chance",
+                "agility",
+                "intelligence",
+                "life",
+                "energy",
+                "maxEnergy",
+                "actions",
+                "movements",
+                "prospecting",
+                "summonableCreatures",
+                "spells",
+                "kamas"
+        );
     }
 
     @Override
     public List<String> getUpdatableColumns() {
         return ImmutableList.of(
+                "updated_at",
                 "sex",
                 "lookId",
                 "headId",
@@ -164,6 +194,7 @@ public final class PlayerTable implements Table<Player> {
         player.setSpells(buildPlayerSpells(rset));
         player.setWallet(buildWallet(rset, player.getId()));
         player.setShortcutBar(buildShortcutBar(player.getId()));
+        player.setLastUsedAt(rset.getTimestamp("last_used_at").toInstant());
 
         player.getStats().apply(player.getWallet().getEquipedStream());
 
@@ -180,6 +211,8 @@ public final class PlayerTable implements Table<Player> {
 
     @Override
     public void updateToDb(NamedPreparedStatement s, Player player) throws SQLException {
+        s.setTimestamp("updated_at", new Timestamp(System.currentTimeMillis()));
+        s.setTimestamp("last_used_at", Timestamp.from(player.getLastUsedAt()));
         s.setBoolean("sex", player.getSex());
         s.setInt("lookId", player.getLook().getLookId());
         s.setInt("headId", player.getLook().getHeadId());

@@ -29,6 +29,7 @@ import org.heat.world.roleplay.environment.WorldMapPoint;
 import org.heat.world.roleplay.environment.WorldPosition;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.stream.Stream;
 
 import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum.*;
@@ -53,6 +54,8 @@ public class Player
     PlayerSpellBook spells;
     PlayerItemWallet wallet;
     PlayerShortcutBar shortcutBar;
+
+    Instant lastUsedAt;
 
     // lombok auto-generates a #isSex() which is invalid here
     public boolean getSex() {
