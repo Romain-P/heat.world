@@ -3,6 +3,7 @@ package org.heat.world.players;
 import com.ankamagames.dofus.datacenter.breeds.Breed;
 import com.ankamagames.dofus.datacenter.breeds.Head;
 import com.ankamagames.dofus.network.enums.DirectionsEnum;
+import com.github.blackrush.acara.EventBusBuilder;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 import com.typesafe.config.Config;
@@ -28,6 +29,7 @@ import org.rocket.Service;
 import org.rocket.ServiceContext;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import java.time.Instant;
 import java.util.Optional;
@@ -39,6 +41,7 @@ public class DefaultPlayerFactory implements PlayerFactory, Service {
     private final AtomicInteger idGenerator;
     private final PlayerItemRepository playerItems;
     private final PlayerShortcutRepository playerShortcuts;
+    private final EventBusBuilder eventBusBuilder;
 
     // these properties are immutable therefore freely sharable
     private WorldPosition startPosition;
@@ -57,11 +60,18 @@ public class DefaultPlayerFactory implements PlayerFactory, Service {
             ;
 
     @Inject
-    public DefaultPlayerFactory(Datacenter datacenter, PlayerRepository players, PlayerItemRepository playerItems, PlayerShortcutRepository playerShortcuts) {
+    public DefaultPlayerFactory(
+            Datacenter datacenter,
+            PlayerRepository players,
+            PlayerItemRepository playerItems,
+            PlayerShortcutRepository playerShortcuts,
+            @Named("player") EventBusBuilder eventBusBuilder
+    ) {
         this.datacenter = datacenter;
         this.idGenerator = players.createIdGenerator().get();
         this.playerItems = playerItems;
         this.playerShortcuts = playerShortcuts;
+        this.eventBusBuilder = eventBusBuilder;
     }
 
     @Override
@@ -102,6 +112,7 @@ public class DefaultPlayerFactory implements PlayerFactory, Service {
     @Override
     public Future<Player> create(User user, String name, byte breed, boolean sex, int[] colors, int cosmeticId) {
         Player player = new Player();
+        player.setEventBus(eventBusBuilder.build());
         player.setId(idGenerator.incrementAndGet());
         player.setUserId(user.getId());
         player.setName(name);

@@ -30,10 +30,7 @@ import org.heat.shared.Strings;
 import org.heat.shared.function.UnsafeFunctions;
 import org.heat.shared.stream.MoreCollectors;
 import org.heat.world.backend.Backend;
-import org.heat.world.controllers.events.ChoosePlayerEvent;
-import org.heat.world.controllers.events.CreateContextEvent;
-import org.heat.world.controllers.events.CreatePlayerEvent;
-import org.heat.world.controllers.events.NewContextEvent;
+import org.heat.world.controllers.events.*;
 import org.heat.world.controllers.events.roleplay.EquipItemEvent;
 import org.heat.world.controllers.utils.Authenticated;
 import org.heat.world.controllers.utils.Idling;
@@ -67,6 +64,7 @@ public class PlayersController {
 
     @Inject PlayerRepository players;
     @Inject PlayerFactory playerFactory;
+    @Inject PlayerRegistry playerRegistry;
     @Inject Backend backend;
     @Inject @Named("pseudo") Random randomPseudo;
 
@@ -219,6 +217,16 @@ public class PlayersController {
                     player.getMaxWeight()
             ));
         });
+    }
+
+    @Listener
+    public void appearHimselfOnline(EnterContextEvent evt) {
+        playerRegistry.add(player.get());
+    }
+
+    @Listener
+    public void appearHimselfOffline(DestroyContextEvent evt) {
+        playerRegistry.remove(player.get());
     }
 
     @Receive
