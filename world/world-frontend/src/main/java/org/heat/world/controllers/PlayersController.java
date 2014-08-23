@@ -7,6 +7,8 @@ import com.ankamagames.dofus.network.messages.game.character.creation.CharacterC
 import com.ankamagames.dofus.network.messages.game.character.creation.CharacterCreationResultMessage;
 import com.ankamagames.dofus.network.messages.game.character.creation.CharacterNameSuggestionRequestMessage;
 import com.ankamagames.dofus.network.messages.game.character.creation.CharacterNameSuggestionSuccessMessage;
+import com.ankamagames.dofus.network.messages.game.character.deletion.CharacterDeletionErrorMessage;
+import com.ankamagames.dofus.network.messages.game.character.deletion.CharacterDeletionRequestMessage;
 import com.ankamagames.dofus.network.messages.game.character.stats.CharacterStatsListMessage;
 import com.ankamagames.dofus.network.messages.game.context.notification.NotificationListMessage;
 import com.ankamagames.dofus.network.messages.game.context.roleplay.spell.SpellUpgradeFailureMessage;
@@ -20,6 +22,7 @@ import com.ankamagames.dofus.network.messages.game.inventory.items.InventoryWeig
 import com.ankamagames.dofus.network.messages.game.inventory.spells.SpellListMessage;
 import com.github.blackrush.acara.Listener;
 import lombok.extern.slf4j.Slf4j;
+import org.fungsi.Either;
 import org.fungsi.Unit;
 import org.fungsi.concurrent.Future;
 import org.heat.User;
@@ -48,6 +51,7 @@ import java.util.*;
 
 import static com.ankamagames.dofus.network.enums.CharacterCreationResultEnum.ERR_NO_REASON;
 import static com.ankamagames.dofus.network.enums.CharacterCreationResultEnum.OK;
+import static com.ankamagames.dofus.network.enums.CharacterDeletionErrorEnum.DEL_ERR_NO_REASON;
 
 @Controller
 @Authenticated
@@ -75,6 +79,10 @@ public class PlayersController {
         return cached;
     }
 
+    Either<Player, Unit> findPlayer(int id) {
+        return getPlayers().stream().filter(x -> x.getId() == id).collect(MoreCollectors.uniqueMaybe());
+    }
+
     Future<Unit> doChoose(Player player) {
         return client.getEventBus().publish(new ChoosePlayerEvent(player)).toUnit()
                 .flatMap(u -> players.save(player))
@@ -90,12 +98,16 @@ public class PlayersController {
                 ;
     }
 
-    @Receive
-    public void list(CharactersListRequestMessage msg) {
-        client.write(new CharactersListMessage(
+    Future<Unit> writePlayerList() {
+        return client.write(new CharactersListMessage(
                 getPlayers().stream().map(Player::toCharacterBaseInformations),
                 false // TODO(world/players): has startup actions
         ));
+    }
+
+    @Receive
+    public void list(CharactersListRequestMessage msg) {
+        writePlayerList();
     }
 
     @Receive
@@ -125,6 +137,20 @@ public class PlayersController {
     }
 
     @Receive
+    public void remove(CharacterDeletionRequestMessage msg) {
+        Player player = findPlayer(msg.characterId).left();
+
+        players.remove(player)
+            .flatMap(u -> {
+                cached.remove(player);
+                return writePlayerList();
+            })
+            .mayRescue(err -> {
+                return client.write(new CharacterDeletionErrorMessage(DEL_ERR_NO_REASON.value));
+            });
+    }
+
+    @Receive
     public void suggestName(CharacterNameSuggestionRequestMessage msg) {
         // TODO(world/players): enable or disable pseudo suggestion
         client.write(new CharacterNameSuggestionSuccessMessage(Strings.randomPseudo(randomPseudo)));
@@ -132,9 +158,7 @@ public class PlayersController {
 
     @Receive
     public void choose(CharacterSelectionMessage msg) {
-        getPlayers().stream()
-            .filter(x -> x.getId() == msg.id)
-            .collect(MoreCollectors.uniqueMaybe())
+        findPlayer(msg.id)
             .foldLeft(this::doChoose)
             .thenRight(x -> client.write(CharacterSelectedErrorMessage.i))
             .onFailure(err -> log.error("cannot choose player", err))
