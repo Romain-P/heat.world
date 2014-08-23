@@ -7,6 +7,7 @@ import com.ankamagames.dofus.network.messages.game.basic.BasicNoOperationMessage
 import com.ankamagames.dofus.network.messages.game.character.stats.CharacterStatsListMessage;
 import com.ankamagames.dofus.network.messages.game.context.roleplay.objects.ObjectGroundListAddedMessage;
 import com.ankamagames.dofus.network.messages.game.inventory.items.*;
+import com.ankamagames.dofus.network.messages.game.shortcut.ShortcutBarRemovedMessage;
 import com.github.blackrush.acara.Listener;
 import org.fungsi.Either;
 import org.heat.shared.MoreFutures;
@@ -20,6 +21,7 @@ import org.heat.world.items.WorldItemFactory;
 import org.heat.world.items.WorldItemRepository;
 import org.heat.world.players.Player;
 import org.heat.world.players.items.PlayerItemWallet;
+import org.heat.world.players.shortcuts.PlayerShortcut;
 import org.heat.world.roleplay.environment.WorldMap;
 import org.heat.world.roleplay.environment.WorldMapPoint;
 import org.heat.world.roleplay.environment.WorldPosition;
@@ -29,6 +31,7 @@ import org.rocket.network.Prop;
 import org.rocket.network.Receive;
 
 import javax.inject.Inject;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -43,6 +46,15 @@ public class ItemsController {
     @Inject WorldItemRepository items;
     @Inject WorldItemFactory itemFactory;
 
+    private void removeAnyShortcut(int itemUid) {
+        List<PlayerShortcut> shortcuts = player.get().getShortcutBar().removeItemShortcut(itemUid);
+
+        if (shortcuts.isEmpty()) return;
+
+        client.transaction(tx -> {
+            shortcuts.forEach(s -> tx.write(new ShortcutBarRemovedMessage(s.getBarType().value, s.getSlot())));
+        });
+    }
 
     @Listener
     public void onPlayerCreation(CreatePlayerEvent evt) {
@@ -127,6 +139,8 @@ public class ItemsController {
                 // merged...
                 WorldItem merged = mergeOrMove.left();
 
+                removeAnyShortcut(item.getUid());
+
                 MoreFutures.join(items.remove(item), items.save(merged))
                         .onSuccess(pair -> {
                             wallet.remove(pair.first);
@@ -196,6 +210,7 @@ public class ItemsController {
                 return;
             }
 
+            removeAnyShortcut(item.getUid());
             wallet.remove(item);
 
             client.transaction(tx -> {
