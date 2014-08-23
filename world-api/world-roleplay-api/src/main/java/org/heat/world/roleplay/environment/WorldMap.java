@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -22,6 +23,13 @@ import static java.util.Objects.requireNonNull;
 
 @RequiredArgsConstructor
 public final class WorldMap {
+    /**
+     * From {@link java.util.concurrent.ConcurrentHashMap}
+     * " the (estimated) number of elements needed for this operation to be executed in parallel "
+     */
+    public static final int PARALLELISM_THRESHOLD = 100;
+
+
     @Getter final EventBus eventBus;
     @Getter final MapData data;
     final ConcurrentHashMap<Integer, WorldActor> actors = new ConcurrentHashMap<>();
@@ -128,6 +136,26 @@ public final class WorldMap {
         // NOTE(Blackrush): 24 aug 2014
         //      ConcurrentHashMap#searchValues might speed-up search
         return actors.values().stream().anyMatch(x -> x.getActorPosition().getMapPoint().equals(mapPoint));
+    }
+
+    /**
+     * Find an actor on the map by its id
+     * @param id a integer representing an actor id
+     * @return an optional actor having given id
+     */
+    public Optional<WorldActor> findActor(int id) {
+        return Optional.ofNullable(actors.get(id));
+    }
+
+    /**
+     * Find an actor on the map according to a predicate
+     * @param fn a non-null predicate
+     * @return an optional actor matching given predicate
+     */
+    public Optional<WorldActor> findActor(Predicate<WorldActor> fn) {
+        return Optional.ofNullable(
+            actors.searchValues(PARALLELISM_THRESHOLD,
+                actor -> fn.test(actor) ? actor : null));
     }
 
     /**
