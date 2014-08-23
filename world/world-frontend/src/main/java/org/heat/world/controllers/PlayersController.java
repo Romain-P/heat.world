@@ -28,6 +28,7 @@ import org.heat.world.backend.Backend;
 import org.heat.world.controllers.events.CreateContextEvent;
 import org.heat.world.controllers.events.CreatePlayerEvent;
 import org.heat.world.controllers.events.NewContextEvent;
+import org.heat.world.controllers.events.roleplay.EquipItemEvent;
 import org.heat.world.controllers.utils.Authenticated;
 import org.heat.world.controllers.utils.Idling;
 import org.heat.world.items.WorldItem;
@@ -35,6 +36,7 @@ import org.heat.world.metrics.GameStats;
 import org.heat.world.metrics.RegularStat;
 import org.heat.world.players.*;
 import org.heat.world.players.metrics.PlayerSpell;
+import org.heat.world.players.metrics.PlayerStatBook;
 import org.rocket.network.*;
 
 import javax.inject.Inject;
@@ -184,5 +186,18 @@ public class PlayersController {
                 tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
             });
         }
+    }
+
+    @Listener
+    public void applyItemToStatBook(EquipItemEvent evt) {
+        Player player = this.player.get();
+        PlayerStatBook stats = player.getStats();
+        if (evt.isApply()) {
+            stats.apply(evt.getItem());
+        } else {
+            stats.unapply(evt.getItem());
+        }
+
+        client.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
     }
 }
