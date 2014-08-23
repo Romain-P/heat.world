@@ -10,6 +10,7 @@ import org.heat.shared.Pair;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class LazyShortcutBar implements PlayerShortcutBar {
@@ -137,5 +138,19 @@ public final class LazyShortcutBar implements PlayerShortcutBar {
         } else {
             return Either.left(move0(from, toSlot));
         }
+    }
+
+    @Override
+    public List<PlayerShortcut> removeItemShortcut(int itemUid) {
+        requireLoaded();
+
+        List<PlayerShortcut> result =
+            getShortcutsOf0(ItemShortcut.BAR_TYPE)
+                .filter(x -> x instanceof ItemShortcut && ((ItemShortcut) x).getItemUid() == itemUid)
+                .collect(Collectors.toList());
+
+        result.forEach(this::remove0);
+
+        return result;
     }
 }

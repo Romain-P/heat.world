@@ -4,6 +4,7 @@ import com.ankamagames.dofus.network.enums.ShortcutBarEnum;
 import org.fungsi.Either;
 import org.heat.shared.Pair;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -47,4 +48,11 @@ public interface PlayerShortcutBar {
      * @throws java.util.NoSuchElementException if there is no shortcut on "from" slot
      */
     Either<PlayerShortcut, Pair<PlayerShortcut, PlayerShortcut>> swap(ShortcutBarEnum bar, int from, int to);
+
+    /**
+     * Remove an item shortcut given its uid
+     * @param itemUid a valid integer item uid
+     * @return a non-null list of removed shortcuts
+     */
+    List<PlayerShortcut> removeItemShortcut(int itemUid);
 }
