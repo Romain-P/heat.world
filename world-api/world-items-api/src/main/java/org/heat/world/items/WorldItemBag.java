@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public interface WorldItemBag {
+public interface WorldItemBag extends WorldBag {
     // read operations
     /**
      * Find an item by its uid
