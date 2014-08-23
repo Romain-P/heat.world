@@ -42,6 +42,7 @@ import org.rocket.network.*;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.time.Instant;
 import java.util.List;
 import java.util.Random;
 
@@ -128,6 +129,11 @@ public class PlayersController {
                 .ifLeft(this::doChoose)
                 .ifRight(x -> client.write(CharacterSelectedErrorMessage.i))
         ;
+    }
+
+    @Listener
+    public void setLastUsedAt(ChoosePlayerEvent evt) {
+        evt.getPlayer().setLastUsedAt(Instant.now());
     }
 
     @Listener
