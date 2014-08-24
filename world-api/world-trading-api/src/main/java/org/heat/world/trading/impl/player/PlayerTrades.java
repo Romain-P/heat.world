@@ -1,6 +1,7 @@
 package org.heat.world.trading.impl.player;
 
 import com.github.blackrush.acara.EventBus;
+import com.github.blackrush.acara.EventBusBuilder;
 
 public final class PlayerTrades {
     private PlayerTrades() {}
@@ -10,7 +11,7 @@ public final class PlayerTrades {
     }
 
     // Y U NO CURRY JAVA
-    public static PlayerTradeFactory createFactory(EventBus eventBus) {
-        return (first, second) -> create(eventBus, first, second);
+    public static PlayerTradeFactory createFactory(EventBusBuilder eventBusBuilder) {
+        return (first, second) -> create(eventBusBuilder.build(), first, second);
     }
 }

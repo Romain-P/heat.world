@@ -31,6 +31,7 @@ public class StdWorldModule extends AbstractModule {
         install(new StdPlayersModule());
         install(new StdWorldEnvironmentModule());
         install(new StdItemsModule());
+        install(new StdPlayerTradeModule());
     }
 
     @Provides
