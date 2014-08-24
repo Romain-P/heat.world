@@ -18,6 +18,7 @@ import org.heat.world.controllers.events.EnterContextEvent;
 import org.heat.world.controllers.events.roleplay.trades.AcceptPlayerTradeEvent;
 import org.heat.world.controllers.events.roleplay.trades.InvitePlayerTradeEvent;
 import org.heat.world.controllers.utils.Basics;
+import org.heat.world.items.WorldItem;
 import org.heat.world.items.WorldItemWallet;
 import org.heat.world.players.Player;
 import org.heat.world.roleplay.WorldAction;
@@ -122,7 +123,7 @@ public class PlayerTradesController {
         TradeAction action = getTradeAction();
 
         if (action.side == WorldTradeSide.FIRST) {
-            log.warn("no you cant force to exchange " + client);
+            log.warn("no you cant force to exchange {}", client);
             client.write(Basics.noop());
             return;
         }
@@ -149,7 +150,62 @@ public class PlayerTradesController {
 
     @Receive
     public void moveItem(ExchangeObjectMoveMessage msg) {
+        TradeAction action = getTradeAction();
 
+        if (msg.quantity == 0) {
+            client.write(Basics.noop());
+            return;
+        }
+
+        final boolean toPublic = msg.quantity > 0;
+        final int quantity = Math.abs(msg.quantity);
+
+        final WorldItemWallet wallet;
+        final WorldItemWallet targetWallet;
+        final WorldItem item;
+
+        if (toPublic) {
+            wallet = action.getPrivateWallet();
+            targetWallet = action.getPublicWallet();
+            item = wallet.findByUid(msg.objectUID).get();
+        } else {
+            wallet = action.getPublicWallet();
+            targetWallet = action.getPrivateWallet();
+            item = wallet.findByUid(msg.objectUID).get();
+        }
+
+        WorldItem itemAfterFork =
+            wallet.fork(item, quantity)
+                .foldRight(x -> {
+                    log.debug("non forked");
+                    wallet.remove(x);
+                    return x;
+                })
+                .thenLeft(result -> {
+                    log.debug("forked");
+                    wallet.update(result.first);
+                    if (toPublic) {
+                        client.write(new ExchangeObjectModifiedMessage(false, result.first.toObjectItem()));
+                    }
+                    return result.second.withUid(-result.first.getUid());
+                });
+
+        @SuppressWarnings("unused")
+        WorldItem itemAfterMerge =
+            targetWallet.tryMerge(itemAfterFork)
+                .foldRight(x -> {
+                    log.debug("non merged");
+                    targetWallet.add(x);
+                    return x;
+                })
+                .thenLeft(result -> {
+                    log.debug("merged");
+                    targetWallet.update(result);
+                    if (toPublic) {
+                        client.write(new ExchangeObjectRemovedMessage(false, itemAfterFork.getUid()));
+                    }
+                    return result;
+                });
     }
 
     @Listener
@@ -199,8 +255,8 @@ public class PlayerTradesController {
     @Listener
     public void onTraderKamas(PlayerTraderKamasEvent evt) {
         client.write(new ExchangeKamaModifiedMessage(
-                evt.getTrader() != player.get(),
-                evt.getWallet().getKamas()));
+            evt.getTrader() != player.get(),
+            evt.getWallet().getKamas()));
     }
 
     @Listener
