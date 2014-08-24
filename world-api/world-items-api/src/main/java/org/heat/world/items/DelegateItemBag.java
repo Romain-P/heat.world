@@ -62,8 +62,13 @@ public abstract class DelegateItemBag implements WorldItemBag {
     }
 
     @Override
-    public Either<WorldItem, WorldItem> tryMerge(WorldItem item) {
-        return delegate().tryMerge(item);
+    public Either<WorldItem, WorldItem> mergeOn(WorldItem item, CharacterInventoryPositionEnum position) {
+        return delegate().mergeOn(item, position);
+    }
+
+    @Override
+    public Either<WorldItem, WorldItem> merge(WorldItem item) {
+        return delegate().merge(item);
     }
 
     @Override

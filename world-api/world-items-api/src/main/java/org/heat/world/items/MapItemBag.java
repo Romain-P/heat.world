@@ -8,7 +8,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED;
 import static java.util.Objects.requireNonNull;
 
 public final class MapItemBag implements WorldItemBag {
@@ -110,31 +109,16 @@ public final class MapItemBag implements WorldItemBag {
     }
 
     @Override
-    public Either<WorldItem, WorldItem> tryMerge(WorldItem item) {
+    public Either<WorldItem, WorldItem> mergeOn(WorldItem item, CharacterInventoryPositionEnum position) {
         requireNonNull(item, "item");
-
-        Optional<WorldItem> opt = findByPosition(INVENTORY_POSITION_NOT_EQUIPED)
-                .filter(x -> WorldItem.compare(item, x) == 0)
-                .findFirst();
-
-        if (!opt.isPresent()) {
-            return Either.right(item);
-        }
-
-        WorldItem same = opt.get();
-        return Either.left(same.plusQuantity(item.getQuantity()));
-    }
-
-    @Override
-    public Either<WorldItem, WorldItem> mergeOrMove(WorldItem item, CharacterInventoryPositionEnum position) {
-        requireNonNull(item, "item");
+        requireNonNull(position, "position");
 
         Optional<WorldItem> opt = findByPosition(position)
                 .filter(x -> WorldItem.compare(item, x) == 0)
                 .findFirst();
 
         if (!opt.isPresent()) {
-            return Either.right(item.withPosition(position));
+            return Either.right(item);
         }
 
         WorldItem same = opt.get();
