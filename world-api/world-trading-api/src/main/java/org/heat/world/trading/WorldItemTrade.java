@@ -1,14 +1,12 @@
 package org.heat.world.trading;
 
-import org.heat.world.items.WorldItem;
 import org.heat.world.items.WorldItemBag;
 
 import java.util.Optional;
 
 public interface WorldItemTrade extends TradeInterface {
-    void addItem(WorldTradeSide side, WorldItem item);
-    void removeItem(WorldTradeSide side, WorldItem item);
-    Optional<WorldItem> tryRemoveItem(WorldTradeSide side, int itemUid);
+    @Override
+    WorldItemBag getTradeBag(WorldTradeSide side);
 
     @Override
     Optional<? extends Result> conclude();

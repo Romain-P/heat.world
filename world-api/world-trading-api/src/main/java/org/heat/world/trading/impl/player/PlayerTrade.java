@@ -16,7 +16,9 @@ public interface PlayerTrade extends WorldTrade {
     void uncheck(WorldTradeSide side);
 
     PlayerTrader getTrader(WorldTradeSide side);
-    WorldItemWallet getWallet(WorldTradeSide side);
+
+    @Override
+    WorldItemWallet getTradeBag(WorldTradeSide side);
 
     default PlayerTrader getFirstTrader() {
         return getTrader(WorldTradeSide.FIRST);

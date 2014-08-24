@@ -4,16 +4,12 @@ import com.github.blackrush.acara.EventBus;
 import com.google.common.collect.ImmutableMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Synchronized;
-import org.heat.world.items.WorldItem;
-import org.heat.world.items.WorldItemWallet;
-import org.heat.world.items.WorldItemWallets;
+import org.heat.world.items.*;
 import org.heat.world.trading.WorldTradeSide;
 import org.heat.world.trading.impl.player.events.*;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.heat.world.trading.WorldTradeSide.FIRST;
 import static org.heat.world.trading.WorldTradeSide.SECOND;
@@ -22,6 +18,7 @@ final class PlayerTradeImpl implements PlayerTrade {
     @Getter final EventBus eventBus;
 
     final ImmutableMap<WorldTradeSide, SideState> states;
+    final Object[] globalTradeLock = new Object[0];
 
     Optional<? extends Result> result = Optional.empty();
 
@@ -33,7 +30,6 @@ final class PlayerTradeImpl implements PlayerTrade {
         );
     }
 
-    @Synchronized
     @Override
     public Optional<? extends Result> conclude() {
         if (!result.isPresent()) {
@@ -44,7 +40,11 @@ final class PlayerTradeImpl implements PlayerTrade {
                 return Optional.empty();
             }
 
-            result = Optional.of(new ConcludedResult(first.createWallet(), second.createWallet()));
+            synchronized (globalTradeLock) {
+                this.result = Optional.of(new ConcludedResult(first.asUnmodifiableView(), second.asUnmodifiableView()));
+            }
+
+            eventBus.publish(new PlayerTradeConcludeEvent(this, result.get()));
         }
 
         return result;
@@ -59,7 +59,10 @@ final class PlayerTradeImpl implements PlayerTrade {
         SideState state = state(side);
         PlayerTrader canceller = state.trader;
 
-        result = Optional.of(new CancelledResult(canceller));
+        synchronized (globalTradeLock) {
+            result = Optional.of(new CancelledResult(canceller));
+        }
+
         eventBus.publish(new PlayerTradeCancelEvent(this, canceller));
     }
 
@@ -117,113 +120,122 @@ final class PlayerTradeImpl implements PlayerTrade {
     //<editor-fold desc="SideState">
 
     @RequiredArgsConstructor
-    class SideState {
+    final class SideState extends DelegateItemBag implements WorldItemWallet {
         final PlayerTrader trader;
 
         boolean check;
-        List<WorldItem> items = new ArrayList<>();
+        MapItemBag items = MapItemBag.newHashMapItemBag();
         int kamas;
 
-        void addItem(WorldItem item) {
-            if (items.contains(item)) return;
-            items.add(item);
-            eventBus.publish(new PlayerTraderAddItemEvent(PlayerTradeImpl.this, trader, createWallet(), item));
+        WorldItemWallet asUnmodifiableView() {
+            return WorldItemWallets.unmodifiable(items.getItemStream().collect(Collectors.toList()), kamas);
         }
 
-        Optional<WorldItem> tryRemoveItem(int itemUid) {
-            Optional<WorldItem> option = items.stream().filter(x -> x.getUid() == itemUid).findAny();
-            option.ifPresent(item -> {
-                items.remove(item);
-                eventBus.publish(new PlayerTraderRemoveItemEvent(PlayerTradeImpl.this, trader, createWallet(), item));
-            });
-            return option;
+        @Override
+        protected WorldItemBag delegate() {
+            return items;
         }
 
-        void removeItem(WorldItem item) {
-            if (items.remove(item)) {
-                eventBus.publish(new PlayerTraderRemoveItemEvent(PlayerTradeImpl.this, trader, createWallet(), item));
-            }
-        }
-
-        void setKamas(int kamas) {
-            if (kamas < 0) {
-                throw new IllegalArgumentException("you cannot set a negative amount of kamas");
-            }
-            this.kamas = kamas;
-            eventBus.publish(new PlayerTraderKamasEvent(PlayerTradeImpl.this, trader, createWallet()));
+        @Override
+        public int getKamas() {
+            return kamas;
         }
 
         void check() {
-            if (check) {
-                return;
+            synchronized (globalTradeLock) {
+                if (check) {
+                    return;
+                }
+
+                this.check = true;
             }
 
-            this.check = true;
             eventBus.publish(new PlayerTradeCheckEvent(PlayerTradeImpl.this, trader, true));
         }
 
         void uncheck() {
-            if (!check) {
-                return;
+            synchronized (globalTradeLock) {
+                if (!check) {
+                    return;
+                }
+
+                this.check = false;
             }
 
-            this.check = false;
             eventBus.publish(new PlayerTradeCheckEvent(PlayerTradeImpl.this, trader, false));
         }
 
-        WorldItemWallet createWallet() {
-            return WorldItemWallets.unmodifiable(items, kamas);
+        @Override
+        public void setKamas(int kamas) {
+            if (kamas < 0) {
+                throw new IllegalArgumentException("you cannot set a negative amount of kamas");
+            }
+            synchronized (globalTradeLock) {
+                this.kamas = kamas;
+            }
+            eventBus.publish(new PlayerTraderKamasEvent(PlayerTradeImpl.this, trader, this));
+        }
+
+        @Override
+        public void add(WorldItem item) {
+            synchronized (globalTradeLock) {
+                super.add(item);
+            }
+            eventBus.publish(new PlayerTraderAddItemEvent(PlayerTradeImpl.this, trader, this, item));
+        }
+
+        @Override
+        public void update(WorldItem item) {
+            synchronized (globalTradeLock) {
+                super.update(item);
+            }
+            eventBus.publish(new PlayerTraderUpdateItemEvent(PlayerTradeImpl.this, trader, this, item));
+        }
+
+        @Override
+        public void remove(WorldItem item) {
+            synchronized (globalTradeLock) {
+                super.remove(item);
+            }
+            eventBus.publish(new PlayerTraderUpdateItemEvent(PlayerTradeImpl.this, trader, this, item));
+        }
+
+        @Override
+        public Optional<WorldItem> tryRemove(int uid) {
+            final Optional<WorldItem> option;
+            synchronized (globalTradeLock) {
+                option = super.tryRemove(uid);
+            }
+            option.ifPresent(item -> eventBus.publish(
+                    new PlayerTraderUpdateItemEvent(PlayerTradeImpl.this, trader, this, item)));
+            return option;
         }
     }
     //</editor-fold>
     //<editor-fold desc="Delegates to SideState">
 
-    @Synchronized
-    @Override
-    public void addItem(WorldTradeSide side, WorldItem item) {
-        state(side).addItem(item);
-    }
-
-    @Synchronized
-    @Override
-    public void removeItem(WorldTradeSide side, WorldItem item) {
-        state(side).removeItem(item);
-    }
-
-    @Synchronized
-    @Override
-    public Optional<WorldItem> tryRemoveItem(WorldTradeSide side, int itemUid) {
-        return state(side).tryRemoveItem(itemUid);
-    }
-
-    @Synchronized
-    @Override
-    public void setKamas(WorldTradeSide side, int kamas) {
-        state(side).setKamas(kamas);
-    }
-
-    @Synchronized
     @Override
     public void check(WorldTradeSide side) {
-        state(side).check();
+        synchronized (globalTradeLock) {
+            state(side).check();
+        }
     }
 
-    @Synchronized
     @Override
     public void uncheck(WorldTradeSide side) {
-        state(side).uncheck();
+        synchronized (globalTradeLock) {
+            state(side).uncheck();
+        }
     }
 
-    @Synchronized
     @Override
     public PlayerTrader getTrader(WorldTradeSide side) {
         return state(side).trader;
     }
 
-    @Synchronized
     @Override
-    public WorldItemWallet getWallet(WorldTradeSide side) {
-        return state(side).createWallet();
+    public WorldItemWallet getTradeBag(WorldTradeSide side) {
+        return state(side);
     }
 
     //</editor-fold>

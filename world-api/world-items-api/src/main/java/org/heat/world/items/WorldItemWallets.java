@@ -4,6 +4,7 @@ import com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum;
 import org.fungsi.Either;
 import org.heat.shared.Pair;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -13,7 +14,7 @@ import java.util.stream.Stream;
 public final class WorldItemWallets {
     private WorldItemWallets() {}
     
-    public static WorldItemWallet unmodifiable(final List<WorldItem> items, final int kamas) {
+    public static WorldItemWallet unmodifiable(final Collection<WorldItem> items, final int kamas) {
         return new Adapter() {
             @Override
             public Stream<WorldItem> getItemStream() {

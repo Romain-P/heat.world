@@ -5,7 +5,9 @@ import org.heat.world.items.WorldWallet;
 import java.util.Optional;
 
 public interface WorldKamasTrade extends TradeInterface {
-    void setKamas(WorldTradeSide side, int kamas);
+
+    @Override
+    WorldWallet getTradeBag(WorldTradeSide side);
 
     @Override
     Optional<? extends Result> conclude();

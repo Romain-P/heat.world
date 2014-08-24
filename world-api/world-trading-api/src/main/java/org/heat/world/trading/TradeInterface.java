@@ -11,6 +11,8 @@ public interface TradeInterface {
     Optional<? extends Result> conclude();
     boolean isConcluded();
 
+    WorldBag getTradeBag(WorldTradeSide side);
+
     public interface Result {
         WorldBag getFirst();
         WorldBag getSecond();
