@@ -127,21 +127,21 @@ final class PlayerTradeImpl implements PlayerTrade {
         void addItem(WorldItem item) {
             if (items.contains(item)) return;
             items.add(item);
-            eventBus.publish(new PlayerTradeAddItemEvent(PlayerTradeImpl.this, trader, item));
+            eventBus.publish(new PlayerTraderAddItemEvent(PlayerTradeImpl.this, trader, createWallet(), item));
         }
 
         Optional<WorldItem> tryRemoveItem(int itemUid) {
             Optional<WorldItem> option = items.stream().filter(x -> x.getUid() == itemUid).findAny();
             option.ifPresent(item -> {
                 items.remove(item);
-                eventBus.publish(new PlayerTradeRemoveItemEvent(PlayerTradeImpl.this, trader, item));
+                eventBus.publish(new PlayerTraderRemoveItemEvent(PlayerTradeImpl.this, trader, createWallet(), item));
             });
             return option;
         }
 
         void removeItem(WorldItem item) {
             if (items.remove(item)) {
-                eventBus.publish(new PlayerTradeRemoveItemEvent(PlayerTradeImpl.this, trader, item));
+                eventBus.publish(new PlayerTraderRemoveItemEvent(PlayerTradeImpl.this, trader, createWallet(), item));
             }
         }
 
@@ -153,7 +153,7 @@ final class PlayerTradeImpl implements PlayerTrade {
                 return;
             }
             this.kamas += kamas;
-            eventBus.publish(new PlayerTradeAddKamasEvent(PlayerTradeImpl.this, trader, kamas));
+            eventBus.publish(new PlayerTraderKamasEvent(PlayerTradeImpl.this, trader, createWallet()));
         }
 
         void removeKamas(int kamas) {
@@ -164,7 +164,7 @@ final class PlayerTradeImpl implements PlayerTrade {
                 return;
             }
             this.kamas -= kamas;
-            eventBus.publish(new PlayerTradeRemoveKamasEvent(PlayerTradeImpl.this, trader, kamas));
+            eventBus.publish(new PlayerTraderKamasEvent(PlayerTradeImpl.this, trader, createWallet()));
         }
 
         void check() {
