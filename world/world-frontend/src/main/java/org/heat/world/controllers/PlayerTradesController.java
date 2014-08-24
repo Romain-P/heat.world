@@ -107,6 +107,16 @@ public class PlayerTradesController {
         action.trade.getEventBus().publish(AcceptPlayerTradeEvent.INSTANCE);
     }
 
+    @Receive
+    public void setKamas(ExchangeObjectMoveKamaMessage msg) {
+
+    }
+
+    @Receive
+    public void setItem(ExchangeObjectMoveMessage msg) {
+
+    }
+
     @Listener
     public InvitePlayerTradeEvent.AckT onInvited(InvitePlayerTradeEvent evt) {
         if (currentAction.isPresent()) {
