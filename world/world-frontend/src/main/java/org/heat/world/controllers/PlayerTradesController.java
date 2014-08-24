@@ -4,9 +4,7 @@ import com.ankamagames.dofus.network.enums.DialogTypeEnum;
 import com.ankamagames.dofus.network.enums.GameContextEnum;
 import com.ankamagames.dofus.network.messages.game.dialog.LeaveDialogRequestMessage;
 import com.ankamagames.dofus.network.messages.game.inventory.exchanges.*;
-import com.ankamagames.dofus.network.messages.game.inventory.items.ExchangeKamaModifiedMessage;
-import com.ankamagames.dofus.network.messages.game.inventory.items.ExchangeObjectModifiedMessage;
-import com.ankamagames.dofus.network.messages.game.inventory.items.ExchangeObjectRemovedMessage;
+import com.ankamagames.dofus.network.messages.game.inventory.items.*;
 import com.github.blackrush.acara.Listener;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -19,10 +17,13 @@ import org.heat.world.controllers.events.roleplay.trades.AcceptPlayerTradeEvent;
 import org.heat.world.controllers.events.roleplay.trades.InvitePlayerTradeEvent;
 import org.heat.world.controllers.utils.Basics;
 import org.heat.world.items.WorldItem;
+import org.heat.world.items.WorldItemRepository;
 import org.heat.world.items.WorldItemWallet;
 import org.heat.world.players.Player;
+import org.heat.world.players.items.PlayerItemWallet;
 import org.heat.world.roleplay.WorldAction;
 import org.heat.world.roleplay.environment.WorldMap;
+import org.heat.world.trading.WorldTrade;
 import org.heat.world.trading.WorldTradeSide;
 import org.heat.world.trading.impl.player.PlayerTrade;
 import org.heat.world.trading.impl.player.PlayerTradeFactory;
@@ -43,6 +44,7 @@ public class PlayerTradesController {
     @Inject MutProp<WorldAction> currentAction;
 
     @Inject PlayerTradeFactory tradeFactory;
+    @Inject WorldItemRepository itemRepository;
 
     @RequiredArgsConstructor
     @Getter
@@ -297,7 +299,51 @@ public class PlayerTradesController {
 
     @Listener
     public void onTradeConclude(PlayerTradeConcludeEvent evt) {
-        // take traded kamas and items
-        log.debug("trade has been concluded, congratulations!");
+        TradeAction action = getTradeAction();
+        Player player = this.player.get();
+        PlayerItemWallet wallet = player.getWallet();
+
+        WorldTrade.Result result = evt.getResult();
+        WorldItemWallet lost = result.getBag(action.side);
+        WorldItemWallet won = result.getBag(action.side.backwards());
+
+        // add the won kamas minus the lost kamas
+        wallet.plusKamas(won.getKamas() - lost.getKamas());
+
+        // remove or decrease quantity of lost items
+        lost.getItemStream()
+            .forEach(item -> {
+                if (item.getUid() < 0) {
+                    WorldItem original = wallet.findByUid(-item.getUid()).get()
+                        .plusQuantity(-item.getQuantity());
+
+                    itemRepository.save(original)
+                        .onSuccess(wallet::update);
+                } else {
+                    wallet.remove(item);
+                }
+            });
+
+        // add or merge won items
+        won.getItemStream()
+            .forEach(item -> {
+                if (item.getUid() < 0) {
+                    wallet.tryMerge(item)
+                        .ifLeft(merged -> {
+                            itemRepository.save(merged)
+                                .onSuccess(wallet::update);
+                        })
+                        .ifRight(nonMerged -> {
+                            wallet.add(item);
+                        });
+                } else {
+                    wallet.add(item);
+                }
+            });
+
+        client.transaction(tx -> {
+            tx.write(new InventoryContentMessage(wallet.getItemStream().map(WorldItem::toObjectItem), wallet.getKamas()));
+            tx.write(new InventoryWeightMessage(wallet.getWeight(), player.getMaxWeight()));
+        });
     }
 }
