@@ -196,6 +196,7 @@ final class PlayerTradeImpl implements PlayerTrade {
         return state(side).tryRemoveItem(itemUid);
     }
 
+    @Synchronized
     @Override
     public void setKamas(WorldTradeSide side, int kamas) {
         state(side).setKamas(kamas);
@@ -213,19 +214,16 @@ final class PlayerTradeImpl implements PlayerTrade {
         state(side).uncheck();
     }
 
+    @Synchronized
     @Override
     public PlayerTrader getTrader(WorldTradeSide side) {
         return state(side).trader;
     }
 
+    @Synchronized
     @Override
-    public PlayerTrader getFirstTrader() {
-        return getTrader(FIRST);
-    }
-
-    @Override
-    public PlayerTrader getSecondTrader() {
-        return getTrader(SECOND);
+    public WorldItemWallet getWallet(WorldTradeSide side) {
+        return state(side).createWallet();
     }
 
     //</editor-fold>
