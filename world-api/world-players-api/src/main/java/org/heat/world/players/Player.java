@@ -18,7 +18,6 @@ import lombok.ToString;
 import org.heat.shared.stream.MoreCollectors;
 import org.heat.world.items.WorldItem;
 import org.heat.world.items.WorldItemType;
-import org.heat.world.items.WorldItemWallet;
 import org.heat.world.metrics.GameStats;
 import org.heat.world.players.items.PlayerItemWallet;
 import org.heat.world.players.metrics.PlayerExperience;
@@ -142,11 +141,6 @@ public class Player
                 userId,
                 toActorAlignmentInformations()
         );
-    }
-
-    @Override
-    public WorldItemWallet getTraderBag() {
-        return wallet;
     }
 
     public CharacterCharacteristicsInformations toCharacterCharacteristicsInformations() {

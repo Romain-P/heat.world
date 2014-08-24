@@ -4,6 +4,9 @@ import org.heat.world.items.WorldItemWallet;
 import org.heat.world.trading.WorldTrader;
 
 public interface PlayerTrader extends WorldTrader {
+    @Deprecated
     @Override
-    WorldItemWallet getTraderBag();
+    default WorldItemWallet getTraderBag() {
+        throw new UnsupportedOperationException();
+    }
 }
