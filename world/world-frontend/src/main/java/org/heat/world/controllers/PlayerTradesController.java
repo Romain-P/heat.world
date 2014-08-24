@@ -215,6 +215,7 @@ public class PlayerTradesController {
     public void check(ExchangeReadyMessage msg) {
         TradeAction action = getTradeAction();
         action.trade.check(action.side);
+        action.trade.conclude();
     }
 
     @Listener
@@ -255,7 +256,7 @@ public class PlayerTradesController {
     }
 
     @Listener
-    public void onCancelTrade(PlayerTradeCancelEvent evt) {
+    public void onTradeEnd(PlayerTradeEndEvent evt) {
         evt.getTrade().getEventBus().unsubscribe(this);
         currentAction.remove();
         client.write(new ExchangeLeaveMessage(DialogTypeEnum.DIALOG_EXCHANGE.value, evt.getTrade().isConcluded()));
@@ -292,5 +293,11 @@ public class PlayerTradesController {
     @Listener
     public void onTradeCheck(PlayerTradeCheckEvent evt) {
         client.write(new ExchangeIsReadyMessage(evt.getTrader().getActorId(), evt.isCheck()));
+    }
+
+    @Listener
+    public void onTradeConclude(PlayerTradeConcludeEvent evt) {
+        // take traded kamas and items
+        log.debug("trade has been concluded, congratulations!");
     }
 }

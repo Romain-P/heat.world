@@ -45,6 +45,7 @@ final class PlayerTradeImpl implements PlayerTrade {
             }
 
             eventBus.publish(new PlayerTradeConcludeEvent(this, result.get()));
+            eventBus.publish(new PlayerTradeEndEvent(this));
         }
 
         return result;
@@ -63,7 +64,7 @@ final class PlayerTradeImpl implements PlayerTrade {
             result = Optional.of(new CancelledResult(canceller));
         }
 
-        eventBus.publish(new PlayerTradeCancelEvent(this, canceller));
+        eventBus.publish(new PlayerTradeEndEvent(this));
     }
 
     @Override
