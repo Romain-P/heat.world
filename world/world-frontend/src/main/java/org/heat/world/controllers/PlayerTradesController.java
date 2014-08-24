@@ -8,12 +8,14 @@ import com.ankamagames.dofus.network.messages.game.inventory.items.ExchangeKamaM
 import com.github.blackrush.acara.Listener;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.fungsi.concurrent.Future;
 import org.fungsi.concurrent.Promise;
 import org.fungsi.concurrent.Promises;
 import org.heat.world.controllers.events.EnterContextEvent;
 import org.heat.world.controllers.events.roleplay.trades.AcceptPlayerTradeEvent;
 import org.heat.world.controllers.events.roleplay.trades.InvitePlayerTradeEvent;
+import org.heat.world.controllers.utils.Basics;
 import org.heat.world.items.WorldItemWallet;
 import org.heat.world.players.Player;
 import org.heat.world.roleplay.WorldAction;
@@ -30,6 +32,7 @@ import java.util.Optional;
 import static com.ankamagames.dofus.network.enums.ExchangeErrorEnum.REQUEST_IMPOSSIBLE;
 import static com.ankamagames.dofus.network.enums.ExchangeTypeEnum.PLAYER_TRADE;
 
+@Slf4j
 @Controller
 public class PlayerTradesController {
     @Inject NetworkClient client;
@@ -107,6 +110,13 @@ public class PlayerTradesController {
     @Receive
     public void accept(ExchangeAcceptMessage msg) {
         TradeAction action = getTradeAction();
+
+        if (action.side == WorldTradeSide.FIRST) {
+            log.warn("no you cant force to exchange " + client);
+            client.write(Basics.noop());
+            return;
+        }
+
         action.trade.getEventBus().publish(AcceptPlayerTradeEvent.INSTANCE);
     }
 
