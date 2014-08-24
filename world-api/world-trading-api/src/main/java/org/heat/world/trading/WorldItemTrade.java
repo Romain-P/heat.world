@@ -17,5 +17,11 @@ public interface WorldItemTrade extends TradeInterface {
 
         @Override
         WorldItemBag getSecond();
+
+        @Override
+        default WorldItemBag getBag(WorldTradeSide side) {
+            if (side == WorldTradeSide.FIRST) return getFirst();
+            return getSecond();
+        }
     }
 }

@@ -18,5 +18,11 @@ public interface WorldKamasTrade extends TradeInterface {
 
         @Override
         WorldWallet getSecond();
+
+        @Override
+        default WorldWallet getBag(WorldTradeSide side) {
+            if (side == WorldTradeSide.FIRST) return getFirst();
+            return getSecond();
+        }
     }
 }

@@ -16,5 +16,10 @@ public interface TradeInterface {
     public interface Result {
         WorldBag getFirst();
         WorldBag getSecond();
+
+        default WorldBag getBag(WorldTradeSide side) {
+            if (side == WorldTradeSide.FIRST) return getFirst();
+            return getSecond();
+        }
     }
 }
