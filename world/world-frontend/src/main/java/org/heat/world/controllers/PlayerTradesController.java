@@ -4,6 +4,7 @@ import com.ankamagames.dofus.network.enums.DialogTypeEnum;
 import com.ankamagames.dofus.network.enums.GameContextEnum;
 import com.ankamagames.dofus.network.messages.game.dialog.LeaveDialogRequestMessage;
 import com.ankamagames.dofus.network.messages.game.inventory.exchanges.*;
+import com.ankamagames.dofus.network.messages.game.inventory.items.ExchangeKamaModifiedMessage;
 import com.github.blackrush.acara.Listener;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.fungsi.concurrent.Promises;
 import org.heat.world.controllers.events.EnterContextEvent;
 import org.heat.world.controllers.events.roleplay.trades.AcceptPlayerTradeEvent;
 import org.heat.world.controllers.events.roleplay.trades.InvitePlayerTradeEvent;
+import org.heat.world.items.WorldItemWallet;
 import org.heat.world.players.Player;
 import org.heat.world.roleplay.WorldAction;
 import org.heat.world.roleplay.environment.WorldMap;
@@ -20,6 +22,7 @@ import org.heat.world.trading.WorldTradeSide;
 import org.heat.world.trading.impl.player.PlayerTrade;
 import org.heat.world.trading.impl.player.PlayerTradeFactory;
 import org.heat.world.trading.impl.player.events.PlayerTradeCancelEvent;
+import org.heat.world.trading.impl.player.events.PlayerTraderKamasEvent;
 import org.rocket.network.*;
 
 import javax.inject.Inject;
@@ -42,6 +45,7 @@ public class PlayerTradesController {
         final PlayerTrade trade;
         final WorldTradeSide side;
         final Player actor = player.get();
+        final WorldItemWallet wallet = actor.getWallet().createTemp();
         final Promise<WorldAction> endFuture = Promises.create();
 
         @Override
@@ -109,7 +113,15 @@ public class PlayerTradesController {
 
     @Receive
     public void setKamas(ExchangeObjectMoveKamaMessage msg) {
+        TradeAction action = getTradeAction();
 
+        if (action.wallet.getKamas() < msg.quantity) {
+            // todo send error
+            return;
+        }
+
+        action.wallet.plusKamas(-msg.quantity);
+        action.trade.addKamas(action.side, msg.quantity);
     }
 
     @Receive
@@ -159,5 +171,12 @@ public class PlayerTradesController {
         evt.getTrade().getEventBus().unsubscribe(this);
         currentAction.remove();
         client.write(new ExchangeLeaveMessage(DialogTypeEnum.DIALOG_EXCHANGE.value, evt.getTrade().isConcluded()));
+    }
+
+    @Listener
+    public void onTraderKamas(PlayerTraderKamasEvent evt) {
+        client.write(new ExchangeKamaModifiedMessage(
+                evt.getTrader() != player.get(),
+                evt.getWallet().getKamas()));
     }
 }
