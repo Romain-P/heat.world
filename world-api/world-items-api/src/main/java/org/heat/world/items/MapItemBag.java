@@ -31,17 +31,6 @@ public final class MapItemBag implements WorldItemBag {
     }
 
     @Override
-    public Stream<WorldItem> findByGid(int gid) {
-        return map.values().stream().filter(x -> x.getTemplate().getId() == gid);
-    }
-
-    @Override
-    public Stream<WorldItem> findByPosition(CharacterInventoryPositionEnum position) {
-        requireNonNull(position, "position");
-        return map.values().stream().filter(x -> x.getPosition() == position);
-    }
-
-    @Override
     public Stream<WorldItem> getItemStream() {
         return map.values().stream();
     }

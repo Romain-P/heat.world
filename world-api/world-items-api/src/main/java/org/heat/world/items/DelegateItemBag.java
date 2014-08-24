@@ -27,6 +27,21 @@ public abstract class DelegateItemBag implements WorldItemBag {
     }
 
     @Override
+    public Stream<WorldItem> findByNotPosition(CharacterInventoryPositionEnum position) {
+        return delegate().findByNotPosition(position);
+    }
+
+    @Override
+    public Stream<WorldItem> findEquiped() {
+        return delegate().findEquiped();
+    }
+
+    @Override
+    public Stream<WorldItem> findNonEquiped() {
+        return delegate().findNonEquiped();
+    }
+
+    @Override
     public Stream<WorldItem> getItemStream() {
         return delegate().getItemStream();
     }

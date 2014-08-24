@@ -20,20 +20,6 @@ public interface WorldItemBag {
     Optional<WorldItem> findByUid(int uid);
 
     /**
-     * Find multiple items by their gid
-     * @param gid an integer
-     * @return a non-null, non-leaking stream
-     */
-    Stream<WorldItem> findByGid(int gid);
-
-    /**
-     * Find multiple items by their position
-     * @param position an non-null position
-     * @return a non-null, non-leaking stream
-     */
-    Stream<WorldItem> findByPosition(CharacterInventoryPositionEnum position);
-
-    /**
      * Return a stream of items
      * @return a non-null, non-leaking stream
      */
@@ -94,6 +80,50 @@ public interface WorldItemBag {
     Optional<WorldItem> tryRemove(int uid);
 
     // defaults
+
+    /**
+     * Find multiple items by their gid
+     * @param gid an integer
+     * @return a non-null, non-leaking stream
+     */
+    default Stream<WorldItem> findByGid(int gid) {
+        return getItemStream().filter(x -> x.getGid() == gid);
+    }
+
+    /**
+     * Find multiple items by their position
+     * @param position an non-null position
+     * @return a non-null, non-leaking stream
+     */
+    default Stream<WorldItem> findByPosition(CharacterInventoryPositionEnum position) {
+        return getItemStream().filter(x -> x.getPosition() == position);
+    }
+
+    /**
+     * Find multiple items not having the given position
+     * @param position a non-null position
+     * @return a non-null, non-leaking, stream
+     */
+    default Stream<WorldItem> findByNotPosition(CharacterInventoryPositionEnum position) {
+        return getItemStream().filter(x -> x.getPosition() != position);
+    }
+
+    /**
+     * Find equiped items
+     * @return a non-null, non-leaking stream
+     */
+    default Stream<WorldItem> findEquiped() {
+        return findByNotPosition(INVENTORY_POSITION_NOT_EQUIPED);
+    }
+
+    /**
+     * Find non-equiped items
+     * @return a non-null, non-leaking streal
+     */
+    default Stream<WorldItem> findNonEquiped() {
+        return findByPosition(INVENTORY_POSITION_NOT_EQUIPED);
+    }
+
     /**
      * Try to merge a given item to another non-equiped item
      * @param item a non-null item
