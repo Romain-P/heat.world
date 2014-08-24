@@ -8,7 +8,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED;
 import static java.util.Objects.requireNonNull;
 
 public final class MapItemBag implements WorldItemBag {
@@ -29,17 +28,6 @@ public final class MapItemBag implements WorldItemBag {
     @Override
     public Optional<WorldItem> findByUid(int uid) {
         return Optional.ofNullable(map.get(uid));
-    }
-
-    @Override
-    public Stream<WorldItem> findByGid(int gid) {
-        return map.values().stream().filter(x -> x.getTemplate().getId() == gid);
-    }
-
-    @Override
-    public Stream<WorldItem> findByPosition(CharacterInventoryPositionEnum position) {
-        requireNonNull(position, "position");
-        return map.values().stream().filter(x -> x.getPosition() == position);
     }
 
     @Override
@@ -110,31 +98,16 @@ public final class MapItemBag implements WorldItemBag {
     }
 
     @Override
-    public Either<WorldItem, WorldItem> tryMerge(WorldItem item) {
+    public Either<WorldItem, WorldItem> mergeOn(WorldItem item, CharacterInventoryPositionEnum position) {
         requireNonNull(item, "item");
-
-        Optional<WorldItem> opt = findByPosition(INVENTORY_POSITION_NOT_EQUIPED)
-                .filter(x -> WorldItem.compare(item, x) == 0)
-                .findFirst();
-
-        if (!opt.isPresent()) {
-            return Either.right(item);
-        }
-
-        WorldItem same = opt.get();
-        return Either.left(same.plusQuantity(item.getQuantity()));
-    }
-
-    @Override
-    public Either<WorldItem, WorldItem> mergeOrMove(WorldItem item, CharacterInventoryPositionEnum position) {
-        requireNonNull(item, "item");
+        requireNonNull(position, "position");
 
         Optional<WorldItem> opt = findByPosition(position)
                 .filter(x -> WorldItem.compare(item, x) == 0)
                 .findFirst();
 
         if (!opt.isPresent()) {
-            return Either.right(item.withPosition(position));
+            return Either.right(item);
         }
 
         WorldItem same = opt.get();

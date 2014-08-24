@@ -1,12 +1,15 @@
 package org.heat.world.items;
 
 import com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum;
+import com.ankamagames.dofus.network.types.game.data.items.ObjectItem;
 import org.fungsi.Either;
 import org.heat.shared.Pair;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED;
 
 public interface WorldItemBag extends WorldBag {
     // read operations
@@ -18,24 +21,26 @@ public interface WorldItemBag extends WorldBag {
     Optional<WorldItem> findByUid(int uid);
 
     /**
-     * Find multiple items by their gid
-     * @param gid an integer
-     * @return a non-null, non-leaking stream
-     */
-    Stream<WorldItem> findByGid(int gid);
-
-    /**
-     * Find multiple items by their position
-     * @param position an non-null position
-     * @return a non-null, non-leaking stream
-     */
-    Stream<WorldItem> findByPosition(CharacterInventoryPositionEnum position);
-
-    /**
      * Return a stream of items
      * @return a non-null, non-leaking stream
      */
     Stream<WorldItem> getItemStream();
+
+    /**
+     * Fork an item with a given quantity
+     * @param item a non-null item that'll be forked
+     * @param quantity a positive quantity lower or equal to given item's quantity
+     * @return either forked items or same item if fork wasn't necessary
+     */
+    Either<Pair<WorldItem, WorldItem>, WorldItem> fork(WorldItem item, int quantity);
+
+    /**
+     * Either merge an item or return the same item if there wasn't any item which was mergeable with on the given position
+     * @param item a non-null item
+     * @param position a non-null position
+     * @return either the merged item or the same item
+     */
+    Either<WorldItem, WorldItem> mergeOn(WorldItem item, CharacterInventoryPositionEnum position);
 
     // write operations
     /**
@@ -75,25 +80,85 @@ public interface WorldItemBag extends WorldBag {
      */
     Optional<WorldItem> tryRemove(int uid);
 
+    // defaults
+
     /**
-     * Fork an item with a given quantity
-     * @param item a non-null item that'll be forked
-     * @param quantity a positive quantity lower or equal to given item's quantity
-     * @return either forked items or same item if fork wasn't necessary
+     * Convert this bag to a stream of {@link com.ankamagames.dofus.network.types.game.data.items.ObjectItem}
+     * @return a non-null, non-leaking stream
      */
-    Either<Pair<WorldItem, WorldItem>, WorldItem> fork(WorldItem item, int quantity);
+    default Stream<ObjectItem> toObjectItem() {
+        return getItemStream().map(WorldItem::toObjectItem);
+    }
+
+    /**
+     * Get the total weight taken by this bag
+     * @return a positive integer
+     */
+    default int getWeight() {
+        return getItemStream()
+                .mapToInt(item -> (int) item.getTemplate().getRealWeight())
+                .reduce(0, Integer::sum);
+    }
+
+    /**
+     * Find multiple items by their gid
+     * @param gid an integer
+     * @return a non-null, non-leaking stream
+     */
+    default Stream<WorldItem> findByGid(int gid) {
+        return getItemStream().filter(x -> x.getGid() == gid);
+    }
+
+    /**
+     * Find multiple items by their position
+     * @param position an non-null position
+     * @return a non-null, non-leaking stream
+     */
+    default Stream<WorldItem> findByPosition(CharacterInventoryPositionEnum position) {
+        return getItemStream().filter(x -> x.getPosition() == position);
+    }
+
+    /**
+     * Find multiple items not having the given position
+     * @param position a non-null position
+     * @return a non-null, non-leaking, stream
+     */
+    default Stream<WorldItem> findByNotPosition(CharacterInventoryPositionEnum position) {
+        return getItemStream().filter(x -> x.getPosition() != position);
+    }
+
+    /**
+     * Find equiped items
+     * @return a non-null, non-leaking stream
+     */
+    default Stream<WorldItem> findEquiped() {
+        return findByNotPosition(INVENTORY_POSITION_NOT_EQUIPED);
+    }
+
+    /**
+     * Find non-equiped items
+     * @return a non-null, non-leaking streal
+     */
+    default Stream<WorldItem> findNonEquiped() {
+        return findByPosition(INVENTORY_POSITION_NOT_EQUIPED);
+    }
 
     /**
      * Try to merge a given item to another non-equiped item
      * @param item a non-null item
      * @return either merged or same item
      */
-    Either<WorldItem, WorldItem> tryMerge(WorldItem item);
+    default Either<WorldItem, WorldItem> merge(WorldItem item) {
+        return mergeOn(item, INVENTORY_POSITION_NOT_EQUIPED);
+    }
 
     /**
      * Merge an item
      * @param item a non-null item
      * @return either merged or moved item
      */
-    Either<WorldItem, WorldItem> mergeOrMove(WorldItem item, CharacterInventoryPositionEnum position);
+    default Either<WorldItem, WorldItem> mergeOrMove(WorldItem item, CharacterInventoryPositionEnum position) {
+        return mergeOn(item, position)
+            .rightMap(nonMerged -> item.withPosition(position));
+    }
 }

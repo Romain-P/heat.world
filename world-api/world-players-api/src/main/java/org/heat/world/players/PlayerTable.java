@@ -207,7 +207,7 @@ public final class PlayerTable implements Table<Player> {
         player.setShortcutBar(buildShortcutBar(player.getId()));
         player.setLastUsedAt(rset.getTimestamp("last_used_at").toInstant());
 
-        player.getStats().apply(player.getWallet().getEquipedStream());
+        player.getStats().apply(player.getWallet().findEquiped());
 
         return player;
     }

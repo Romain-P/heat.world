@@ -27,6 +27,21 @@ public abstract class DelegateItemBag implements WorldItemBag {
     }
 
     @Override
+    public Stream<WorldItem> findByNotPosition(CharacterInventoryPositionEnum position) {
+        return delegate().findByNotPosition(position);
+    }
+
+    @Override
+    public Stream<WorldItem> findEquiped() {
+        return delegate().findEquiped();
+    }
+
+    @Override
+    public Stream<WorldItem> findNonEquiped() {
+        return delegate().findNonEquiped();
+    }
+
+    @Override
     public Stream<WorldItem> getItemStream() {
         return delegate().getItemStream();
     }
@@ -62,8 +77,13 @@ public abstract class DelegateItemBag implements WorldItemBag {
     }
 
     @Override
-    public Either<WorldItem, WorldItem> tryMerge(WorldItem item) {
-        return delegate().tryMerge(item);
+    public Either<WorldItem, WorldItem> mergeOn(WorldItem item, CharacterInventoryPositionEnum position) {
+        return delegate().mergeOn(item, position);
+    }
+
+    @Override
+    public Either<WorldItem, WorldItem> merge(WorldItem item) {
+        return delegate().merge(item);
     }
 
     @Override

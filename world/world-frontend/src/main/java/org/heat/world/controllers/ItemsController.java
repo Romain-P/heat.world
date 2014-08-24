@@ -271,7 +271,7 @@ public class ItemsController {
 
         WorldItem item = option.get();
 
-        wallet.tryMerge(item)
+        wallet.merge(item)
                 .ifLeft(merged -> {
                     items.remove(item); // remove and just forget it, nobody needs it anymore
 

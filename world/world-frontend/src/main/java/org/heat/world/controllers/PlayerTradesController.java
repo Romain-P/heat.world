@@ -197,7 +197,7 @@ public class PlayerTradesController {
 
         @SuppressWarnings("unused")
         WorldItem itemAfterMerge =
-            targetWallet.tryMerge(itemAfterFork)
+            targetWallet.merge(itemAfterFork)
                 .foldRight(x -> {
                     log.debug("non merged");
                     targetWallet.add(x);
@@ -328,7 +328,7 @@ public class PlayerTradesController {
         won.getItemStream()
             .forEach(item -> {
                 if (item.getUid() < 0) {
-                    wallet.tryMerge(item)
+                    wallet.merge(item)
                         .ifLeft(merged -> {
                             itemRepository.save(merged)
                                 .onSuccess(wallet::update);

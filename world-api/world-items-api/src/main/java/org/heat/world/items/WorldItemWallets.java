@@ -35,20 +35,13 @@ public final class WorldItemWallets {
         }
 
         @Override
-        public Stream<WorldItem> findByGid(int gid) {
-            return getItemStream().filter(x -> x.getGid() == gid);
-        }
-
-        @Override
-        public Stream<WorldItem> findByPosition(CharacterInventoryPositionEnum position) {
-            return getItemStream().filter(x -> x.getPosition() == position);
-        }
-
-        @Override
         public Stream<WorldItem> getItemStream() { throw new UnsupportedOperationException(); }
 
         @Override
         public int getKamas() { throw new UnsupportedOperationException(); }
+
+        @Override
+        public void setKamas(int kamas) { throw new UnsupportedOperationException(); }
 
         @Override
         public void add(WorldItem item) { throw new UnsupportedOperationException(); }
@@ -69,13 +62,7 @@ public final class WorldItemWallets {
         public Either<Pair<WorldItem, WorldItem>, WorldItem> fork(WorldItem item, int quantity) { throw new UnsupportedOperationException(); }
 
         @Override
-        public Either<WorldItem, WorldItem> tryMerge(WorldItem item) { throw new UnsupportedOperationException(); }
-
-        @Override
-        public Either<WorldItem, WorldItem> mergeOrMove(WorldItem item, CharacterInventoryPositionEnum position) { throw new UnsupportedOperationException(); }
-
-        @Override
-        public void setKamas(int kamas) { throw new UnsupportedOperationException(); }
+        public Either<WorldItem, WorldItem> mergeOn(WorldItem item, CharacterInventoryPositionEnum position) { throw new UnsupportedOperationException(); }
     }
 
     public static WorldItemWallet createTemporary(Stream<WorldItem> items, int kamas) {
