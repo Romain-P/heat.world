@@ -234,5 +234,20 @@ final class PlayerTradeImpl implements PlayerTrade {
         state(side).uncheck();
     }
 
+    @Override
+    public PlayerTrader getTrader(WorldTradeSide side) {
+        return state(side).trader;
+    }
+
+    @Override
+    public PlayerTrader getFirstTrader() {
+        return getTrader(FIRST);
+    }
+
+    @Override
+    public PlayerTrader getSecondTrader() {
+        return getTrader(SECOND);
+    }
+
     //</editor-fold>
 }

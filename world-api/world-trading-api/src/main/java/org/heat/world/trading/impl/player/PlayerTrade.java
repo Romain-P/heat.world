@@ -13,4 +13,12 @@ public interface PlayerTrade extends WorldTrade {
 
     void check(WorldTradeSide side);
     void uncheck(WorldTradeSide side);
+
+    PlayerTrader getFirstTrader();
+    PlayerTrader getSecondTrader();
+
+    default PlayerTrader getTrader(WorldTradeSide side) {
+        if (side == WorldTradeSide.FIRST) return getFirstTrader();
+        return getSecondTrader();
+    }
 }
