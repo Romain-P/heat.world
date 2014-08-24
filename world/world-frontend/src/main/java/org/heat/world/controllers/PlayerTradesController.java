@@ -101,6 +101,12 @@ public class PlayerTradesController {
         currentAction.remove();
     }
 
+    @Receive
+    public void accept(ExchangeAcceptMessage msg) {
+        TradeAction action = getTradeAction();
+        action.trade.getEventBus().publish(AcceptPlayerTradeEvent.INSTANCE);
+    }
+
     @Listener
     public InvitePlayerTradeEvent.AckT onInvited(InvitePlayerTradeEvent evt) {
         if (currentAction.isPresent()) {
@@ -123,7 +129,19 @@ public class PlayerTradesController {
 
     @Listener
     public void onAcceptTrade(AcceptPlayerTradeEvent evt) {
-        client.write(new ExchangeStartedMessage(PLAYER_TRADE.value));
+        PlayerTrade trade = getTradeAction().trade;
+        Player first = (Player) trade.getFirstTrader();
+        Player second = (Player) trade.getSecondTrader();
+
+        client.write(new ExchangeStartedWithPodsMessage(
+                PLAYER_TRADE.value,
+                first.getId(),
+                first.getWallet().getWeight(),
+                first.getMaxWeight(),
+                second.getId(),
+                second.getWallet().getWeight(),
+                second.getMaxWeight()
+        ));
     }
 
     @Listener
