@@ -208,6 +208,12 @@ public class PlayerTradesController {
                 });
     }
 
+    @Receive
+    public void check(ExchangeReadyMessage msg) {
+        TradeAction action = getTradeAction();
+        action.trade.check(action.side);
+    }
+
     @Listener
     public InvitePlayerTradeEvent.AckT onInvited(InvitePlayerTradeEvent evt) {
         if (currentAction.isPresent()) {
