@@ -197,7 +197,7 @@ final class PlayerTradeImpl implements PlayerTrade {
             synchronized (globalTradeLock) {
                 super.remove(item);
             }
-            eventBus.publish(new PlayerTraderUpdateItemEvent(PlayerTradeImpl.this, trader, this, item));
+            eventBus.publish(new PlayerTraderRemoveItemEvent(PlayerTradeImpl.this, trader, this, item));
         }
 
         @Override
