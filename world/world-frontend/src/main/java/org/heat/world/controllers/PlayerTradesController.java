@@ -145,6 +145,7 @@ public class PlayerTradesController {
             return;
         }
 
+        action.trade.uncheckAllIfNeeded();
         action.getPublicWallet().setKamas(msg.quantity);
     }
 
@@ -156,6 +157,8 @@ public class PlayerTradesController {
             client.write(Basics.noop());
             return;
         }
+
+        action.trade.uncheckAllIfNeeded();
 
         final boolean toPublic = msg.quantity > 0;
         final int quantity = Math.abs(msg.quantity);

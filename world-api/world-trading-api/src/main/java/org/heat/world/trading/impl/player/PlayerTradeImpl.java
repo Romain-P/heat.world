@@ -212,7 +212,7 @@ final class PlayerTradeImpl implements PlayerTrade {
         }
     }
     //</editor-fold>
-    //<editor-fold desc="Delegates to SideState">
+    //<editor-fold desc="PlayerTrade handy helpers">
 
     @Override
     public void check(WorldTradeSide side) {
@@ -226,6 +226,15 @@ final class PlayerTradeImpl implements PlayerTrade {
         synchronized (globalTradeLock) {
             state(side).uncheck();
         }
+    }
+
+    @Override
+    public void uncheckAllIfNeeded() {
+        states.forEach((side, state) -> {
+            if (state.check) {
+                state.uncheck();
+            }
+        });
     }
 
     @Override

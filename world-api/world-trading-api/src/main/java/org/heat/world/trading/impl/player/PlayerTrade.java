@@ -15,6 +15,8 @@ public interface PlayerTrade extends WorldTrade {
     void check(WorldTradeSide side);
     void uncheck(WorldTradeSide side);
 
+    void uncheckAllIfNeeded();
+
     PlayerTrader getTrader(WorldTradeSide side);
 
     @Override
