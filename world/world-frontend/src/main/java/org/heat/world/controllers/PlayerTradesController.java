@@ -1,6 +1,8 @@
 package org.heat.world.controllers;
 
+import com.ankamagames.dofus.network.enums.DialogTypeEnum;
 import com.ankamagames.dofus.network.enums.GameContextEnum;
+import com.ankamagames.dofus.network.messages.game.dialog.LeaveDialogRequestMessage;
 import com.ankamagames.dofus.network.messages.game.inventory.exchanges.*;
 import com.github.blackrush.acara.Listener;
 import lombok.Getter;
@@ -11,19 +13,18 @@ import org.fungsi.concurrent.Promises;
 import org.heat.world.controllers.events.EnterContextEvent;
 import org.heat.world.controllers.events.roleplay.trades.AcceptPlayerTradeEvent;
 import org.heat.world.controllers.events.roleplay.trades.InvitePlayerTradeEvent;
-import org.heat.world.controllers.events.roleplay.trades.RefusePlayerTradeEvent;
 import org.heat.world.players.Player;
 import org.heat.world.roleplay.WorldAction;
 import org.heat.world.roleplay.environment.WorldMap;
 import org.heat.world.trading.WorldTradeSide;
 import org.heat.world.trading.impl.player.PlayerTrade;
 import org.heat.world.trading.impl.player.PlayerTradeFactory;
+import org.heat.world.trading.impl.player.events.PlayerTradeCancelEvent;
 import org.rocket.network.*;
 
 import javax.inject.Inject;
 import java.util.Optional;
 
-import static com.ankamagames.dofus.network.enums.DialogTypeEnum.DIALOG_EXCHANGE;
 import static com.ankamagames.dofus.network.enums.ExchangeErrorEnum.REQUEST_IMPOSSIBLE;
 import static com.ankamagames.dofus.network.enums.ExchangeTypeEnum.PLAYER_TRADE;
 
@@ -94,18 +95,29 @@ public class PlayerTradesController {
             });
     }
 
+    @Receive
+    public void cancel(LeaveDialogRequestMessage msg) {
+        currentAction.get().cancel();
+        currentAction.remove();
+    }
+
     @Listener
     public InvitePlayerTradeEvent.AckT onInvited(InvitePlayerTradeEvent evt) {
         if (currentAction.isPresent()) {
             throw new InvitePlayerTradeEvent.Busy();
         }
 
-        currentAction.set(new TradeAction(evt.getTrade(), WorldTradeSide.SECOND));
+        PlayerTrade trade = evt.getTrade();
+
+        trade.getEventBus().subscribe(this);
+        currentAction.set(new TradeAction(trade, WorldTradeSide.SECOND));
+
         client.write(new ExchangeRequestedTradeMessage(
                 PLAYER_TRADE.value,
                 evt.getSource().getId(),
                 player.get().getId()
         ));
+
         return InvitePlayerTradeEvent.Ack;
     }
 
@@ -115,7 +127,9 @@ public class PlayerTradesController {
     }
 
     @Listener
-    public void onRefuseTrade(RefusePlayerTradeEvent evt) {
-        client.write(new ExchangeLeaveMessage(DIALOG_EXCHANGE.value, false));
+    public void onCancelTrade(PlayerTradeCancelEvent evt) {
+        evt.getTrade().getEventBus().unsubscribe(this);
+        currentAction.remove();
+        client.write(new ExchangeLeaveMessage(DialogTypeEnum.DIALOG_EXCHANGE.value, evt.getTrade().isConcluded()));
     }
 }
