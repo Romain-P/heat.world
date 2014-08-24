@@ -1,6 +1,7 @@
 package org.heat.world.items;
 
 import com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum;
+import com.ankamagames.dofus.network.types.game.data.items.ObjectItem;
 import org.fungsi.Either;
 import org.heat.shared.Pair;
 
@@ -80,6 +81,24 @@ public interface WorldItemBag {
     Optional<WorldItem> tryRemove(int uid);
 
     // defaults
+
+    /**
+     * Convert this bag to a stream of {@link com.ankamagames.dofus.network.types.game.data.items.ObjectItem}
+     * @return a non-null, non-leaking stream
+     */
+    default Stream<ObjectItem> toObjectItem() {
+        return getItemStream().map(WorldItem::toObjectItem);
+    }
+
+    /**
+     * Get the total weight taken by this bag
+     * @return a positive integer
+     */
+    default int getWeight() {
+        return getItemStream()
+                .mapToInt(item -> (int) item.getTemplate().getRealWeight())
+                .reduce(0, Integer::sum);
+    }
 
     /**
      * Find multiple items by their gid

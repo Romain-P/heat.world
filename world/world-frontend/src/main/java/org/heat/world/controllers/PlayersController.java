@@ -34,7 +34,6 @@ import org.heat.world.controllers.events.*;
 import org.heat.world.controllers.events.roleplay.EquipItemEvent;
 import org.heat.world.controllers.utils.Authenticated;
 import org.heat.world.controllers.utils.Idling;
-import org.heat.world.items.WorldItem;
 import org.heat.world.metrics.GameStats;
 import org.heat.world.metrics.RegularStat;
 import org.heat.world.players.*;
@@ -209,7 +208,7 @@ public class PlayersController {
             tx.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
 
             tx.write(new InventoryContentMessage(
-                    player.getWallet().getItemStream().map(WorldItem::toObjectItem),
+                    player.getWallet().toObjectItem(),
                     player.getWallet().getKamas()
             ));
             tx.write(new InventoryWeightMessage(
