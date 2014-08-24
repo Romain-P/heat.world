@@ -44,8 +44,8 @@ final class PlayerTradeImpl implements PlayerTrade {
                 this.result = Optional.of(new ConcludedResult(first.asUnmodifiableView(), second.asUnmodifiableView()));
             }
 
-            eventBus.publish(new PlayerTradeConcludeEvent(this, result.get()));
-            eventBus.publish(new PlayerTradeEndEvent(this));
+            eventBus.publish(new PlayerTradeConcludeEvent(this, result.get()))
+                    .respond(e -> eventBus.publish(new PlayerTradeEndEvent(this)));
         }
 
         return result;
