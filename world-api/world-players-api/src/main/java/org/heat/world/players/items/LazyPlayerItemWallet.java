@@ -1,8 +1,6 @@
 package org.heat.world.players.items;
 
-import org.heat.world.items.DelegateItemBag;
-import org.heat.world.items.WorldItem;
-import org.heat.world.items.WorldItemBag;
+import org.heat.world.items.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -91,5 +89,10 @@ public final class LazyPlayerItemWallet extends DelegateItemBag implements Playe
         Optional<WorldItem> opt = super.tryRemove(uid);
         opt.ifPresent(item -> playerItems.remove(playerId, item));
         return opt;
+    }
+
+    @Override
+    public WorldItemWallet createTemp() {
+        return WorldItemWallets.createTemporary(getItemStream(), kamas.get());
     }
 }

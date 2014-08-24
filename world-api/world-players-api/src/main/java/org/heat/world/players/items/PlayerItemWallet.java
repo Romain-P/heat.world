@@ -8,6 +8,8 @@ import java.util.stream.Stream;
 import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED;
 
 public interface PlayerItemWallet extends WorldItemWallet {
+    WorldItemWallet createTemp();
+
     default int getWeight() {
         return getItemStream()
                 .mapToInt(item -> (int) item.getTemplate().getRealWeight())
