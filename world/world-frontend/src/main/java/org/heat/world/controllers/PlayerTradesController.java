@@ -5,6 +5,8 @@ import com.ankamagames.dofus.network.enums.GameContextEnum;
 import com.ankamagames.dofus.network.messages.game.dialog.LeaveDialogRequestMessage;
 import com.ankamagames.dofus.network.messages.game.inventory.exchanges.*;
 import com.ankamagames.dofus.network.messages.game.inventory.items.ExchangeKamaModifiedMessage;
+import com.ankamagames.dofus.network.messages.game.inventory.items.ExchangeObjectModifiedMessage;
+import com.ankamagames.dofus.network.messages.game.inventory.items.ExchangeObjectRemovedMessage;
 import com.github.blackrush.acara.Listener;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +51,14 @@ public class PlayerTradesController {
         final Player actor = player.get();
         final WorldItemWallet wallet = actor.getWallet().createTemp();
         final Promise<WorldAction> endFuture = Promises.create();
+
+        public WorldItemWallet getPublicWallet() {
+            return trade.getTradeBag(side);
+        }
+
+        public WorldItemWallet getPrivateWallet() {
+            return wallet;
+        }
 
         @Override
         public Future<WorldAction> cancel() {
@@ -124,7 +134,7 @@ public class PlayerTradesController {
     public void setKamas(ExchangeObjectMoveKamaMessage msg) {
         TradeAction action = getTradeAction();
 
-        if (msg.quantity > action.wallet.getKamas()) {
+        if (msg.quantity > action.getPrivateWallet().getKamas()) {
             // is this the right error value?
             client.write(new ExchangeErrorMessage(REQUEST_IMPOSSIBLE.value));
             return;
@@ -134,11 +144,11 @@ public class PlayerTradesController {
             return;
         }
 
-        action.trade.setKamas(action.side, msg.quantity);
+        action.getPublicWallet().setKamas(msg.quantity);
     }
 
     @Receive
-    public void setItem(ExchangeObjectMoveMessage msg) {
+    public void moveItem(ExchangeObjectMoveMessage msg) {
 
     }
 
@@ -195,16 +205,27 @@ public class PlayerTradesController {
 
     @Listener
     public void onTraderAddItem(PlayerTraderAddItemEvent evt) {
+        client.write(new ExchangeObjectAddedMessage(
+            evt.getTrader() != player.get(),
+            evt.getItem().toObjectItem()));
+    }
 
+    @Listener
+    public void onTraderUpdateItem(PlayerTraderUpdateItemEvent evt) {
+        client.write(new ExchangeObjectModifiedMessage(
+            evt.getTrader() != player.get(),
+            evt.getItem().toObjectItem()));
     }
 
     @Listener
     public void onTraderRemoveItem(PlayerTraderRemoveItemEvent evt) {
-
+        client.write(new ExchangeObjectRemovedMessage(
+            evt.getTrader() != player.get(),
+            evt.getItem().getUid()));
     }
 
     @Listener
     public void onTradeCheck(PlayerTradeCheckEvent evt) {
-
+        client.write(new ExchangeIsReadyMessage(evt.getTrader().getActorId(), evt.isCheck()));
     }
 }
