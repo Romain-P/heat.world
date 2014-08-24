@@ -1,21 +1,121 @@
 package org.heat.world.controllers;
 
-import com.ankamagames.dofus.network.messages.game.inventory.exchanges.ExchangePlayerRequestMessage;
+import com.ankamagames.dofus.network.enums.GameContextEnum;
+import com.ankamagames.dofus.network.messages.game.inventory.exchanges.*;
+import com.github.blackrush.acara.Listener;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.fungsi.concurrent.Future;
+import org.fungsi.concurrent.Promise;
+import org.fungsi.concurrent.Promises;
+import org.heat.world.controllers.events.EnterContextEvent;
+import org.heat.world.controllers.events.roleplay.trades.AcceptPlayerTradeEvent;
+import org.heat.world.controllers.events.roleplay.trades.InvitePlayerTradeEvent;
+import org.heat.world.controllers.events.roleplay.trades.RefusePlayerTradeEvent;
 import org.heat.world.players.Player;
-import org.rocket.network.Controller;
-import org.rocket.network.NetworkClient;
-import org.rocket.network.Prop;
-import org.rocket.network.Receive;
+import org.heat.world.roleplay.WorldAction;
+import org.heat.world.roleplay.environment.WorldMap;
+import org.heat.world.trading.WorldTradeSide;
+import org.heat.world.trading.impl.player.PlayerTrade;
+import org.heat.world.trading.impl.player.PlayerTradeFactory;
+import org.rocket.network.*;
 
 import javax.inject.Inject;
+import java.util.Optional;
+
+import static com.ankamagames.dofus.network.enums.DialogTypeEnum.DIALOG_EXCHANGE;
+import static com.ankamagames.dofus.network.enums.ExchangeErrorEnum.REQUEST_IMPOSSIBLE;
+import static com.ankamagames.dofus.network.enums.ExchangeTypeEnum.PLAYER_TRADE;
 
 @Controller
 public class PlayerTradesController {
     @Inject NetworkClient client;
     @Inject Prop<Player> player;
+    @Inject MutProp<WorldAction> currentAction;
+
+    @Inject PlayerTradeFactory tradeFactory;
+
+    @RequiredArgsConstructor
+    @Getter
+    class TradeAction implements WorldAction {
+        final PlayerTrade trade;
+        final WorldTradeSide side;
+        final Player actor = player.get();
+        final Promise<WorldAction> endFuture = Promises.create();
+
+        @Override
+        public Future<WorldAction> cancel() {
+            if (!endFuture.isDone()) {
+                trade.cancel(side);
+                endFuture.complete(this);
+            }
+            return endFuture;
+        }
+    }
+
+    private TradeAction getTradeAction() {
+        return (TradeAction) currentAction.get();
+    }
+
+    @Listener
+    public void listenTradeInvitations(EnterContextEvent evt) {
+        if (evt.getContext() != GameContextEnum.ROLE_PLAY) return;
+
+        player.get().getEventBus().subscribe(this);
+    }
 
     @Receive
     public void invite(ExchangePlayerRequestMessage msg) {
+        Player player = this.player.get();
+        WorldMap map = player.getPosition().getMap();
 
+        Optional<Player> option = map.findActor(msg.target).flatMap(Player::asPlayer);
+        if (!option.isPresent()) {
+            client.write(new ExchangeErrorMessage(REQUEST_IMPOSSIBLE.value));
+            return;
+        }
+        Player target = option.get();
+
+        PlayerTrade trade = tradeFactory.apply(player, target);
+
+        target.getEventBus().publish(new InvitePlayerTradeEvent(trade, player))
+            .filter(answers -> answers.contains(InvitePlayerTradeEvent.Ack)).toUnit()
+            .onSuccess(u -> {
+                currentAction.set(new TradeAction(trade, WorldTradeSide.FIRST));
+                trade.getEventBus().subscribe(this);
+                client.write(new ExchangeRequestedTradeMessage(
+                        PLAYER_TRADE.value,
+                        player.getId(),
+                        target.getId()
+                ));
+            })
+            .onFailure(err -> {
+                client.write(new ExchangeErrorMessage(REQUEST_IMPOSSIBLE.value));
+            });
+    }
+
+    @Listener
+    public InvitePlayerTradeEvent.AckT onInvited(InvitePlayerTradeEvent evt) {
+        if (currentAction.isPresent()) {
+            throw new InvitePlayerTradeEvent.Busy();
+        }
+
+        currentAction.set(new TradeAction(evt.getTrade(), WorldTradeSide.SECOND));
+        client.write(new ExchangeRequestedTradeMessage(
+                PLAYER_TRADE.value,
+                evt.getSource().getId(),
+                player.get().getId()
+        ));
+        return InvitePlayerTradeEvent.Ack;
+    }
+
+    @Listener
+    public void onAcceptTrade(AcceptPlayerTradeEvent evt) {
+        client.write(new ExchangeStartedMessage(PLAYER_TRADE.value));
+    }
+
+    @Listener
+    public void onRefuseTrade(RefusePlayerTradeEvent evt) {
+        client.write(new ExchangeLeaveMessage(DIALOG_EXCHANGE.value, false));
     }
 }
