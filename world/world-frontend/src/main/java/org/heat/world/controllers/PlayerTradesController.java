@@ -21,8 +21,7 @@ import org.heat.world.roleplay.environment.WorldMap;
 import org.heat.world.trading.WorldTradeSide;
 import org.heat.world.trading.impl.player.PlayerTrade;
 import org.heat.world.trading.impl.player.PlayerTradeFactory;
-import org.heat.world.trading.impl.player.events.PlayerTradeCancelEvent;
-import org.heat.world.trading.impl.player.events.PlayerTraderKamasEvent;
+import org.heat.world.trading.impl.player.events.*;
 import org.rocket.network.*;
 
 import javax.inject.Inject;
@@ -178,5 +177,20 @@ public class PlayerTradesController {
         client.write(new ExchangeKamaModifiedMessage(
                 evt.getTrader() != player.get(),
                 evt.getWallet().getKamas()));
+    }
+
+    @Listener
+    public void onTraderAddItem(PlayerTraderAddItemEvent evt) {
+
+    }
+
+    @Listener
+    public void onTraderRemoveItem(PlayerTraderRemoveItemEvent evt) {
+
+    }
+
+    @Listener
+    public void onTradeCheck(PlayerTradeCheckEvent evt) {
+
     }
 }
