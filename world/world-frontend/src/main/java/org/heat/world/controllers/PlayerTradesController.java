@@ -114,13 +114,17 @@ public class PlayerTradesController {
     public void setKamas(ExchangeObjectMoveKamaMessage msg) {
         TradeAction action = getTradeAction();
 
-        if (action.wallet.getKamas() < msg.quantity) {
-            // todo send error
+        if (msg.quantity > action.wallet.getKamas()) {
+            // is this the right error value?
+            client.write(new ExchangeErrorMessage(REQUEST_IMPOSSIBLE.value));
+            return;
+        } else if (msg.quantity < 0) {
+            // is this the right error value?
+            client.write(new ExchangeErrorMessage(REQUEST_IMPOSSIBLE.value));
             return;
         }
 
-        action.wallet.plusKamas(-msg.quantity);
-        action.trade.addKamas(action.side, msg.quantity);
+        action.trade.setKamas(action.side, msg.quantity);
     }
 
     @Receive

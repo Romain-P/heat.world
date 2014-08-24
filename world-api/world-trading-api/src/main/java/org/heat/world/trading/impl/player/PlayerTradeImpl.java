@@ -145,25 +145,11 @@ final class PlayerTradeImpl implements PlayerTrade {
             }
         }
 
-        void addKamas(int kamas) {
+        void setKamas(int kamas) {
             if (kamas < 0) {
-                throw new IllegalArgumentException("you cannot add a negative amount of kamas");
+                throw new IllegalArgumentException("you cannot set a negative amount of kamas");
             }
-            if (kamas == 0) {
-                return;
-            }
-            this.kamas += kamas;
-            eventBus.publish(new PlayerTraderKamasEvent(PlayerTradeImpl.this, trader, createWallet()));
-        }
-
-        void removeKamas(int kamas) {
-            if (kamas < 0) {
-                throw new IllegalArgumentException("you cannot remove a negative amount of kamas");
-            }
-            if (kamas == 0) {
-                return;
-            }
-            this.kamas -= kamas;
+            this.kamas = kamas;
             eventBus.publish(new PlayerTraderKamasEvent(PlayerTradeImpl.this, trader, createWallet()));
         }
 
@@ -210,16 +196,9 @@ final class PlayerTradeImpl implements PlayerTrade {
         return state(side).tryRemoveItem(itemUid);
     }
 
-    @Synchronized
     @Override
-    public void addKamas(WorldTradeSide side, int kamas) {
-        state(side).addKamas(kamas);
-    }
-
-    @Synchronized
-    @Override
-    public void removeKamas(WorldTradeSide side, int kamas) {
-        state(side).removeKamas(kamas);
+    public void setKamas(WorldTradeSide side, int kamas) {
+        state(side).setKamas(kamas);
     }
 
     @Synchronized
