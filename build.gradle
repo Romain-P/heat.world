@@ -20,7 +20,7 @@ allprojects {
     ext.guice = '3.0'
     ext.heatUtil = '0.4.+'
     ext.heatShared = '0.1-SNAPSHOT'
-    ext.heatD2vendor = '2.21.3-5'
+    ext.heatD2vendor = '2.21.3-6'
 
     repositories {
         maven {
