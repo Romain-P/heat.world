@@ -245,7 +245,8 @@ final class PlayerTradeImpl implements PlayerTrade {
 
     @Override
     public WorldItemWallet getTradeBag(WorldTradeSide side) {
-        return state(side);
+        // dangerous backdoor, be careful
+        return states.get(side);
     }
 
     //</editor-fold>
