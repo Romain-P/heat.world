@@ -20,6 +20,7 @@ import org.heat.world.items.WorldItem;
 import org.heat.world.items.WorldItemRepository;
 import org.heat.world.items.WorldItemWallet;
 import org.heat.world.players.Player;
+import org.heat.world.players.PlayerRepository;
 import org.heat.world.players.items.PlayerItemWallet;
 import org.heat.world.roleplay.WorldAction;
 import org.heat.world.roleplay.environment.WorldMap;
@@ -45,6 +46,7 @@ public class PlayerTradesController {
 
     @Inject PlayerTradeFactory tradeFactory;
     @Inject WorldItemRepository itemRepository;
+    @Inject PlayerRepository playerRepository;
 
     @RequiredArgsConstructor
     @Getter
@@ -330,6 +332,8 @@ public class PlayerTradesController {
                     wallet.add(item);
                 }
             });
+
+        playerRepository.save(player);
 
         client.transaction(tx -> {
             tx.write(new InventoryContentMessage(wallet.getItemStream().map(WorldItem::toObjectItem), wallet.getKamas()));
