@@ -182,33 +182,23 @@ public class PlayerTradesController {
         WorldItem itemAfterFork =
             wallet.fork(item, quantity)
                 .foldRight(x -> {
-                    log.debug("non forked");
                     wallet.remove(x);
                     return x;
                 })
                 .thenLeft(result -> {
-                    log.debug("forked");
                     wallet.update(result.first);
-                    if (toPublic) {
-                        client.write(new ExchangeObjectModifiedMessage(false, result.first.toObjectItem()));
-                    }
-                    return result.second.withUid(-result.first.getUid());
+                    return result.second.withUid(result.first.getUid());
                 });
 
         @SuppressWarnings("unused")
         WorldItem itemAfterMerge =
             targetWallet.merge(itemAfterFork)
                 .foldRight(x -> {
-                    log.debug("non merged");
                     targetWallet.add(x);
                     return x;
                 })
                 .thenLeft(result -> {
-                    log.debug("merged");
                     targetWallet.update(result);
-                    if (toPublic) {
-                        client.write(new ExchangeObjectRemovedMessage(false, itemAfterFork.getUid()));
-                    }
                     return result;
                 });
     }
