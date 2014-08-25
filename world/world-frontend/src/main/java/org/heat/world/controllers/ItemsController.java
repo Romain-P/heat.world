@@ -9,6 +9,8 @@ import com.ankamagames.dofus.network.messages.game.inventory.items.*;
 import com.ankamagames.dofus.network.messages.game.shortcut.ShortcutBarRemovedMessage;
 import com.github.blackrush.acara.Listener;
 import org.fungsi.Either;
+import org.fungsi.concurrent.Future;
+import org.fungsi.concurrent.Futures;
 import org.heat.shared.MoreFutures;
 import org.heat.shared.Pair;
 import org.heat.world.controllers.events.CreatePlayerEvent;
@@ -31,6 +33,7 @@ import org.rocket.network.Prop;
 import org.rocket.network.Receive;
 
 import javax.inject.Inject;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -63,20 +66,24 @@ public class ItemsController {
         boolean apply = after.getPosition() != INVENTORY_POSITION_NOT_EQUIPED;
         client.getEventBus().publish(new EquipItemEvent(after, apply));
     }
-
-    private void give(Player player, int gid, int quantity) {
-        items.save(itemFactory.create(gid, quantity))
-                .onSuccess(player.getWallet()::add);
+    
+    private Future<WorldItem> createAndSave(int gid, int quantity) {
+        return items.save(itemFactory.create(gid, quantity));
     }
 
     @Listener
     public void onPlayerCreation(CreatePlayerEvent evt) {
         // DEBUG(world/frontend)
-        give(evt.getPlayer(), 39, 1); // small owl amulet
-        give(evt.getPlayer(), 100, 2); // small wisdom ring
-        give(evt.getPlayer(), 2474, 1); // adventurer hat
-        give(evt.getPlayer(), 6801, 1); // winter cloak
-        give(evt.getPlayer(), 9002, 1); // phtalmo
+        Future<List<WorldItem>> items = Futures.collect(Arrays.asList(
+                createAndSave(39, 1), // small owl amulet
+                createAndSave(100, 2), // small wisdom ring
+                createAndSave(2474, 1), // adventurer hat
+                createAndSave(6801, 1), // winter cloak
+                createAndSave(9002, 1) // phtalmo
+        ));
+
+        items.onSuccess(evt.getPlayer().getWallet()::addAll)
+            .onSuccess(x -> client.write(new ObjectsAddedMessage(x.stream().map(WorldItem::toObjectItem))));
     }
 
     @Receive
