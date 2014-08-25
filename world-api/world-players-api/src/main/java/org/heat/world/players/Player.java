@@ -6,6 +6,7 @@ import com.ankamagames.dofus.network.enums.DirectionsEnum;
 import com.ankamagames.dofus.network.types.game.character.alignment.ActorAlignmentInformations;
 import com.ankamagames.dofus.network.types.game.character.alignment.ActorExtendedAlignmentInformations;
 import com.ankamagames.dofus.network.types.game.character.characteristic.CharacterCharacteristicsInformations;
+import com.ankamagames.dofus.network.types.game.character.characteristic.CharacterSpellModification;
 import com.ankamagames.dofus.network.types.game.character.choice.CharacterBaseInformations;
 import com.ankamagames.dofus.network.types.game.character.restriction.ActorRestrictionsInformations;
 import com.ankamagames.dofus.network.types.game.context.roleplay.GameRolePlayCharacterInformations;
@@ -149,7 +150,7 @@ public class Player
         // TODO(world/players): alignment
         res.alignmentInfos = new ActorExtendedAlignmentInformations();
         // TODO(world/players): spell modifications
-        res.spellModifications = Stream.empty();
+        res.spellModifications = new CharacterSpellModification[0];
 
         res.experience = experience.getCurrent();
         res.experienceLevelFloor = experience.getStep().getTop();
