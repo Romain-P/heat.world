@@ -41,9 +41,9 @@ public final class JdbcPlayerItemRepository implements PlayerItemRepository {
 
     private String batchInsertQuery(int rows) {
         StringBuilder builder = new StringBuilder("insert into player_items(player_id, item_uid) values ");
-        builder.append("(?,?,?)");
+        builder.append("(?,?)");
         for (int i = 1; i < rows; i++) {
-            builder.append(",(?,?,?)");
+            builder.append(",(?,?)");
         }
         return builder.toString();
     }
