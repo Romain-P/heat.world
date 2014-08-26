@@ -5,6 +5,8 @@ import com.google.inject.*;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import com.typesafe.config.Config;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.marshalling.DefaultMarshallerProvider;
 import io.netty.handler.codec.marshalling.DefaultUnmarshallerProvider;
@@ -43,7 +45,8 @@ public class StdDistBackendModule extends PrivateModule {
     NetworkClientService provideNetworkClientService(
             EventBusBuilder eventBusBuilder,
             ControllerFactory controllerFactory,
-            Config config
+            Config config,
+            ByteBufAllocator allocator
     ) {
         return RocketNetty.newClientService(
                 eventBusBuilder.build(),
@@ -51,6 +54,7 @@ public class StdDistBackendModule extends PrivateModule {
                 bootstrap -> {
                     bootstrap.remoteAddress(config.getString("heat.world.backend.host"), config.getInt("heat.world.backend.port"));
                     bootstrap.channelFactory(NioSocketChannel::new);
+                    bootstrap.option(ChannelOption.ALLOCATOR, allocator);
                 },
                 pipeline -> {
                     MarshallerFactory marshaller = Marshalling.getProvidedMarshallerFactory("river");

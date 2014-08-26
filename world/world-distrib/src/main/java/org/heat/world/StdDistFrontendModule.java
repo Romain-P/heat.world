@@ -5,8 +5,12 @@ import com.github.blackrush.acara.EventBusBuilder;
 import com.google.inject.*;
 import com.google.inject.name.Named;
 import com.typesafe.config.Config;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.channel.AdaptiveRecvByteBufAllocator;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LoggingHandler;
+import org.heat.dofus.network.DofusProtocol;
 import org.heat.dofus.network.NetworkComponentFactory;
 import org.heat.dofus.network.NetworkMessage;
 import org.heat.dofus.network.netty.DofusDecoder;
@@ -43,7 +47,8 @@ public class StdDistFrontendModule extends PrivateModule {
             EventBusBuilder eventBusBuilder,
             ControllerFactory controllerFactory,
             NetworkComponentFactory<NetworkMessage> messageFactory,
-            Config config
+            Config config,
+            ByteBufAllocator allocator
     ) {
         return RocketNetty.newService(
                 eventBusBuilder::build,
@@ -51,6 +56,14 @@ public class StdDistFrontendModule extends PrivateModule {
                 bootstrap -> {
                     bootstrap.localAddress(config.getInt("heat.world.frontend.port"));
                     bootstrap.channelFactory(NioServerSocketChannel::new);
+                    bootstrap.childOption(ChannelOption.ALLOCATOR, allocator);
+                    bootstrap.childOption(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(
+                            DofusProtocol.MAX_HEADER_LEN,
+                            64, // initial size of a buffer, get refined time to time
+                            DofusProtocol.MAX_MESSAGE_LEN
+                    ));
+                    bootstrap.option(ChannelOption.SO_BACKLOG, config.getInt("heat.world.frontend.backlog"));
+                    bootstrap.option(ChannelOption.SO_REUSEADDR, true);
                 },
                 pipeline -> {
                     pipeline.addLast("decoder", new DofusDecoder(messageFactory));

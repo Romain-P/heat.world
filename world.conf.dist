@@ -11,6 +11,7 @@ heat {
     frontend {
       public-host = 127.0.0.1
       port = 5556
+      backlog = 64
     }
 
     db {
