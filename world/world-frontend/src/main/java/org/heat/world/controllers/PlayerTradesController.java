@@ -210,8 +210,12 @@ public class PlayerTradesController {
     @Receive
     public void check(ExchangeReadyMessage msg) {
         TradeAction action = getTradeAction();
-        action.trade.check(action.side);
-        action.trade.conclude();
+        if (msg.ready) {
+            action.trade.check(action.side);
+            action.trade.conclude();
+        } else {
+            action.trade.uncheck(action.side);
+        }
     }
 
     @Listener
