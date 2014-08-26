@@ -9,7 +9,9 @@ import com.github.blackrush.acara.Listener;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.fungsi.Unit;
 import org.fungsi.concurrent.Future;
+import org.fungsi.concurrent.Futures;
 import org.fungsi.concurrent.Promise;
 import org.fungsi.concurrent.Promises;
 import org.heat.world.controllers.events.EnterContextEvent;
@@ -299,28 +301,28 @@ public class PlayerTradesController {
         WorldItemWallet lost = result.getBag(action.side);
         WorldItemWallet won = result.getBag(action.side.backwards());
 
-        // add the won kamas minus the lost kamas
-        wallet.plusKamas(won.getKamas() - lost.getKamas());
-
         // remove or decrease quantity of lost items
-        lost.getItemStream()
-            .forEach(item -> {
+        Future<Unit> looseFuture = lost.getItemStream()
+            .<Future<Unit>>map(item -> {
                 Optional<WorldItem> option = wallet.findByUid(item.getUid())
                         // decrease quantity only if it results of at least one
                         .filter(x -> x.getQuantity() > item.getQuantity());
 
                 if (option.isPresent()) {
                     WorldItem original = option.get().plusQuantity(-item.getQuantity());
-                    itemRepository.save(original)
-                        .onSuccess(wallet::update);
+                    return itemRepository.save(original)
+                        .onSuccess(wallet::update)
+                        .toUnit();
                 } else {
                     wallet.remove(item);
+                    return Futures.unit();
                 }
-            });
+            })
+            .collect(Futures.collect()).toUnit();
 
         // add or merge won items
-        won.getItemStream()
-            .forEach(item -> {
+        Future<Unit> winFuture = won.getItemStream()
+            .<Future<Unit>>map(item -> {
                 // determine whether or not it has been forked
                 Optional<WorldItem> option = ((Player) action.trade.getTrader(action.side.backwards())).getWallet()
                         .findByUid(item.getUid())
@@ -328,37 +330,48 @@ public class PlayerTradesController {
 
                 if (option.isPresent()) {
                     // we do know that item has been forked
-                    wallet.merge(item)
-                        .ifLeft(merged -> {
+                    return wallet.merge(item)
+                        .foldLeft(merged -> {
                             // just merge it, no ownership changes
-                            itemRepository.save(merged)
-                                    .onSuccess(wallet::update);
+                            return itemRepository.save(merged)
+                                    .onSuccess(wallet::update)
+                                    .toUnit();
                         })
-                        .ifRight(nonMerged -> {
+                        .thenRight(nonMerged -> {
                             // create a new item, get ownership
-                            itemRepository.save(item.withUid(0))
-                                    .onSuccess(wallet::add);
+                            return itemRepository.save(item.withUid(0))
+                                    .onSuccess(wallet::add)
+                                    .toUnit();
                         });
                 } else {
-                    wallet.merge(item)
-                        .ifLeft(merged -> {
+                    return wallet.merge(item)
+                        .foldLeft(merged -> {
                             // merge it and remove old one, no ownership changes
                             itemRepository.remove(item);
-                            itemRepository.save(merged)
-                                    .onSuccess(wallet::update);
+                            return itemRepository.save(merged)
+                                    .onSuccess(wallet::update)
+                                    .toUnit();
                         })
-                        .ifRight(nonMerged -> {
+                        .thenRight(nonMerged -> {
                             // get ownership
                             wallet.add(item);
+                            return Futures.unit();
                         });
                 }
+            })
+            .collect(Futures.collect()).toUnit();
+
+        // add the won kamas minus the lost kamas
+        wallet.plusKamas(won.getKamas() - lost.getKamas());
+
+        playerRepository.save(player)
+            .then(looseFuture)
+            .then(winFuture)
+            .onSuccess(u -> {
+                client.transaction(tx -> {
+                    tx.write(new InventoryContentMessage(wallet.getItemStream().map(WorldItem::toObjectItem), wallet.getKamas()));
+                    tx.write(new InventoryWeightMessage(wallet.getWeight(), player.getMaxWeight()));
+                });
             });
-
-        playerRepository.save(player);
-
-        client.transaction(tx -> {
-            tx.write(new InventoryContentMessage(wallet.getItemStream().map(WorldItem::toObjectItem), wallet.getKamas()));
-            tx.write(new InventoryWeightMessage(wallet.getWeight(), player.getMaxWeight()));
-        });
     }
 }
