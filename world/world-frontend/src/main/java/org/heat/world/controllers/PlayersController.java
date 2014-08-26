@@ -219,7 +219,7 @@ public class PlayersController {
     }
 
     @Listener
-    public void appearHimselfOnline(EnterContextEvent evt) {
+    public void appearHimselfOnline(NewContextEvent evt) {
         playerRegistry.add(player.get());
     }
 
