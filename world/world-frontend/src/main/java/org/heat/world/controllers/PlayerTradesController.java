@@ -310,10 +310,12 @@ public class PlayerTradesController {
                         .filter(x -> x.getQuantity() > item.getQuantity());
 
                 if (option.isPresent()) {
+                    log.debug("decreasing quantity");
                     WorldItem original = option.get().plusQuantity(-item.getQuantity());
                     itemRepository.save(original)
                         .onSuccess(wallet::update);
                 } else {
+                    log.debug("loose ownership");
                     wallet.remove(item);
                 }
             });
@@ -325,22 +327,27 @@ public class PlayerTradesController {
                     .ifLeft(merged -> {
                         // we successfully merged an item
                         // so we do not need to worry about ownership as a merge action imply transfer of ownership
+                        log.debug("merge item and remove old one");
                         itemRepository.remove(item);
                         itemRepository.save(merged)
                             .onSuccess(wallet::update);
                     })
                     .ifRight(nonMerged -> {
                         // determine whether or not it has been forked
-                        Optional<WorldItem> option = action.trade.getTradeBag(action.side.backwards()).findByUid(item.getUid());
+                        Optional<WorldItem> option = ((Player) action.trade.getTrader(action.side.backwards())).getWallet()
+                                .findByUid(item.getUid())
+                                .filter(x -> x.getQuantity() > item.getQuantity());
 
                         if (option.isPresent()) {
                             // we know it has been forked
                             // so we need to create a new item especially for us in order to acquire ownership
+                            log.debug("create a new item");
                             itemRepository.save(item.withUid(0))
                                 .onSuccess(wallet::add);
                         } else {
                             // we know it has *not* been forked
                             // so we are fine, no need to create another one, just get the ownership
+                            log.debug("get ownership");
                             wallet.add(item);
                         }
                     });

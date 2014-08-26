@@ -240,13 +240,12 @@ final class PlayerTradeImpl implements PlayerTrade {
 
     @Override
     public PlayerTrader getTrader(WorldTradeSide side) {
-        return state(side).trader;
+        return states.get(side).trader;
     }
 
     @Override
     public WorldItemWallet getTradeBag(WorldTradeSide side) {
-        // dangerous backdoor, be careful
-        return states.get(side);
+        return state(side);
     }
 
     //</editor-fold>
