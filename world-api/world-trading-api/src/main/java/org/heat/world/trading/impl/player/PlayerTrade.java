@@ -7,6 +7,9 @@ import org.heat.world.trading.WorldTradeSide;
 import java.util.Optional;
 
 public interface PlayerTrade extends WorldTrade {
+    int getStep();
+    void increaseStep();
+
     @Override
     Optional<? extends Result> conclude();
     void cancel(WorldTradeSide side);

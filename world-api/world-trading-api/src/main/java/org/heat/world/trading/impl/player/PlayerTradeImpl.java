@@ -19,6 +19,7 @@ final class PlayerTradeImpl implements PlayerTrade {
 
     final ImmutableMap<WorldTradeSide, SideState> states;
     final Object[] globalTradeLock = new Object[0];
+    int step = 0;
 
     Optional<? extends Result> result = Optional.empty();
 
@@ -75,6 +76,20 @@ final class PlayerTradeImpl implements PlayerTrade {
     @Override
     public boolean isCancelled() {
         return result.isPresent() && result.get() instanceof CancelledResult;
+    }
+
+    @Override
+    public int getStep() {
+        synchronized (globalTradeLock) {
+            return step;
+        }
+    }
+
+    @Override
+    public void increaseStep() {
+        synchronized (globalTradeLock) {
+            step++;
+        }
     }
 
     SideState state(WorldTradeSide side) {

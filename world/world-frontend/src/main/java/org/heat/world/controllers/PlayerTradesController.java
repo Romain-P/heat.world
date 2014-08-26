@@ -152,6 +152,7 @@ public class PlayerTradesController {
         }
 
         action.trade.uncheckAllIfNeeded();
+        action.trade.increaseStep();
         action.getPublicWallet().setKamas(msg.quantity);
     }
 
@@ -165,6 +166,7 @@ public class PlayerTradesController {
         }
 
         action.trade.uncheckAllIfNeeded();
+        action.trade.increaseStep();
 
         final boolean toPublic = msg.quantity > 0;
         final int quantity = Math.abs(msg.quantity);
@@ -210,6 +212,17 @@ public class PlayerTradesController {
     @Receive
     public void check(ExchangeReadyMessage msg) {
         TradeAction action = getTradeAction();
+
+        if (action.trade.getStep() <= 0) {
+            log.warn("you can not check or uncheck a trade with step=0 {}", client);
+            client.write(Basics.noop());
+            return;
+        }
+
+        if (msg.step != action.trade.getStep()) {
+            throw new IllegalStateException("client seems desynchronized");
+        }
+
         if (msg.ready) {
             action.trade.check(action.side);
             action.trade.conclude();
