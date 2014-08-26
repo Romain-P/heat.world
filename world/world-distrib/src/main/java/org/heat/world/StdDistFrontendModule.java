@@ -51,7 +51,7 @@ public class StdDistFrontendModule extends PrivateModule {
             ByteBufAllocator allocator
     ) {
         return RocketNetty.newService(
-                eventBusBuilder::build,
+                eventBusBuilder,
                 controllerFactory,
                 bootstrap -> {
                     bootstrap.localAddress(config.getInt("heat.world.frontend.port"));
