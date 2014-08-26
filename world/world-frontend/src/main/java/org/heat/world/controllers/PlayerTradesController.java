@@ -310,12 +310,10 @@ public class PlayerTradesController {
                         .filter(x -> x.getQuantity() > item.getQuantity());
 
                 if (option.isPresent()) {
-                    log.debug("decreasing quantity");
                     WorldItem original = option.get().plusQuantity(-item.getQuantity());
                     itemRepository.save(original)
                         .onSuccess(wallet::update);
                 } else {
-                    log.debug("loose ownership");
                     wallet.remove(item);
                 }
             });
@@ -323,34 +321,37 @@ public class PlayerTradesController {
         // add or merge won items
         won.getItemStream()
             .forEach(item -> {
-                wallet.merge(item)
-                    .ifLeft(merged -> {
-                        // we successfully merged an item
-                        // so we do not need to worry about ownership as a merge action imply transfer of ownership
-                        log.debug("merge item and remove old one");
-                        itemRepository.remove(item);
-                        itemRepository.save(merged)
-                            .onSuccess(wallet::update);
-                    })
-                    .ifRight(nonMerged -> {
-                        // determine whether or not it has been forked
-                        Optional<WorldItem> option = ((Player) action.trade.getTrader(action.side.backwards())).getWallet()
-                                .findByUid(item.getUid())
-                                .filter(x -> x.getQuantity() > item.getQuantity());
+                // determine whether or not it has been forked
+                Optional<WorldItem> option = ((Player) action.trade.getTrader(action.side.backwards())).getWallet()
+                        .findByUid(item.getUid())
+                        .filter(x -> x.getQuantity() > item.getQuantity());
 
-                        if (option.isPresent()) {
-                            // we know it has been forked
-                            // so we need to create a new item especially for us in order to acquire ownership
-                            log.debug("create a new item");
+                if (option.isPresent()) {
+                    // we do know that item has been forked
+                    wallet.merge(item)
+                        .ifLeft(merged -> {
+                            // just merge it, no ownership changes
+                            itemRepository.save(merged)
+                                    .onSuccess(wallet::update);
+                        })
+                        .ifRight(nonMerged -> {
+                            // create a new item, get ownership
                             itemRepository.save(item.withUid(0))
-                                .onSuccess(wallet::add);
-                        } else {
-                            // we know it has *not* been forked
-                            // so we are fine, no need to create another one, just get the ownership
-                            log.debug("get ownership");
+                                    .onSuccess(wallet::add);
+                        });
+                } else {
+                    wallet.merge(item)
+                        .ifLeft(merged -> {
+                            // merge it and remove old one, no ownership changes
+                            itemRepository.remove(item);
+                            itemRepository.save(merged)
+                                    .onSuccess(wallet::update);
+                        })
+                        .ifRight(nonMerged -> {
+                            // get ownership
                             wallet.add(item);
-                        }
-                    });
+                        });
+                }
             });
 
         playerRepository.save(player);
