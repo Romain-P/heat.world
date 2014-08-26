@@ -381,9 +381,12 @@ public class PlayerTradesController {
         // add the won kamas minus the lost kamas
         wallet.plusKamas(won.getKamas() - lost.getKamas());
 
-        playerRepository.save(player)
-            .then(looseFuture)
-            .then(winFuture)
+        Future<Unit> kamasFuture =
+            won.getKamas() - lost.getKamas() != 0
+                ? playerRepository.save(player)
+                : Futures.unit();
+
+        kamasFuture.then(looseFuture).then(winFuture)
             .onSuccess(u -> {
                 client.transaction(tx -> {
                     tx.write(new InventoryContentMessage(wallet.getItemStream().map(WorldItem::toObjectItem), wallet.getKamas()));
