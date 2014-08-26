@@ -13,7 +13,7 @@ import static java.util.Objects.requireNonNull;
 public final class MapItemBag implements WorldItemBag {
     private final Map<Integer, WorldItem> map;
 
-    private MapItemBag(Map<Integer, WorldItem> map) {
+    MapItemBag(Map<Integer, WorldItem> map) {
         this.map = map;
     }
 

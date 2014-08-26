@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 
 import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED;
 
-public interface WorldItemBag {
+public interface WorldItemBag extends WorldBag {
     // read operations
     /**
      * Find an item by its uid

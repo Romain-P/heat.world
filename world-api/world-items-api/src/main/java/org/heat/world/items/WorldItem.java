@@ -40,15 +40,15 @@ public final class WorldItem {
         return create(uid, version + 1, template, effects, position, quantity);
     }
 
-    WorldItem withUid(int uid) {
+    // mutators
+    public WorldItem withUid(int uid) {
         return create(uid, version + 1, template, effects, position, quantity);
     }
 
-    WorldItem withNewVersion() {
+    public WorldItem withNewVersion() {
         return copy(template, effects, position, quantity);
     }
 
-    // mutators
     public WorldItem withPosition(CharacterInventoryPositionEnum position) {
         requireNonNull(position, "position");
         return copy(template, effects, position, quantity);

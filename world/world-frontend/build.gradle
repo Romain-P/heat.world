@@ -3,5 +3,6 @@ dependencies {
     compile project(':world-api:world-frontend-api')
     compile project(':world-api:world-players-api')
     compile project(':world-api:world-items-api')
+    compile project(':world-api:world-trading-api')
     compile "org.rocket:rocket-network:$rocket"
 }

@@ -25,13 +25,16 @@ import org.heat.world.players.metrics.PlayerExperience;
 import org.heat.world.players.metrics.PlayerSpellBook;
 import org.heat.world.players.metrics.PlayerStatBook;
 import org.heat.world.players.shortcuts.PlayerShortcutBar;
+import org.heat.world.roleplay.WorldActor;
 import org.heat.world.roleplay.WorldActorLook;
 import org.heat.world.roleplay.WorldHumanoidActor;
 import org.heat.world.roleplay.environment.WorldMapPoint;
 import org.heat.world.roleplay.environment.WorldPosition;
+import org.heat.world.trading.impl.player.PlayerTrader;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum.*;
@@ -42,7 +45,8 @@ import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum
 @ToString
 public class Player
         implements Serializable,
-            WorldHumanoidActor
+            WorldHumanoidActor,
+            PlayerTrader
 {
     EventBus eventBus;
     int id;
@@ -239,5 +243,12 @@ public class Player
     @Override
     public int hashCode() {
         return id;
+    }
+
+    public static Optional<Player> asPlayer(WorldActor actor) {
+        if (actor instanceof Player) {
+            return Optional.of((Player) actor);
+        }
+        return Optional.empty();
     }
 }
