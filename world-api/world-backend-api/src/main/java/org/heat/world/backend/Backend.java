@@ -13,4 +13,8 @@ public interface Backend {
     void setNewStatus(ServerStatusEnum newStatus);
     void setNrPlayers(int userId, int nrPlayers);
     void acknowledgeDisconnection(int userId);
+
+    default void acknowledgeDisconnection(User user) {
+        acknowledgeDisconnection(user.getId());
+    }
 }

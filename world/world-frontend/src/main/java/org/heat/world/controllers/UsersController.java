@@ -60,4 +60,11 @@ public class UsersController {
                 .mayRescue(cause -> client.write(AuthenticationTicketRefusedMessage.i).flatMap(x -> client.close()))
         ;
     }
+
+    @Disconnect
+    public void acknowledgeUserDisconnection() {
+        if (user.isPresent()) {
+            backend.acknowledgeDisconnection(user.get());
+        }
+    }
 }
