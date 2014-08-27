@@ -28,6 +28,13 @@ public interface PlayerRegistry {
     Optional<Player> findPlayer(int id);
 
     /**
+     * Find an online player by its user id
+     * @param userId an integer representing {@link org.heat.User#getId()}
+     * @return an optional player
+     */
+    Optional<Player> findPlayerByUserId(int userId);
+
+    /**
      * Find an online player by its name
      * @param name a string representing player's name
      * @return an optional player
@@ -35,8 +42,19 @@ public interface PlayerRegistry {
     Optional<Player> findPlayerByName(String name);
 
     /**
+     * Determine whether or not one of {@link org.heat.User}'s players is registered
+     * @param userId an integer representing {@link org.heat.User#getId()}
+     * @return {@code true} if a user is registered, {@code false} otherwise
+     */
+    default boolean isUserRegisted(int userId) {
+        return findPlayerByUserId(userId).isPresent();
+    }
+
+    /**
      * Add a player to this registry in order to appear online
      * @param player a non-null player
+     * @throws org.heat.world.players.PlayerAlreadyRegisteredException if it already contains the given player or
+     * @throws org.heat.world.players.UserAlreadyRegisteredException if its one of its user's already is
      */
     void add(Player player);
 

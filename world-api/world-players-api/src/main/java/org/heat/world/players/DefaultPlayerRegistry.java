@@ -15,6 +15,7 @@ import java.util.concurrent.locks.StampedLock;
 public final class DefaultPlayerRegistry implements PlayerRegistry {
     private final Map<Integer, Player> byId = new HashMap<>();
     private final Map<String, Player> byName = new HashMap<>();
+    private final Map<Integer, Player> byUserId = new HashMap<>();
     private final StampedLock lock = new StampedLock();
 
     @Getter final EventBus eventBus;
@@ -24,6 +25,27 @@ public final class DefaultPlayerRegistry implements PlayerRegistry {
         long stamp = lock.readLock();
         try {
             return Optional.ofNullable(byId.get(id));
+        } finally {
+            lock.unlockRead(stamp);
+        }
+    }
+
+    @Override
+    public Optional<Player> findPlayerByUserId(int userId) {
+        long stamp = lock.readLock();
+        try {
+            return Optional.of(byUserId.get(userId));
+        } finally {
+            lock.unlockRead(stamp);
+        }
+    }
+
+    // avoid useless Optional boxing
+    @Override
+    public boolean isUserRegisted(int userId) {
+        long stamp = lock.readLock();
+        try {
+            return byUserId.containsKey(userId);
         } finally {
             lock.unlockRead(stamp);
         }
@@ -46,7 +68,10 @@ public final class DefaultPlayerRegistry implements PlayerRegistry {
             // read
             if (byId.containsKey(player.getId())) {
                 // now we are sure there won't be duplicates
-                throw new IllegalArgumentException("registry already contains " + player);
+                throw new PlayerAlreadyRegisteredException(player + " is already registered");
+            }
+            if (byUserId.containsKey(player.getUserId())) {
+                throw new UserAlreadyRegisteredException(player.getUserId() + " has already a used connected");
             }
 
             // write
@@ -57,6 +82,7 @@ public final class DefaultPlayerRegistry implements PlayerRegistry {
 
             byId.put(player.getId(), player);
             byName.put(player.getName(), player);
+            byUserId.put(player.getUserId(), player);
         } finally {
             lock.unlock(stamp); // can unlock both read and write
         }
@@ -82,6 +108,7 @@ public final class DefaultPlayerRegistry implements PlayerRegistry {
 
             byId.remove(player.getId());
             byName.remove(player.getName());
+            byUserId.remove(player.getUserId());
         } finally {
             lock.unlock(stamp); // can unlock both read and write
         }
