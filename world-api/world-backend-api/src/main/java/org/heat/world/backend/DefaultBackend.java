@@ -86,4 +86,9 @@ public final class DefaultBackend implements Backend {
     public void setNrPlayers(int userId, int nrPlayers) {
         client.write(new SetNrPlayersReq(userId, nrPlayers));
     }
+
+    @Override
+    public void acknowledgeDisconnection(int userId) {
+        client.write(new AckUserAuthReq(userId, false));
+    }
 }

@@ -12,4 +12,5 @@ public interface Backend {
 
     void setNewStatus(ServerStatusEnum newStatus);
     void setNrPlayers(int userId, int nrPlayers);
+    void acknowledgeDisconnection(int userId);
 }
