@@ -59,8 +59,9 @@ public final class DefaultBackend implements Backend {
         String ticket = Strings.randomString(random, 64);
         users.put(ticket, user);
         userAuthTtl.schedule(userAuthTtlDuration, () -> {
-            users.remove(ticket);
-            client.write(new AckUserAuthReq(user.getId(), false));
+            if (users.remove(ticket, user)) {
+                client.write(new AckUserAuthReq(user.getId(), false));
+            }
         });
         return Futures.success(ticket);
     }
