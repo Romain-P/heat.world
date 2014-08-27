@@ -8,6 +8,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import com.typesafe.config.Config;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.PooledByteBufAllocator;
 import org.heat.StdDataModule;
@@ -35,8 +36,12 @@ public class StdWorldModule extends AbstractModule {
 
     @Provides
     @Singleton
-    ExecutorService provideExecutorService() {
-        return Executors.newFixedThreadPool(16);
+    ExecutorService provideExecutorService(Config config) {
+        int parallelism = config.getInt("heat.world.workers-parallelism");
+        if (parallelism <= 0) {
+            parallelism = Runtime.getRuntime().availableProcessors();
+        }
+        return Executors.newWorkStealingPool(parallelism);
     }
 
     @Provides

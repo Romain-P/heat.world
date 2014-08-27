@@ -1,6 +1,7 @@
 heat {
   world {
     id = 1
+    workers-parallelism = 0 // automatically detect when <= 0
 
     backend {
       host = 127.0.0.1
