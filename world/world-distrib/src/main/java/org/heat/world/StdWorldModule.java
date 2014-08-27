@@ -10,7 +10,6 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.PooledByteBufAllocator;
-import org.fungsi.concurrent.Workers;
 import org.heat.StdDataModule;
 import org.rocket.network.acara.RocketAcara;
 import org.rocket.world.StdBackendControllerModule;
@@ -55,7 +54,7 @@ public class StdWorldModule extends AbstractModule {
     @Provides
     EventBusBuilder provideEventBusBuilder(ExecutorService executor, @Named("main") Supervisor supervisor) {
         return CoreEventBus.builder()
-                .setWorker(Workers.wrap(executor))
+                .setWorker(new WorldWorker(executor))
                 .setSupervisor(supervisor)
                 .install(new SupervisedEventModule())
                 .install(RocketAcara.newContextfulModule())
