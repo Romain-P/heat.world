@@ -9,6 +9,7 @@ import org.fungsi.concurrent.Futures;
 import org.fungsi.concurrent.Timer;
 import org.heat.User;
 import org.heat.backend.UserAlreadyConnectedException;
+import org.heat.backend.messages.AckUserAuthReq;
 import org.heat.backend.messages.SetNrPlayersReq;
 import org.heat.backend.messages.SetStatusReq;
 import org.heat.shared.Strings;
@@ -57,7 +58,10 @@ public final class DefaultBackend implements Backend {
         }
         String ticket = Strings.randomString(random, 64);
         users.put(ticket, user);
-        userAuthTtl.schedule(userAuthTtlDuration, () -> users.remove(ticket));
+        userAuthTtl.schedule(userAuthTtlDuration, () -> {
+            users.remove(ticket);
+            client.write(new AckUserAuthReq(user.getId(), false));
+        });
         return Futures.success(ticket);
     }
 
@@ -69,6 +73,7 @@ public final class DefaultBackend implements Backend {
             return Futures.failure(new NoSuchElementException());
         }
 
+        client.write(new AckUserAuthReq(user.getId(), true));
         return Futures.success(user);
     }
 
