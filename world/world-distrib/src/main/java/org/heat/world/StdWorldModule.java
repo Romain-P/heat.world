@@ -46,8 +46,9 @@ public class StdWorldModule extends AbstractModule {
 
     @Provides
     @Singleton
-    ScheduledExecutorService provideScheduler() {
-        return Executors.newScheduledThreadPool(2);
+    ScheduledExecutorService provideScheduler(Config config) {
+        int coreSize = config.getInt("heat.world.scheduler-core-size");
+        return Executors.newScheduledThreadPool(coreSize);
     }
 
     @Provides
