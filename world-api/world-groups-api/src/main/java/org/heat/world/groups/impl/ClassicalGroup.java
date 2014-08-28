@@ -21,15 +21,16 @@ final class ClassicalGroup implements WorldGroup {
     @Getter final int maxMembers;
 
     WorldGroupMember leader;
+    String name = "";
     final Map<Integer, WorldGroupMember> members = new HashMap<>();
     final Map<Integer, Invit> invitations = new HashMap<>();
-    String name;
 
     ClassicalGroup(int groupId, EventBus eventBus, int maxMembers, WorldGroupMember leader) {
         this.groupId = groupId;
         this.eventBus = eventBus;
         this.maxMembers = maxMembers;
         this.leader = leader;
+        this.members.put(leader.getActorId(), leader);
     }
 
     void disband() {
