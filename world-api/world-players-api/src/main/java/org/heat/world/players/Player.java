@@ -1,14 +1,17 @@
 package org.heat.world.players;
 
 import com.ankamagames.dofus.datacenter.breeds.Breed;
+import com.ankamagames.dofus.network.enums.BreedEnum;
 import com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum;
 import com.ankamagames.dofus.network.enums.DirectionsEnum;
+import com.ankamagames.dofus.network.enums.PlayerStatusEnum;
 import com.ankamagames.dofus.network.types.game.character.alignment.ActorAlignmentInformations;
 import com.ankamagames.dofus.network.types.game.character.alignment.ActorExtendedAlignmentInformations;
 import com.ankamagames.dofus.network.types.game.character.characteristic.CharacterCharacteristicsInformations;
 import com.ankamagames.dofus.network.types.game.character.characteristic.CharacterSpellModification;
 import com.ankamagames.dofus.network.types.game.character.choice.CharacterBaseInformations;
 import com.ankamagames.dofus.network.types.game.character.restriction.ActorRestrictionsInformations;
+import com.ankamagames.dofus.network.types.game.character.status.PlayerStatus;
 import com.ankamagames.dofus.network.types.game.context.roleplay.GameRolePlayCharacterInformations;
 import com.ankamagames.dofus.network.types.game.context.roleplay.HumanInformations;
 import com.github.blackrush.acara.EventBus;
@@ -120,6 +123,17 @@ public class Player
     @Override
     public boolean getActorSex() {
         return sex;
+    }
+
+    @Override
+    public BreedEnum getActorBreed() {
+        return BreedEnum.valueOf((byte) breed.getId()).get();
+    }
+
+    @Override
+    public PlayerStatus toPlayerStatus() {
+        // TODO(world/players): implement Player#toPlayerStatus()
+        return new PlayerStatus(PlayerStatusEnum.PLAYER_STATUS_AVAILABLE.value);
     }
 
     @Override
