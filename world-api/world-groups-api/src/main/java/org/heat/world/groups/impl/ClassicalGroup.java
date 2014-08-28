@@ -97,6 +97,12 @@ final class ClassicalGroup implements WorldGroup {
     }
 
     @Override
+    public Stream<WorldGroupGuest> getGuestStream() {
+        notDisbanded();
+        return invitations.values().stream().map(Invit::getGroupGuest);
+    }
+
+    @Override
     public Optional<WorldGroupMember> findMember(int memberId) {
         notDisbanded();
         return Optional.ofNullable(members.get(memberId));
