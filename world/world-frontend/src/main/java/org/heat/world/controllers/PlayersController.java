@@ -37,6 +37,7 @@ import org.heat.world.controllers.utils.Idling;
 import org.heat.world.metrics.GameStats;
 import org.heat.world.metrics.RegularStat;
 import org.heat.world.players.*;
+import org.heat.world.players.events.KickPlayerEvent;
 import org.heat.world.players.metrics.PlayerSpell;
 import org.heat.world.players.metrics.PlayerStatBook;
 import org.rocket.InjectConfig;
@@ -87,6 +88,7 @@ public class PlayersController {
     }
 
     Future<Unit> doChoose(Player player) {
+        player.getEventBus().subscribe(this);
         return client.getEventBus().publish(new ChoosePlayerEvent(player)).toUnit()
                 .flatMap(u -> players.save(player))
                 .flatMap(x -> {
@@ -106,6 +108,13 @@ public class PlayersController {
                 getPlayers().stream().map(Player::toCharacterBaseInformations),
                 false // TODO(world/players): has startup actions
         ));
+    }
+
+    @Disconnect
+    public void unsubscribeFromPlayer() {
+        if (player.isPresent()) {
+            player.get().getEventBus().unsubscribe(this);
+        }
     }
 
     @Receive
@@ -278,5 +287,10 @@ public class PlayersController {
         }
 
         client.write(new CharacterStatsListMessage(player.toCharacterCharacteristicsInformations()));
+    }
+
+    @Listener
+    public Future<KickPlayerEvent> kickRequested(KickPlayerEvent evt) {
+        return client.close().map(x -> KickPlayerEvent.ACK);
     }
 }
