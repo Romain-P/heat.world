@@ -14,6 +14,7 @@ import org.rocket.network.Prop;
 import org.rocket.network.Receive;
 
 import javax.inject.Inject;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -37,6 +38,13 @@ public class GroupsController {
 
     void setGroup(WorldGroup group) {
         this.group = group;
+    }
+
+    void pushInvitation(WorldGroup.Invitation invitation) {
+        if (invitations == null) {
+            invitations = new HashMap<>();
+        }
+        invitations.put(invitation.getGroup().getGroupId(), invitation);
     }
 
     WorldGroup.Invitation getInvitation(int partyId) {
@@ -86,6 +94,7 @@ public class GroupsController {
 
     @Listener
     public void onInvitation(WorldGroup.Invitation invitation) {
+        pushInvitation(invitation);
         WorldGroup group = invitation.getGroup();
         WorldGroupMember inviter = invitation.getInviter();
         client.write(new PartyInvitationMessage(
