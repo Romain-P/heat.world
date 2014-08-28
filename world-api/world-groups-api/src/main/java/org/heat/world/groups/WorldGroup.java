@@ -2,6 +2,7 @@ package org.heat.world.groups;
 
 import com.ankamagames.dofus.network.enums.PartyTypeEnum;
 import com.ankamagames.dofus.network.types.game.context.roleplay.party.PartyGuestInformations;
+import com.ankamagames.dofus.network.types.game.context.roleplay.party.PartyInvitationMemberInformations;
 import com.ankamagames.dofus.network.types.game.context.roleplay.party.PartyMemberInformations;
 import com.github.blackrush.acara.EventBus;
 import org.heat.world.roleplay.WorldHumanoidActor;
@@ -31,6 +32,10 @@ public interface WorldGroup {
 
     default Stream<PartyMemberInformations> toPartyMemberInformations() {
         return getMemberStream().map(WorldGroupMember::toPartyMemberInformations);
+    }
+
+    default Stream<PartyInvitationMemberInformations> toPartyInvitationMemberInformations() {
+        return getMemberStream().map(WorldGroupMember::toPartyInvitationMemberInformations);
     }
 
     default Stream<PartyGuestInformations> toPartyGuestInformations() {

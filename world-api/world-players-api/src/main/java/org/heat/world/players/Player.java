@@ -14,6 +14,7 @@ import com.ankamagames.dofus.network.types.game.character.restriction.ActorRestr
 import com.ankamagames.dofus.network.types.game.character.status.PlayerStatus;
 import com.ankamagames.dofus.network.types.game.context.roleplay.GameRolePlayCharacterInformations;
 import com.ankamagames.dofus.network.types.game.context.roleplay.HumanInformations;
+import com.ankamagames.dofus.network.types.game.context.roleplay.party.PartyInvitationMemberInformations;
 import com.ankamagames.dofus.network.types.game.context.roleplay.party.PartyMemberInformations;
 import com.ankamagames.dofus.network.types.game.context.roleplay.party.companion.PartyCompanionMemberInformations;
 import com.github.blackrush.acara.EventBus;
@@ -205,6 +206,23 @@ public class Player
             (short) position.getSubAreaId(),
             toPlayerStatus(),
             new PartyCompanionMemberInformations[0] // TODO(world/players): companions
+        );
+    }
+
+    @Override
+    public PartyInvitationMemberInformations toPartyInvitationMemberInformations() {
+        return new PartyInvitationMemberInformations(
+                id,
+                (short) experience.getCurrentLevel(),
+                name,
+                look.toEntityLook(),
+                (byte) breed.getId(),
+                sex,
+                (short) position.getMapCoordinates().first,
+                (short) position.getMapCoordinates().second,
+                position.getMapId(),
+                (short) position.getSubAreaId(),
+                new PartyCompanionMemberInformations[0] // TODO(world/players): companions
         );
     }
 
