@@ -160,6 +160,11 @@ public class GroupsController {
     }
 
     @Receive
+    public void cancelInvitation(PartyCancelInvitationMessage msg) {
+        getGroup(msg.partyId).findInvitation(msg.guestId).get().cancel(player.get());
+    }
+
+    @Receive
     public void getInvitationDetails(PartyInvitationDetailsRequestMessage msg) {
         WorldGroup.Invitation invitation = getInvitation(msg.partyId);
         WorldGroup group = invitation.getGroup();
