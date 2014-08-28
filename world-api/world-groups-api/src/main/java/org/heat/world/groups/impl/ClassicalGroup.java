@@ -50,6 +50,12 @@ final class ClassicalGroup implements WorldGroup {
         }
     }
 
+    private void hasNotMember(WorldGroupMember member) {
+        if (members.containsKey(member.getActorId())) {
+            throw new IllegalArgumentException();
+        }
+    }
+
     @Override
     public PartyTypeEnum getPartyType() {
         return PartyTypeEnum.PARTY_TYPE_CLASSICAL;
@@ -61,9 +67,11 @@ final class ClassicalGroup implements WorldGroup {
     }
 
     @Override
-    public void abdicateLeader() {
-        // TODO(world/groups): ClassicalGroup.abdicateLeader
-        throw new UnsupportedOperationException("not implemented");
+    public void abdicateLeader(WorldGroupMember newLeader) {
+        hasMember(newLeader);
+//        WorldGroupMember oldLeader = this.leader;
+        this.leader = newLeader;
+        eventBus.publish(new AbdicateGroupEvent(this, newLeader));
     }
 
     @Override
@@ -78,6 +86,8 @@ final class ClassicalGroup implements WorldGroup {
 
     @Override
     public Invitation invite(WorldGroupMember inviter, WorldGroupMember guest) {
+        hasMember(inviter);
+        hasNotMember(guest);
         return new Invit(new WorldGroupGuest(guest, inviter, Instant.now()));
     }
 

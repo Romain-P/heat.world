@@ -15,7 +15,7 @@ public interface WorldGroup {
     PartyTypeEnum getPartyType();
 
     WorldGroupMember getLeader();
-    void abdicateLeader();
+    void abdicateLeader(WorldGroupMember newLeader);
 
     Invitation invite(WorldGroupMember inviter, WorldGroupMember guest);
     Optional<Invitation> findInvitation(int guestId);
