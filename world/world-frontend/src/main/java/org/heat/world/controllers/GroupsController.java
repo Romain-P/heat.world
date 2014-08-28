@@ -266,6 +266,7 @@ public class GroupsController {
 
     @Listener
     public void disbandGroup(DisbandGroupEvent evt) {
-
+        popGroup(evt.getGroup().getGroupId());
+        client.write(new PartyLeaveMessage(evt.getGroup().getGroupId()));
     }
 }
