@@ -65,6 +65,15 @@ public class GroupsController {
         groups.put(group.getGroupId(), group);
     }
 
+    WorldGroup popGroup(int id) {
+        WorldGroup group = groups.remove(id);
+        if (group == null) {
+            throw new IllegalArgumentException();
+        }
+        group.getEventBus().unsubscribe(this);
+        return group;
+    }
+
     void pushInvitation(WorldGroup.Invitation invitation) {
         if (invitations == null) {
             invitations = new HashMap<>();
@@ -204,6 +213,13 @@ public class GroupsController {
         client.write(Basics.noop());
     }
 
+    @Receive
+    public void leave(PartyLeaveRequestMessage msg) {
+        WorldGroup group = popGroup(msg.partyId);
+        group.leave(player.get());
+        client.write(new PartyLeaveMessage(group.getGroupId()));
+    }
+
     @Listener
     public void newMember(NewGroupMemberEvent evt) {
         client.write(new PartyNewMemberMessage(evt.getGroup().getGroupId(), evt.getMember().toPartyMemberInformations()));
@@ -246,5 +262,10 @@ public class GroupsController {
                 evt.getGroup().getGroupId(),
                 evt.getCanceller().getActorId(),
                 evt.getGuest().getGuest().getActorId()));
+    }
+
+    @Listener
+    public void disbandGroup(DisbandGroupEvent evt) {
+
     }
 }
