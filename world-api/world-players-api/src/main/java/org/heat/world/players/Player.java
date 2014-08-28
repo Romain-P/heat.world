@@ -16,10 +16,13 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.fungsi.Unit;
+import org.fungsi.concurrent.Future;
 import org.heat.shared.stream.MoreCollectors;
 import org.heat.world.items.WorldItem;
 import org.heat.world.items.WorldItemType;
 import org.heat.world.metrics.GameStats;
+import org.heat.world.players.events.KickPlayerEvent;
 import org.heat.world.players.items.PlayerItemWallet;
 import org.heat.world.players.metrics.PlayerExperience;
 import org.heat.world.players.metrics.PlayerSpellBook;
@@ -228,6 +231,12 @@ public class Player
                 + stats.get(GameStats.PODS).getTotal()
                 // TODO(world/players): jobs affect transportable weight
                 ;
+    }
+
+    public Future<Unit> kick() {
+        return getEventBus().publish(KickPlayerEvent.INSTANCE)
+            .filter(answers -> answers.contains(KickPlayerEvent.ACK))
+            .toUnit();
     }
 
     @Override
