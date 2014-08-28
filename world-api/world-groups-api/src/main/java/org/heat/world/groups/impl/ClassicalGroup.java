@@ -28,6 +28,12 @@ final class ClassicalGroup implements WorldGroup {
         this.leader = leader;
     }
 
+    void disbandIfNeeded() {
+        if (members.size() <= 0) {
+            eventBus.publish(new DisbandGroupEvent(this));
+        }
+    }
+
     @Override
     public PartyTypeEnum getPartyType() {
         return PartyTypeEnum.PARTY_TYPE_CLASSICAL;
@@ -72,6 +78,7 @@ final class ClassicalGroup implements WorldGroup {
     public void leave(WorldGroupMember member) {
         if (members.remove(member.getActorId(), member)) {
             eventBus.publish(new LeaveGroupMemberEvent(this, member));
+            disbandIfNeeded();
         }
     }
 
@@ -79,6 +86,7 @@ final class ClassicalGroup implements WorldGroup {
     public void kick(WorldGroupMember kicker, WorldGroupMember member) {
         if (members.remove(member.getActorId(), member)) {
             eventBus.publish(new KickGroupMemberEvent(this, member, kicker));
+            disbandIfNeeded();
         }
     }
 
