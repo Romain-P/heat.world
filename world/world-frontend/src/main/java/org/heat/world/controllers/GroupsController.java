@@ -4,10 +4,7 @@ import com.ankamagames.dofus.network.messages.game.context.roleplay.party.*;
 import com.github.blackrush.acara.Listener;
 import org.heat.world.controllers.events.ChoosePlayerEvent;
 import org.heat.world.controllers.utils.RolePlaying;
-import org.heat.world.groups.WorldGroup;
-import org.heat.world.groups.WorldGroupFactory;
-import org.heat.world.groups.WorldGroupMember;
-import org.heat.world.groups.WorldGroupMemberOverflowException;
+import org.heat.world.groups.*;
 import org.heat.world.groups.events.*;
 import org.heat.world.players.Player;
 import org.heat.world.players.PlayerRegistry;
@@ -146,6 +143,20 @@ public class GroupsController {
                 inviter.getActorName(),
                 player.get().getId()
         ));
+
+        invitation.getInvitationEndFuture()
+            .onFailure(err -> {
+                if (err instanceof WorldGroupInvitationCancelledException) {
+                    WorldGroupInvitationCancelledException ex = (WorldGroupInvitationCancelledException) err;
+
+                    popInvitation(group.getGroupId());
+
+                    client.write(new PartyCancelInvitationNotificationMessage(
+                        group.getGroupId(),
+                        ex.getCanceller().getActorId(),
+                        player.get().getActorId()));
+                }
+            });
     }
 
     @Receive

@@ -55,6 +55,7 @@ public interface WorldGroup {
 
         void accept();
         void refuse();
+        void cancel(WorldGroupMember canceller);
 
         default WorldHumanoidActor getGuest() {
             return getGroupGuest().getGuest();

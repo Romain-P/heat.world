@@ -7,10 +7,7 @@ import org.fungsi.Unit;
 import org.fungsi.concurrent.Future;
 import org.fungsi.concurrent.Promise;
 import org.fungsi.concurrent.Promises;
-import org.heat.world.groups.WorldGroup;
-import org.heat.world.groups.WorldGroupGuest;
-import org.heat.world.groups.WorldGroupMember;
-import org.heat.world.groups.WorldGroupMemberOverflowException;
+import org.heat.world.groups.*;
 import org.heat.world.groups.events.*;
 
 import java.time.Instant;
@@ -203,6 +200,13 @@ final class ClassicalGroup implements WorldGroup {
         public void refuse() {
             invitations.remove(groupGuest.getGuest().getActorId());
             eventBus.publish(new RemoveGuestGroupEvent(ClassicalGroup.this, groupGuest));
+        }
+
+        @Override
+        public void cancel(WorldGroupMember canceller) {
+            hasMember(canceller);
+            refuse();
+            end.fail(new WorldGroupInvitationCancelledException(canceller));
         }
     }
 }
