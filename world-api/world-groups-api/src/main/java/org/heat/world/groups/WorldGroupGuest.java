@@ -4,14 +4,13 @@ import com.ankamagames.dofus.network.types.game.context.roleplay.party.PartyGues
 import com.ankamagames.dofus.network.types.game.context.roleplay.party.companion.PartyCompanionBaseInformations;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.heat.world.roleplay.WorldHumanoidActor;
 
 import java.time.Instant;
 
 @RequiredArgsConstructor
 @Getter
 public final class WorldGroupGuest {
-    final WorldHumanoidActor guest;
+    final WorldGroupMember guest;
     final WorldGroupMember inviter;
     final Instant invitedAt;
 

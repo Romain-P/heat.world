@@ -7,10 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.heat.world.groups.WorldGroup;
 import org.heat.world.groups.WorldGroupGuest;
 import org.heat.world.groups.WorldGroupMember;
-import org.heat.world.groups.events.KickGroupMemberEvent;
-import org.heat.world.groups.events.LeaveGroupMemberEvent;
-import org.heat.world.groups.events.UpdateGroupMemberEvent;
-import org.heat.world.roleplay.WorldHumanoidActor;
+import org.heat.world.groups.events.*;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -58,7 +55,7 @@ final class ClassicalGroup implements WorldGroup {
     }
 
     @Override
-    public Invitation invite(WorldGroupMember inviter, WorldHumanoidActor guest) {
+    public Invitation invite(WorldGroupMember inviter, WorldGroupMember guest) {
         return new Invit(new WorldGroupGuest(guest, inviter, Instant.now()));
     }
 
@@ -91,14 +88,14 @@ final class ClassicalGroup implements WorldGroup {
 
         @Override
         public void accept() {
-            // TODO(world/groups): Invit.accept
-            throw new UnsupportedOperationException("not implemented");
+            WorldGroupMember guest = groupGuest.getGuest();
+            members.put(guest.getActorId(), guest);
+            eventBus.publish(new NewGroupMemberEvent(ClassicalGroup.this, guest));
         }
 
         @Override
         public void refuse() {
-            // TODO(world/groups): Invit.refuse
-            throw new UnsupportedOperationException("not implemented");
+            eventBus.publish(new RemoveGuestGroupEvent(ClassicalGroup.this, groupGuest));
         }
     }
 }
