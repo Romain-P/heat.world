@@ -125,9 +125,13 @@ final class ClassicalGroup implements WorldGroup {
     @Override
     public void leave(WorldGroupMember member) {
         notDisbanded();
-        removeMember(member);
-        eventBus.publish(new LeaveGroupMemberEvent(this, member));
-        disbandIfNeeded();
+        if (leader == member) {
+            disband();
+        } else {
+            removeMember(member);
+            eventBus.publish(new LeaveGroupMemberEvent(this, member));
+            disbandIfNeeded();
+        }
     }
 
     @Override
