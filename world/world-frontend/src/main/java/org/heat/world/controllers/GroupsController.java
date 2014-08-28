@@ -101,7 +101,7 @@ public class GroupsController {
                 group.getGroupId(),
                 group.getGroupType().value,
                 group.getGroupName(),
-                (byte) 0, // todo party max members
+                (byte) group.getMaxMembers(),
                 inviter.getActorId(),
                 inviter.getActorName(),
                 player.get().getId()
@@ -135,7 +135,7 @@ public class GroupsController {
                 group.getGroupId(),
                 group.getGroupType().value,
                 group.getLeader().getActorId(),
-                (byte) 0, // todo party max members
+                (byte) group.getMaxMembers(),
                 group.toPartyMemberInformations(),
                 group.toPartyGuestInformations(),
                 false, // todo restriction

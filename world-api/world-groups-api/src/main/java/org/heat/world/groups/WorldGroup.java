@@ -21,6 +21,8 @@ public interface WorldGroup {
     WorldGroupMember getLeader();
     void abdicateLeader(WorldGroupMember newLeader);
 
+    int getMaxMembers();
+
     Invitation invite(WorldGroupMember inviter, WorldGroupMember guest);
     Optional<Invitation> findInvitation(int guestId);
     void update(WorldGroupMember member);

@@ -17,15 +17,17 @@ import java.util.stream.Stream;
 final class ClassicalGroup implements WorldGroup {
     @Getter final int groupId;
     @Getter final EventBus eventBus;
+    @Getter final int maxMembers;
 
     WorldGroupMember leader;
     final Map<Integer, WorldGroupMember> members = new HashMap<>();
     final Map<Integer, Invit> invitations = new HashMap<>();
     String name;
 
-    ClassicalGroup(int groupId, EventBus eventBus, WorldGroupMember leader) {
+    ClassicalGroup(int groupId, EventBus eventBus, int maxMembers, WorldGroupMember leader) {
         this.groupId = groupId;
         this.eventBus = eventBus;
+        this.maxMembers = maxMembers;
         this.leader = leader;
     }
 
