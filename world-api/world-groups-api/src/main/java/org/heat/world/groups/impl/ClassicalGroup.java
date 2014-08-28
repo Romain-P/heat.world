@@ -205,7 +205,8 @@ final class ClassicalGroup implements WorldGroup {
         @Override
         public void cancel(WorldGroupMember canceller) {
             hasMember(canceller);
-            refuse();
+            invitations.remove(groupGuest.getGuest().getActorId());
+            eventBus.publish(new CancelGuestGroupEvent(ClassicalGroup.this, groupGuest, canceller));
             end.fail(new WorldGroupInvitationCancelledException(canceller));
         }
     }

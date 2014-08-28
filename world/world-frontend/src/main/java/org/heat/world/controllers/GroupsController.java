@@ -3,6 +3,7 @@ package org.heat.world.controllers;
 import com.ankamagames.dofus.network.messages.game.context.roleplay.party.*;
 import com.github.blackrush.acara.Listener;
 import org.heat.world.controllers.events.ChoosePlayerEvent;
+import org.heat.world.controllers.utils.Basics;
 import org.heat.world.controllers.utils.RolePlaying;
 import org.heat.world.groups.*;
 import org.heat.world.groups.events.*;
@@ -200,6 +201,7 @@ public class GroupsController {
         if (invitation != null) {
             invitation.refuse();
         }
+        client.write(Basics.noop());
     }
 
     @Listener
@@ -236,5 +238,13 @@ public class GroupsController {
     @Listener
     public void removeGuest(RemoveGuestGroupEvent evt) {
         // TODO(world/groups): removeGuest
+    }
+
+    @Listener
+    public void cancelGuest(CancelGuestGroupEvent evt) {
+        client.write(new PartyCancelInvitationNotificationMessage(
+                evt.getGroup().getGroupId(),
+                evt.getCanceller().getActorId(),
+                evt.getGuest().getGuest().getActorId()));
     }
 }
