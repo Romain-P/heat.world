@@ -31,6 +31,9 @@ public interface WorldGroup {
     }
 
     public interface Invitation {
+        public enum AckT { INSTANCE }
+        public static final AckT Ack = AckT.INSTANCE;
+
         WorldGroupGuest getGroupGuest();
 
         void accept();
