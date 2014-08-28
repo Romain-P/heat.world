@@ -8,6 +8,7 @@ import org.heat.world.groups.WorldGroup;
 import org.heat.world.groups.WorldGroupFactory;
 import org.heat.world.groups.WorldGroupMember;
 import org.heat.world.groups.WorldGroupMemberOverflowException;
+import org.heat.world.groups.events.*;
 import org.heat.world.players.Player;
 import org.heat.world.players.PlayerRegistry;
 import org.rocket.network.Controller;
@@ -163,5 +164,41 @@ public class GroupsController {
     public void refuse(PartyRefuseInvitationMessage msg) {
         WorldGroup.Invitation invitation = popInvitation(msg.partyId);
         invitation.refuse();
+    }
+
+    @Listener
+    public void newMember(NewGroupMemberEvent evt) {
+        client.write(new PartyNewMemberMessage(evt.getGroup().getGroupId(), evt.getMember().toPartyMemberInformations()));
+    }
+
+    @Listener
+    public void updateMember(UpdateGroupMemberEvent evt) {
+        client.write(new PartyUpdateMessage(evt.getGroup().getGroupId(), evt.getMember().toPartyMemberInformations()));
+    }
+
+    @Listener
+    public void leaveMember(LeaveGroupMemberEvent evt) {
+        client.write(new PartyMemberRemoveMessage(evt.getGroup().getGroupId(), evt.getMember().getActorId()));
+    }
+
+    @Listener
+    public void kickMember(KickGroupMemberEvent evt) {
+        Player player = this.player.get();
+
+        if (evt.getMember() == player) {
+            // TODO(world/groups): GET REKT
+        } else {
+            client.write(new PartyMemberRemoveMessage(evt.getGroup().getGroupId(), evt.getMember().getActorId()));
+        }
+    }
+
+    @Listener
+    public void newGuest(NewGuestGroupEvent evt) {
+        client.write(new PartyNewGuestMessage(evt.getGroup().getGroupId(), evt.getGuest().toPartyGuestInformations()));
+    }
+
+    @Listener
+    public void removeGuest(RemoveGuestGroupEvent evt) {
+        // TODO(world/groups): removeGuest
     }
 }
