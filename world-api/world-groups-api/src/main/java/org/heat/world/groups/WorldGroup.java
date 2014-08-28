@@ -5,6 +5,7 @@ import com.ankamagames.dofus.network.types.game.context.roleplay.party.PartyMemb
 import com.github.blackrush.acara.EventBus;
 import org.heat.world.roleplay.WorldHumanoidActor;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface WorldGroup {
@@ -19,9 +20,10 @@ public interface WorldGroup {
     Invitation invite(WorldGroupMember inviter, WorldHumanoidActor guest);
     void update(WorldGroupMember member);
     void leave(WorldGroupMember member);
-    void kick(WorldGroupMember member);
+    void kick(WorldGroupMember kicker, WorldGroupMember member);
 
     Stream<WorldGroupMember> getMemberStream();
+    Optional<WorldGroupMember> findMember(int memberId);
 
     default Stream<PartyMemberInformations> toPartyMemberInformations() {
         return getMemberStream().map(WorldGroupMember::toPartyMemberInformations);
