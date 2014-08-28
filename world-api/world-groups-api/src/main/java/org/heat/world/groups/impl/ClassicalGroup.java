@@ -174,6 +174,7 @@ final class ClassicalGroup implements WorldGroup {
         Invit(WorldGroupGuest groupGuest) {
             this.groupGuest = groupGuest;
             invitations.put(groupGuest.getGuest().getActorId(), this);
+            eventBus.publish(new NewGuestGroupEvent(ClassicalGroup.this, groupGuest));
         }
 
         @Override
@@ -186,7 +187,6 @@ final class ClassicalGroup implements WorldGroup {
             WorldGroupMember guest = groupGuest.getGuest();
             invitations.remove(guest.getActorId());
             addMember(guest);
-            eventBus.publish(new NewGroupMemberEvent(ClassicalGroup.this, guest));
         }
 
         @Override

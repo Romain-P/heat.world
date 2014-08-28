@@ -39,6 +39,7 @@ public class GroupsController {
     WorldGroup getGroup() {
         if (group == null) {
             group = groupFactory.create(player.get());
+            group.getEventBus().subscribe(this);
             writePartyJoinMessage();
         }
         return group;
