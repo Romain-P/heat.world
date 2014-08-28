@@ -5,6 +5,7 @@ import com.github.blackrush.acara.Listener;
 import org.heat.world.controllers.events.ChoosePlayerEvent;
 import org.heat.world.controllers.utils.RolePlaying;
 import org.heat.world.groups.WorldGroup;
+import org.heat.world.groups.WorldGroupFactory;
 import org.heat.world.groups.WorldGroupMember;
 import org.heat.world.groups.WorldGroupMemberOverflowException;
 import org.heat.world.players.Player;
@@ -29,13 +30,15 @@ public class GroupsController {
     @Inject Prop<Player> player;
 
     @Inject PlayerRegistry playerRegistry;
+    @Inject WorldGroupFactory groupFactory;
 
     WorldGroup group;
     Map<Integer, WorldGroup.Invitation> invitations;
 
     WorldGroup getGroup() {
         if (group == null) {
-            throw new IllegalStateException();
+            group = groupFactory.create(player.get());
+            writePartyJoinMessage();
         }
         return group;
     }
@@ -71,6 +74,19 @@ public class GroupsController {
             throw new IllegalArgumentException();
         }
         return invitation;
+    }
+
+    void writePartyJoinMessage() {
+        client.write(new PartyJoinMessage(
+                group.getGroupId(),
+                group.getGroupType().value,
+                group.getLeader().getActorId(),
+                (byte) group.getMaxMembers(),
+                group.toPartyMemberInformations(),
+                group.toPartyGuestInformations(),
+                false, // todo restriction
+                group.getGroupName()
+        ));
     }
 
     @Listener
@@ -136,16 +152,7 @@ public class GroupsController {
         try {
             invitation.accept();
             setGroup(group);
-            client.write(new PartyJoinMessage(
-                    group.getGroupId(),
-                    group.getGroupType().value,
-                    group.getLeader().getActorId(),
-                    (byte) group.getMaxMembers(),
-                    group.toPartyMemberInformations(),
-                    group.toPartyGuestInformations(),
-                    false, // todo restriction
-                    group.getGroupName()
-            ));
+            writePartyJoinMessage();
             group.getEventBus().subscribe(this);
         } catch (WorldGroupMemberOverflowException e) {
             client.write(new PartyCannotJoinErrorMessage(msg.partyId, PARTY_JOIN_ERROR_NOT_ENOUGH_ROOM.value));
