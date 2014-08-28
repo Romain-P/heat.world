@@ -5,6 +5,8 @@ import com.ankamagames.dofus.network.types.game.context.roleplay.party.PartyGues
 import com.ankamagames.dofus.network.types.game.context.roleplay.party.PartyInvitationMemberInformations;
 import com.ankamagames.dofus.network.types.game.context.roleplay.party.PartyMemberInformations;
 import com.github.blackrush.acara.EventBus;
+import org.fungsi.Unit;
+import org.fungsi.concurrent.Future;
 import org.heat.world.roleplay.WorldHumanoidActor;
 
 import java.util.Optional;
@@ -47,9 +49,7 @@ public interface WorldGroup {
     }
 
     public interface Invitation {
-        public enum AckT { INSTANCE }
-        public static final AckT Ack = AckT.INSTANCE;
-
+        Future<Unit> getInvitationEndFuture();
         WorldGroup getGroup();
         WorldGroupGuest getGroupGuest();
 

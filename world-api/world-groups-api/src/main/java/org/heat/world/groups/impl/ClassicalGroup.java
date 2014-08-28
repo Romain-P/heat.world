@@ -3,6 +3,10 @@ package org.heat.world.groups.impl;
 import com.ankamagames.dofus.network.enums.PartyTypeEnum;
 import com.github.blackrush.acara.EventBus;
 import lombok.Getter;
+import org.fungsi.Unit;
+import org.fungsi.concurrent.Future;
+import org.fungsi.concurrent.Promise;
+import org.fungsi.concurrent.Promises;
 import org.heat.world.groups.WorldGroup;
 import org.heat.world.groups.WorldGroupGuest;
 import org.heat.world.groups.WorldGroupMember;
@@ -170,6 +174,7 @@ final class ClassicalGroup implements WorldGroup {
 
     class Invit implements Invitation {
         @Getter final WorldGroupGuest groupGuest;
+        final Promise<Unit> end = Promises.create();
 
         Invit(WorldGroupGuest groupGuest) {
             this.groupGuest = groupGuest;
@@ -180,6 +185,11 @@ final class ClassicalGroup implements WorldGroup {
         @Override
         public WorldGroup getGroup() {
             return ClassicalGroup.this;
+        }
+
+        @Override
+        public Future<Unit> getInvitationEndFuture() {
+            return end;
         }
 
         @Override
