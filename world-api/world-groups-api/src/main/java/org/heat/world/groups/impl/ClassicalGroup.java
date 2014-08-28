@@ -6,6 +6,7 @@ import lombok.Getter;
 import org.heat.world.groups.WorldGroup;
 import org.heat.world.groups.WorldGroupGuest;
 import org.heat.world.groups.WorldGroupMember;
+import org.heat.world.groups.WorldGroupMemberOverflowException;
 import org.heat.world.groups.events.*;
 
 import java.time.Instant;
@@ -46,6 +47,9 @@ final class ClassicalGroup implements WorldGroup {
     }
 
     void addMember(WorldGroupMember member) {
+        if (members.size() >= maxMembers) {
+            throw new WorldGroupMemberOverflowException();
+        }
         members.put(member.getActorId(), member);
     }
 
