@@ -19,6 +19,7 @@ import org.rocket.network.Receive;
 import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static com.ankamagames.dofus.network.enums.PartyJoinErrorEnum.PARTY_JOIN_ERROR_NOT_ENOUGH_ROOM;
@@ -33,20 +34,37 @@ public class GroupsController {
     @Inject PlayerRegistry playerRegistry;
     @Inject WorldGroupFactory groupFactory;
 
-    WorldGroup group;
+    Map<Integer, WorldGroup> groups;
     Map<Integer, WorldGroup.Invitation> invitations;
 
-    WorldGroup getGroup() {
+    WorldGroup createGroup() {
+        if (groups != null) {
+            if (!groups.isEmpty()) {
+                throw new IllegalStateException();
+            }
+        } else {
+            groups = new HashMap<>();
+        }
+
+        WorldGroup group = groupFactory.create(player.get());
+        group.getEventBus().subscribe(this);
+        groups.put(group.getGroupId(), group);
+
+        writePartyJoinMessage(group);
+
+        return group;
+    }
+
+    WorldGroup getGroup(int id) {
+        WorldGroup group = groups.get(id);
         if (group == null) {
-            group = groupFactory.create(player.get());
-            group.getEventBus().subscribe(this);
-            writePartyJoinMessage();
+            throw new NoSuchElementException();
         }
         return group;
     }
 
     void setGroup(WorldGroup group) {
-        this.group = group;
+        groups.put(group.getGroupId(), group);
     }
 
     void pushInvitation(WorldGroup.Invitation invitation) {
@@ -78,7 +96,7 @@ public class GroupsController {
         return invitation;
     }
 
-    void writePartyJoinMessage() {
+    void writePartyJoinMessage(WorldGroup group) {
         client.write(new PartyJoinMessage(
                 group.getGroupId(),
                 group.getGroupType().value,
@@ -105,7 +123,7 @@ public class GroupsController {
         }
 
         Player player = this.player.get();
-        WorldGroup group = getGroup();
+        WorldGroup group = createGroup();
 
         Player target = option.get();
         WorldGroup.Invitation invitation = group.invite(player, target);
@@ -154,7 +172,7 @@ public class GroupsController {
         try {
             invitation.accept();
             setGroup(group);
-            writePartyJoinMessage();
+            writePartyJoinMessage(group);
             group.getEventBus().subscribe(this);
         } catch (WorldGroupMemberOverflowException e) {
             client.write(new PartyCannotJoinErrorMessage(msg.partyId, PARTY_JOIN_ERROR_NOT_ENOUGH_ROOM.value));
