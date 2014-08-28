@@ -87,9 +87,9 @@ public class GroupsController {
             throw new IllegalStateException();
         }
         WorldGroup.Invitation invitation = invitations.remove(partyId);
-        if (invitation == null) {
-            throw new IllegalArgumentException();
-        }
+//        if (invitation == null) {
+//            throw new IllegalArgumentException();
+//        }
         return invitation;
     }
 
@@ -151,10 +151,9 @@ public class GroupsController {
 
                     popInvitation(group.getGroupId());
 
-                    client.write(new PartyCancelInvitationNotificationMessage(
+                    client.write(new PartyInvitationCancelledForGuestMessage(
                         group.getGroupId(),
-                        ex.getCanceller().getActorId(),
-                        player.get().getActorId()));
+                        ex.getCanceller().getActorId()));
                 }
             });
     }
@@ -198,7 +197,9 @@ public class GroupsController {
     @Receive
     public void refuse(PartyRefuseInvitationMessage msg) {
         WorldGroup.Invitation invitation = popInvitation(msg.partyId);
-        invitation.refuse();
+        if (invitation != null) {
+            invitation.refuse();
+        }
     }
 
     @Listener
