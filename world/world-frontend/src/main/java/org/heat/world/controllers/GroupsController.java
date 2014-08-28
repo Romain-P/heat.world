@@ -100,7 +100,7 @@ public class GroupsController {
         client.write(new PartyInvitationMessage(
                 group.getGroupId(),
                 group.getGroupType().value,
-                "", // todo party name
+                group.getGroupName(),
                 (byte) 0, // todo party max members
                 inviter.getActorId(),
                 inviter.getActorName(),
@@ -115,7 +115,7 @@ public class GroupsController {
         client.write(new PartyInvitationDetailsMessage(
                 group.getGroupId(),
                 group.getGroupType().value,
-                "",
+                group.getGroupName(),
                 invitation.getInviter().getActorId(),
                 invitation.getInviter().getActorName(),
                 group.getLeader().getActorId(),
@@ -139,7 +139,7 @@ public class GroupsController {
                 group.toPartyMemberInformations(),
                 group.toPartyGuestInformations(),
                 false, // todo restriction
-                "" // todo party name
+                group.getGroupName()
         ));
         group.getEventBus().subscribe(this);
     }

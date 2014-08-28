@@ -21,6 +21,7 @@ final class ClassicalGroup implements WorldGroup {
     WorldGroupMember leader;
     final Map<Integer, WorldGroupMember> members = new HashMap<>();
     final Map<Integer, Invit> invitations = new HashMap<>();
+    String name;
 
     ClassicalGroup(int groupId, EventBus eventBus, WorldGroupMember leader) {
         this.groupId = groupId;
@@ -88,6 +89,17 @@ final class ClassicalGroup implements WorldGroup {
 //        WorldGroupMember oldLeader = this.leader;
         this.leader = newLeader;
         eventBus.publish(new AbdicateGroupEvent(this, newLeader));
+    }
+
+    @Override
+    public String getGroupName() {
+        return name;
+    }
+
+    @Override
+    public void setGroupName(String name) {
+        this.name = name;
+        eventBus.publish(new NewNameGroupEvent(this, name));
     }
 
     @Override

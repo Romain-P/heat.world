@@ -15,6 +15,8 @@ public interface WorldGroup {
 
     int getGroupId();
     PartyTypeEnum getGroupType();
+    String getGroupName();
+    void setGroupName(String name);
 
     WorldGroupMember getLeader();
     void abdicateLeader(WorldGroupMember newLeader);
