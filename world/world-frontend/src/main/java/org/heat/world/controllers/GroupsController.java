@@ -14,6 +14,7 @@ import org.rocket.network.Prop;
 import org.rocket.network.Receive;
 
 import javax.inject.Inject;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -24,24 +25,40 @@ public class GroupsController {
 
     @Inject PlayerRegistry playerRegistry;
 
+    WorldGroup group;
+    Map<Integer, WorldGroup.Invitation> invitations;
+
     WorldGroup getGroup() {
-        // TODO(world/groups): GroupsController.getGroup
-        throw new UnsupportedOperationException("not implemented");
+        if (group == null) {
+            throw new IllegalStateException();
+        }
+        return group;
     }
 
-    void setGroup(WorldGroup gruop) {
-        // TODO(world/groups): GroupsController.setGroup
-        throw new UnsupportedOperationException("not implemented");
+    void setGroup(WorldGroup group) {
+        this.group = group;
     }
 
     WorldGroup.Invitation getInvitation(int partyId) {
-        // TODO(world/groups): GroupsController.getInvitation
-        throw new UnsupportedOperationException("not implemented");
+        if (invitations == null) {
+            throw new IllegalStateException();
+        }
+        WorldGroup.Invitation invitation = invitations.get(partyId);
+        if (invitation == null) {
+            throw new IllegalArgumentException();
+        }
+        return invitation;
     }
 
     WorldGroup.Invitation popInvitation(int partyId) {
-        // TODO(world/groups): GroupsController.popInvitation
-        throw new UnsupportedOperationException("not implemented");
+        if (invitations == null) {
+            throw new IllegalStateException();
+        }
+        WorldGroup.Invitation invitation = invitations.remove(partyId);
+        if (invitation == null) {
+            throw new IllegalArgumentException();
+        }
+        return invitation;
     }
 
     @Listener
