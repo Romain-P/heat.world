@@ -28,17 +28,18 @@ final class ClassicalGroup implements WorldGroup {
         this.leader = leader;
     }
 
-    void disbandIfNeeded() {
-        if (leader != null && members.size() <= 1) {
-            leader = null;
-            eventBus.publish(new DisbandGroupEvent(this));
-        }
-    }
-
     void disband() {
         leader = null;
         members.clear();
+        invitations.forEach((guestId, invit) -> invit.refuse());
+        invitations.clear();
         eventBus.publish(new DisbandGroupEvent(this));
+    }
+
+    void disbandIfNeeded() {
+        if (leader != null && members.size() <= 1) {
+            disband();
+        }
     }
 
     void addMember(WorldGroupMember member) {
