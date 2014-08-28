@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.ankamagames.dofus.network.enums.PartyJoinErrorEnum.PARTY_JOIN_ERROR_NOT_ENOUGH_ROOM;
+import static com.ankamagames.dofus.network.enums.PartyJoinErrorEnum.PARTY_JOIN_ERROR_PLAYER_NOT_FOUND;
 
 @Controller
 @RolePlaying
@@ -81,7 +82,7 @@ public class GroupsController {
     public void invite(PartyInvitationRequestMessage msg) {
         Optional<Player> option = playerRegistry.findPlayerByName(msg.name);
         if (!option.isPresent()) {
-            // send error
+            client.write(new PartyCannotJoinErrorMessage(0, PARTY_JOIN_ERROR_PLAYER_NOT_FOUND.value));
             return;
         }
 
