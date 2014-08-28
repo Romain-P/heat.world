@@ -19,6 +19,7 @@ public class StdFrontendControllerModule extends ControllerModule {
         newController().to(ItemsController.class);
         newController().to(ShortcutsController.class);
         newController().to(PlayerTradesController.class);
+        newController().to(GroupsController.class);
 
         newProp(User.class);
         newProp(Player.class);
