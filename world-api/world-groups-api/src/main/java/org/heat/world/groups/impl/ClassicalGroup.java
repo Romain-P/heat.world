@@ -29,7 +29,7 @@ final class ClassicalGroup implements WorldGroup {
     }
 
     void disbandIfNeeded() {
-        if (leader != null && members.size() <= 0) {
+        if (leader != null && members.size() <= 1) {
             leader = null;
             eventBus.publish(new DisbandGroupEvent(this));
         }
