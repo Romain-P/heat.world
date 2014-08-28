@@ -29,9 +29,16 @@ final class ClassicalGroup implements WorldGroup {
     }
 
     void disbandIfNeeded() {
-        if (members.size() <= 0) {
+        if (leader != null && members.size() <= 0) {
+            leader = null;
             eventBus.publish(new DisbandGroupEvent(this));
         }
+    }
+
+    void disband() {
+        leader = null;
+        members.clear();
+        eventBus.publish(new DisbandGroupEvent(this));
     }
 
     void addMember(WorldGroupMember member) {
