@@ -104,9 +104,18 @@ public class GroupsController {
         WorldGroup group = invitation.getGroup();
 
         setGroup(group);
-        group.getEventBus().subscribe(this);
-
         invitation.accept();
+        client.write(new PartyJoinMessage(
+                group.getGroupId(),
+                group.getGroupType().value,
+                group.getLeader().getActorId(),
+                (byte) 0, // todo party max members
+                group.toPartyMemberInformations(),
+                group.toPartyGuestInformations(),
+                false, // todo restriction
+                "" // todo party name
+        ));
+        group.getEventBus().subscribe(this);
     }
 
     @Receive
