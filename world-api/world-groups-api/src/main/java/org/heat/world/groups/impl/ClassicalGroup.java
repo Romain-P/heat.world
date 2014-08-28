@@ -3,7 +3,6 @@ package org.heat.world.groups.impl;
 import com.ankamagames.dofus.network.enums.PartyTypeEnum;
 import com.github.blackrush.acara.EventBus;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.heat.world.groups.WorldGroup;
 import org.heat.world.groups.WorldGroupGuest;
 import org.heat.world.groups.WorldGroupMember;
@@ -21,6 +20,7 @@ final class ClassicalGroup implements WorldGroup {
 
     WorldGroupMember leader;
     final Map<Integer, WorldGroupMember> members = new HashMap<>();
+    final Map<Integer, Invit> invitations = new HashMap<>();
 
     ClassicalGroup(int partyId, EventBus eventBus, WorldGroupMember leader) {
         this.partyId = partyId;
@@ -82,6 +82,11 @@ final class ClassicalGroup implements WorldGroup {
     }
 
     @Override
+    public Optional<Invitation> findInvitation(int guestId) {
+        return Optional.ofNullable(invitations.get(guestId));
+    }
+
+    @Override
     public void update(WorldGroupMember member) {
         hasMember(member);
         eventBus.publish(new UpdateGroupMemberEvent(this, member));
@@ -101,19 +106,25 @@ final class ClassicalGroup implements WorldGroup {
         disbandIfNeeded();
     }
 
-    @RequiredArgsConstructor
     class Invit implements Invitation {
         @Getter final WorldGroupGuest groupGuest;
+
+        Invit(WorldGroupGuest groupGuest) {
+            this.groupGuest = groupGuest;
+            invitations.put(groupGuest.getGuest().getActorId(), this);
+        }
 
         @Override
         public void accept() {
             WorldGroupMember guest = groupGuest.getGuest();
+            invitations.remove(guest.getActorId());
             addMember(guest);
             eventBus.publish(new NewGroupMemberEvent(ClassicalGroup.this, guest));
         }
 
         @Override
         public void refuse() {
+            invitations.remove(groupGuest.getGuest().getActorId());
             eventBus.publish(new RemoveGuestGroupEvent(ClassicalGroup.this, groupGuest));
         }
     }

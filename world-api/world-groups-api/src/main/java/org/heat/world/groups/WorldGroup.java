@@ -18,6 +18,7 @@ public interface WorldGroup {
     void abdicateLeader();
 
     Invitation invite(WorldGroupMember inviter, WorldGroupMember guest);
+    Optional<Invitation> findInvitation(int guestId);
     void update(WorldGroupMember member);
     void leave(WorldGroupMember member);
     void kick(WorldGroupMember kicker, WorldGroupMember member);
