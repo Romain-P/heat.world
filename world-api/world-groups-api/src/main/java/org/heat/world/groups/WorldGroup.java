@@ -1,0 +1,44 @@
+package org.heat.world.groups;
+
+import com.ankamagames.dofus.network.enums.PartyTypeEnum;
+import com.ankamagames.dofus.network.types.game.context.roleplay.party.PartyMemberInformations;
+import com.github.blackrush.acara.EventBus;
+import org.heat.world.roleplay.WorldHumanoidActor;
+
+import java.util.stream.Stream;
+
+public interface WorldGroup {
+    EventBus getEventBus();
+
+    int getPartyId();
+    PartyTypeEnum getPartyType();
+
+    WorldGroupMember getLeader();
+    void abdicateLeader();
+
+    Invitation invite(WorldGroupMember inviter, WorldHumanoidActor guest);
+    void update(WorldGroupMember member);
+    void leave(WorldGroupMember member);
+    void kick(WorldGroupMember member);
+
+    Stream<WorldGroupMember> getMemberStream();
+
+    default Stream<PartyMemberInformations> toPartyMemberInformations() {
+        return getMemberStream().map(WorldGroupMember::toPartyMemberInformations);
+    }
+
+    public interface Invitation {
+        WorldGroupGuest getGroupGuest();
+
+        void accept();
+        void refuse();
+
+        default WorldHumanoidActor getGuest() {
+            return getGroupGuest().getGuest();
+        }
+
+        default WorldGroupMember getInviter() {
+            return getGroupGuest().getInviter();
+        }
+    }
+}
