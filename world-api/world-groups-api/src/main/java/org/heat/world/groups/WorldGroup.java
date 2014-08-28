@@ -11,8 +11,8 @@ import java.util.stream.Stream;
 public interface WorldGroup {
     EventBus getEventBus();
 
-    int getPartyId();
-    PartyTypeEnum getPartyType();
+    int getGroupId();
+    PartyTypeEnum getGroupType();
 
     WorldGroupMember getLeader();
     void abdicateLeader(WorldGroupMember newLeader);
@@ -34,6 +34,7 @@ public interface WorldGroup {
         public enum AckT { INSTANCE }
         public static final AckT Ack = AckT.INSTANCE;
 
+        WorldGroup getGroup();
         WorldGroupGuest getGroupGuest();
 
         void accept();

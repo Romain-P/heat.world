@@ -15,15 +15,15 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 final class ClassicalGroup implements WorldGroup {
-    @Getter final int partyId;
+    @Getter final int groupId;
     @Getter final EventBus eventBus;
 
     WorldGroupMember leader;
     final Map<Integer, WorldGroupMember> members = new HashMap<>();
     final Map<Integer, Invit> invitations = new HashMap<>();
 
-    ClassicalGroup(int partyId, EventBus eventBus, WorldGroupMember leader) {
-        this.partyId = partyId;
+    ClassicalGroup(int groupId, EventBus eventBus, WorldGroupMember leader) {
+        this.groupId = groupId;
         this.eventBus = eventBus;
         this.leader = leader;
     }
@@ -71,7 +71,7 @@ final class ClassicalGroup implements WorldGroup {
     }
 
     @Override
-    public PartyTypeEnum getPartyType() {
+    public PartyTypeEnum getGroupType() {
         return PartyTypeEnum.PARTY_TYPE_CLASSICAL;
     }
 
@@ -149,6 +149,11 @@ final class ClassicalGroup implements WorldGroup {
         Invit(WorldGroupGuest groupGuest) {
             this.groupGuest = groupGuest;
             invitations.put(groupGuest.getGuest().getActorId(), this);
+        }
+
+        @Override
+        public WorldGroup getGroup() {
+            return ClassicalGroup.this;
         }
 
         @Override
