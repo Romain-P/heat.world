@@ -34,6 +34,22 @@ final class ClassicalGroup implements WorldGroup {
         }
     }
 
+    void addMember(WorldGroupMember member) {
+        members.put(member.getActorId(), member);
+    }
+
+    void removeMember(WorldGroupMember member) {
+        if (!members.remove(member.getActorId(), member)) {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    void hasMember(WorldGroupMember member) {
+        if (!members.containsKey(member.getActorId())) {
+            throw new IllegalArgumentException();
+        }
+    }
+
     @Override
     public PartyTypeEnum getPartyType() {
         return PartyTypeEnum.PARTY_TYPE_CLASSICAL;
@@ -67,27 +83,22 @@ final class ClassicalGroup implements WorldGroup {
 
     @Override
     public void update(WorldGroupMember member) {
-        if (!members.containsKey(member.getActorId())) {
-            throw new IllegalArgumentException();
-        }
-
+        hasMember(member);
         eventBus.publish(new UpdateGroupMemberEvent(this, member));
     }
 
     @Override
     public void leave(WorldGroupMember member) {
-        if (members.remove(member.getActorId(), member)) {
-            eventBus.publish(new LeaveGroupMemberEvent(this, member));
-            disbandIfNeeded();
-        }
+        removeMember(member);
+        eventBus.publish(new LeaveGroupMemberEvent(this, member));
+        disbandIfNeeded();
     }
 
     @Override
     public void kick(WorldGroupMember kicker, WorldGroupMember member) {
-        if (members.remove(member.getActorId(), member)) {
-            eventBus.publish(new KickGroupMemberEvent(this, member, kicker));
-            disbandIfNeeded();
-        }
+        removeMember(member);
+        eventBus.publish(new KickGroupMemberEvent(this, member, kicker));
+        disbandIfNeeded();
     }
 
     @RequiredArgsConstructor
@@ -97,7 +108,7 @@ final class ClassicalGroup implements WorldGroup {
         @Override
         public void accept() {
             WorldGroupMember guest = groupGuest.getGuest();
-            members.put(guest.getActorId(), guest);
+            addMember(guest);
             eventBus.publish(new NewGroupMemberEvent(ClassicalGroup.this, guest));
         }
 
