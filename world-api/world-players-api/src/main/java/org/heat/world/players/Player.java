@@ -14,6 +14,8 @@ import com.ankamagames.dofus.network.types.game.character.restriction.ActorRestr
 import com.ankamagames.dofus.network.types.game.character.status.PlayerStatus;
 import com.ankamagames.dofus.network.types.game.context.roleplay.GameRolePlayCharacterInformations;
 import com.ankamagames.dofus.network.types.game.context.roleplay.HumanInformations;
+import com.ankamagames.dofus.network.types.game.context.roleplay.party.PartyMemberInformations;
+import com.ankamagames.dofus.network.types.game.context.roleplay.party.companion.PartyCompanionMemberInformations;
 import com.github.blackrush.acara.EventBus;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import lombok.ToString;
 import org.fungsi.Unit;
 import org.fungsi.concurrent.Future;
 import org.heat.shared.stream.MoreCollectors;
+import org.heat.world.groups.WorldGroupMember;
 import org.heat.world.items.WorldItem;
 import org.heat.world.items.WorldItemType;
 import org.heat.world.metrics.GameStats;
@@ -52,7 +55,8 @@ import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum
 public class Player
         implements Serializable,
             WorldHumanoidActor,
-            PlayerTrader
+            PlayerTrader,
+            WorldGroupMember
 {
     EventBus eventBus;
     int id;
@@ -178,6 +182,30 @@ public class Player
         Players.populateCharacterCharacteristicsInformations(stats, res);
 
         return res;
+    }
+
+    @Override
+    public PartyMemberInformations toPartyMemberInformations() {
+        return new PartyMemberInformations(
+            id,
+            (short) experience.getCurrentLevel(),
+            name,
+            look.toEntityLook(),
+            (byte) breed.getId(),
+            sex,
+            stats.get(GameStats.LIFE).getCurrent(),
+            stats.get(GameStats.LIFE).getMax(),
+            stats.get(GameStats.PROSPECTING).getTotal(),
+            (short) 1, // TODO(world/players): regen rate
+            stats.get(GameStats.INITIATIVE).getTotal(),
+            (byte) 0, // TODO(world/players): alignment side
+            (short) position.getMapCoordinates().first,
+            (short) position.getMapCoordinates().second,
+            position.getMapId(),
+            (short) position.getSubAreaId(),
+            toPlayerStatus(),
+            new PartyCompanionMemberInformations[0] // TODO(world/players): companions
+        );
     }
 
     @SuppressWarnings({"SimplifiableIfStatement", "RedundantIfStatement"})
