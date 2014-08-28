@@ -57,9 +57,15 @@ final class ClassicalGroup implements WorldGroup {
         }
     }
 
-    private void hasNotMember(WorldGroupMember member) {
+    void hasNotMember(WorldGroupMember member) {
         if (members.containsKey(member.getActorId())) {
             throw new IllegalArgumentException();
+        }
+    }
+
+    void notDisbanded() {
+        if (leader == null) {
+            throw new IllegalStateException();
         }
     }
 
@@ -70,11 +76,13 @@ final class ClassicalGroup implements WorldGroup {
 
     @Override
     public WorldGroupMember getLeader() {
+        notDisbanded();
         return leader;
     }
 
     @Override
     public void abdicateLeader(WorldGroupMember newLeader) {
+        notDisbanded();
         hasMember(newLeader);
 //        WorldGroupMember oldLeader = this.leader;
         this.leader = newLeader;
@@ -83,16 +91,19 @@ final class ClassicalGroup implements WorldGroup {
 
     @Override
     public Stream<WorldGroupMember> getMemberStream() {
+        notDisbanded();
         return members.values().stream();
     }
 
     @Override
     public Optional<WorldGroupMember> findMember(int memberId) {
+        notDisbanded();
         return Optional.ofNullable(members.get(memberId));
     }
 
     @Override
     public Invitation invite(WorldGroupMember inviter, WorldGroupMember guest) {
+        notDisbanded();
         hasMember(inviter);
         hasNotMember(guest);
         return new Invit(new WorldGroupGuest(guest, inviter, Instant.now()));
@@ -100,17 +111,20 @@ final class ClassicalGroup implements WorldGroup {
 
     @Override
     public Optional<Invitation> findInvitation(int guestId) {
+        notDisbanded();
         return Optional.ofNullable(invitations.get(guestId));
     }
 
     @Override
     public void update(WorldGroupMember member) {
+        notDisbanded();
         hasMember(member);
         eventBus.publish(new UpdateGroupMemberEvent(this, member));
     }
 
     @Override
     public void leave(WorldGroupMember member) {
+        notDisbanded();
         removeMember(member);
         eventBus.publish(new LeaveGroupMemberEvent(this, member));
         disbandIfNeeded();
@@ -118,6 +132,7 @@ final class ClassicalGroup implements WorldGroup {
 
     @Override
     public void kick(WorldGroupMember kicker, WorldGroupMember member) {
+        notDisbanded();
         removeMember(member);
         eventBus.publish(new KickGroupMemberEvent(this, member, kicker));
         disbandIfNeeded();
