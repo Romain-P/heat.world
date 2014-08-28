@@ -6,6 +6,7 @@ import org.heat.world.controllers.events.ChoosePlayerEvent;
 import org.heat.world.controllers.utils.RolePlaying;
 import org.heat.world.groups.WorldGroup;
 import org.heat.world.groups.WorldGroupMember;
+import org.heat.world.groups.WorldGroupMemberOverflowException;
 import org.heat.world.players.Player;
 import org.heat.world.players.PlayerRegistry;
 import org.rocket.network.Controller;
@@ -17,6 +18,8 @@ import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import static com.ankamagames.dofus.network.enums.PartyJoinErrorEnum.PARTY_JOIN_ERROR_NOT_ENOUGH_ROOM;
 
 @Controller
 @RolePlaying
@@ -129,19 +132,23 @@ public class GroupsController {
         WorldGroup.Invitation invitation = popInvitation(msg.partyId);
         WorldGroup group = invitation.getGroup();
 
-        setGroup(group);
-        invitation.accept();
-        client.write(new PartyJoinMessage(
-                group.getGroupId(),
-                group.getGroupType().value,
-                group.getLeader().getActorId(),
-                (byte) group.getMaxMembers(),
-                group.toPartyMemberInformations(),
-                group.toPartyGuestInformations(),
-                false, // todo restriction
-                group.getGroupName()
-        ));
-        group.getEventBus().subscribe(this);
+        try {
+            invitation.accept();
+            setGroup(group);
+            client.write(new PartyJoinMessage(
+                    group.getGroupId(),
+                    group.getGroupType().value,
+                    group.getLeader().getActorId(),
+                    (byte) group.getMaxMembers(),
+                    group.toPartyMemberInformations(),
+                    group.toPartyGuestInformations(),
+                    false, // todo restriction
+                    group.getGroupName()
+            ));
+            group.getEventBus().subscribe(this);
+        } catch (WorldGroupMemberOverflowException e) {
+            client.write(new PartyCannotJoinErrorMessage(msg.partyId, PARTY_JOIN_ERROR_NOT_ENOUGH_ROOM.value));
+        }
     }
 
     @Receive
