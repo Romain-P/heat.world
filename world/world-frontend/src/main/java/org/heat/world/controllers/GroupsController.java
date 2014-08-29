@@ -1,5 +1,7 @@
 package org.heat.world.controllers;
 
+import com.ankamagames.dofus.network.enums.FightOptionsEnum;
+import com.ankamagames.dofus.network.messages.game.context.fight.GameFightOptionToggleMessage;
 import com.ankamagames.dofus.network.messages.game.context.roleplay.party.*;
 import com.github.blackrush.acara.Listener;
 import org.heat.world.controllers.events.ChoosePlayerEvent;
@@ -231,6 +233,22 @@ public class GroupsController {
     public void setName(PartyNameSetRequestMessage msg) {
         WorldGroup group = getGroup(msg.partyId);
         group.setGroupName(msg.partyName);
+    }
+
+    @Receive
+    public void toggleFightOption(GameFightOptionToggleMessage msg) {
+        if (msg.option != FightOptionsEnum.FIGHT_OPTION_SET_TO_PARTY_ONLY.value) return;
+
+        // TODO(world/groups): toggle fight option group only
+        client.write(Basics.noop());
+    }
+
+    @Receive
+    public void pledgeLoyalty(PartyPledgeLoyaltyRequestMessage msg) {
+        WorldGroup group = getGroup(msg.partyId);
+
+        // TODO(world/groups): pledge loyalty
+        client.write(Basics.noop());
     }
 
     @Listener
