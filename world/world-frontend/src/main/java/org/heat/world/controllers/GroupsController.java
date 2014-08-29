@@ -62,6 +62,9 @@ public class GroupsController {
     }
 
     void setGroup(WorldGroup group) {
+        if (groups == null) {
+            groups = new HashMap<>();
+        }
         groups.put(group.getGroupId(), group);
     }
 
@@ -209,8 +212,12 @@ public class GroupsController {
         WorldGroup.Invitation invitation = popInvitation(msg.partyId);
         if (invitation != null) {
             invitation.refuse();
+            client.write(new PartyRefuseInvitationNotificationMessage(invitation.getGroup().getGroupId(), player.get().getId()));
+        } else {
+            // seems that you requested to view group details
+            // still a bit buggy, just send a noop for now until i found out why it does not close the dialog
+            client.write(Basics.noop());
         }
-        client.write(Basics.noop());
     }
 
     @Receive
@@ -253,7 +260,7 @@ public class GroupsController {
 
     @Listener
     public void removeGuest(RemoveGuestGroupEvent evt) {
-        // TODO(world/groups): removeGuest
+        client.write(new PartyRefuseInvitationNotificationMessage(evt.getGroup().getGroupId(), evt.getGuest().getGuest().getActorId()));
     }
 
     @Listener

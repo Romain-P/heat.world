@@ -35,10 +35,10 @@ final class ClassicalGroup implements WorldGroup {
     }
 
     void disband() {
-        leader = null;
-        members.clear();
-        invitations.forEach((guestId, invit) -> invit.refuse());
+        invitations.forEach((guestId, invit) -> invit.notifyCancellation(leader));
         invitations.clear();
+        members.clear();
+        leader = null;
         eventBus.publish(new DisbandGroupEvent(this));
     }
 
@@ -194,6 +194,7 @@ final class ClassicalGroup implements WorldGroup {
             WorldGroupMember guest = groupGuest.getGuest();
             invitations.remove(guest.getActorId());
             addMember(guest);
+            eventBus.publish(new NewGroupMemberEvent(ClassicalGroup.this, guest));
         }
 
         @Override
@@ -206,6 +207,10 @@ final class ClassicalGroup implements WorldGroup {
         public void cancel(WorldGroupMember canceller) {
             hasMember(canceller);
             invitations.remove(groupGuest.getGuest().getActorId());
+            notifyCancellation(canceller);
+        }
+
+        void notifyCancellation(WorldGroupMember canceller) {
             eventBus.publish(new CancelGuestGroupEvent(ClassicalGroup.this, groupGuest, canceller));
             end.fail(new WorldGroupInvitationCancelledException(canceller));
         }
