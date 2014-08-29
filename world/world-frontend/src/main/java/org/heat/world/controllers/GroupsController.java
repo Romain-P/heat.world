@@ -4,6 +4,7 @@ import com.ankamagames.dofus.network.enums.FightOptionsEnum;
 import com.ankamagames.dofus.network.messages.game.context.fight.GameFightOptionToggleMessage;
 import com.ankamagames.dofus.network.messages.game.context.roleplay.party.*;
 import com.github.blackrush.acara.Listener;
+import lombok.extern.slf4j.Slf4j;
 import org.heat.world.controllers.events.ChoosePlayerEvent;
 import org.heat.world.controllers.utils.Basics;
 import org.heat.world.controllers.utils.RolePlaying;
@@ -25,6 +26,7 @@ import java.util.Optional;
 import static com.ankamagames.dofus.network.enums.PartyJoinErrorEnum.PARTY_JOIN_ERROR_NOT_ENOUGH_ROOM;
 import static com.ankamagames.dofus.network.enums.PartyJoinErrorEnum.PARTY_JOIN_ERROR_PLAYER_NOT_FOUND;
 
+@Slf4j
 @Controller
 @RolePlaying
 public class GroupsController {
@@ -236,6 +238,26 @@ public class GroupsController {
     }
 
     @Receive
+    public void abdicateThrone(PartyAbdicateThroneMessage msg) {
+        WorldGroup group = getGroup(msg.partyId);
+        if (group.getLeader() != player.get()) {
+            log.warn("you cannot abdicate if you are not yourself the leader {}", client);
+            client.write(Basics.noop());
+            return;
+        }
+
+        WorldGroupMember newLeader = group.findMember(msg.playerId).get();
+        group.abdicateLeader(newLeader);
+    }
+
+    @Receive
+    public void kickMember(PartyKickRequestMessage msg) {
+        WorldGroup group = getGroup(msg.partyId);
+        WorldGroupMember member = group.findMember(msg.playerId).get();
+        group.kick(player.get(), member); // TODO(world/groups): verify permission to kick
+    }
+
+    @Receive
     public void toggleFightOption(GameFightOptionToggleMessage msg) {
         if (msg.option != FightOptionsEnum.FIGHT_OPTION_SET_TO_PARTY_ONLY.value) return;
 
@@ -248,6 +270,22 @@ public class GroupsController {
         WorldGroup group = getGroup(msg.partyId);
 
         // TODO(world/groups): pledge loyalty
+        client.write(Basics.noop());
+    }
+
+    @Receive
+    public void followMember(PartyFollowMemberRequestMessage msg) {
+        WorldGroup group = getGroup(msg.partyId);
+
+        // TODO(world/groups): follow member
+        client.write(Basics.noop());
+    }
+
+    @Receive
+    public void allFollowMember(PartyFollowThisMemberRequestMessage msg) {
+        WorldGroup group = getGroup(msg.partyId);
+
+        // TODO(world/groups): all follow member
         client.write(Basics.noop());
     }
 
@@ -271,7 +309,8 @@ public class GroupsController {
         Player player = this.player.get();
 
         if (evt.getMember() == player) {
-            // TODO(world/groups): GET REKT
+            popGroup(evt.getGroup().getGroupId());
+            client.write(new PartyKickedByMessage(evt.getGroup().getGroupId(), evt.getKicker().getActorId()));
         } else {
             client.write(new PartyMemberRemoveMessage(evt.getGroup().getGroupId(), evt.getMember().getActorId()));
         }
@@ -304,5 +343,10 @@ public class GroupsController {
     @Listener
     public void newName(NewNameGroupEvent evt) {
         client.write(new PartyNameUpdateMessage(evt.getGroup().getGroupId(), evt.getNewName()));
+    }
+
+    @Listener
+    public void abdicate(AbdicateGroupEvent evt) {
+        client.write(new PartyLeaderUpdateMessage(evt.getGroup().getGroupId(), evt.getNewLeader().getActorId()));
     }
 }
