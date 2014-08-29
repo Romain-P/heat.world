@@ -227,6 +227,12 @@ public class GroupsController {
         client.write(new PartyLeaveMessage(group.getGroupId()));
     }
 
+    @Receive
+    public void setName(PartyNameSetRequestMessage msg) {
+        WorldGroup group = getGroup(msg.partyId);
+        group.setGroupName(msg.partyName);
+    }
+
     @Listener
     public void newMember(NewGroupMemberEvent evt) {
         client.write(new PartyNewMemberMessage(evt.getGroup().getGroupId(), evt.getMember().toPartyMemberInformations()));
@@ -275,5 +281,10 @@ public class GroupsController {
     public void disbandGroup(DisbandGroupEvent evt) {
         popGroup(evt.getGroup().getGroupId());
         client.write(new PartyLeaveMessage(evt.getGroup().getGroupId()));
+    }
+
+    @Listener
+    public void newName(NewNameGroupEvent evt) {
+        client.write(new PartyNameUpdateMessage(evt.getGroup().getGroupId(), evt.getNewName()));
     }
 }
