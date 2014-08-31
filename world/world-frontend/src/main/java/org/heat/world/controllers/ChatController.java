@@ -40,9 +40,8 @@ public class ChatController {
     public void speakWithAttachments(ChatClientMultiWithObjectMessage msg) {
         Player player = this.player.get();
 
-        WorldChannelMessage message = new StringChannelMessageWithAttachments(
-            msg.channel,
-            msg.content,
+        WorldChannelMessage message = new ChannelMessageWithAttachments(
+            new StringChannelMessage(msg.channel, msg.content),
             Stream.of(msg.objects)
                 .map(item -> player.getWallet().findByUid(item.objectUID).get())
                 .collect(ImmutableCollectors.toList()));
@@ -65,9 +64,8 @@ public class ChatController {
 
         WorldChannelMessage message = new PrivateChannelMessage.ByReceiverName(
             msg.receiver,
-            new StringChannelMessageWithAttachments(
-                PrivateChannelMessage.CHANNEL_ID,
-                msg.content,
+            new ChannelMessageWithAttachments(
+                new StringChannelMessage(PrivateChannelMessage.CHANNEL_ID, msg.content),
                 Stream.of(msg.objects)
                     .map(item -> player.getWallet().findByUid(item.objectUID).get())
                     .collect(ImmutableCollectors.toList())));
