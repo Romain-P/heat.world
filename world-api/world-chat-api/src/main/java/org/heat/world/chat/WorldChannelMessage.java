@@ -1,5 +1,5 @@
 package org.heat.world.chat;
 
 public interface WorldChannelMessage {
-    String render();
+    String getString();
 }
