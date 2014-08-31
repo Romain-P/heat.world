@@ -7,8 +7,8 @@ import java.util.List;
 public final class StringChannelMessageWithAttachments extends StringChannelMessage {
     private final List<WorldItem> attachments;
 
-    public StringChannelMessageWithAttachments(String string, List<WorldItem> attachments) {
-        super(string);
+    public StringChannelMessageWithAttachments(int channelId, String string, List<WorldItem> attachments) {
+        super(channelId, string);
         this.attachments = attachments;
     }
 

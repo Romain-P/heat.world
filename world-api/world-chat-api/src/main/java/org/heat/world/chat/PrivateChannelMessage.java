@@ -1,7 +1,14 @@
 package org.heat.world.chat;
 
 public interface PrivateChannelMessage extends WorldChannelMessage {
+    public static final int CHANNEL_ID = -1;
+
     WorldChannelMessage getMessage();
+
+    @Override
+    default int getChannelId() {
+        return CHANNEL_ID;
+    }
 
     @Override
     default String getString() {
@@ -24,7 +31,7 @@ public interface PrivateChannelMessage extends WorldChannelMessage {
     public static final class ByReceiverId extends Base {
         private final int receiverId;
 
-        public ByReceiverId(WorldChannelMessage message, int receiverId) {
+        public ByReceiverId(int receiverId, WorldChannelMessage message) {
             super(message);
             this.receiverId = receiverId;
         }
@@ -37,7 +44,7 @@ public interface PrivateChannelMessage extends WorldChannelMessage {
     public static final class ByReceiverName extends Base {
         private final String receiverName;
 
-        public ByReceiverName(WorldChannelMessage message, String receiverName) {
+        public ByReceiverName(String receiverName, WorldChannelMessage message) {
             super(message);
             this.receiverName = receiverName;
         }
