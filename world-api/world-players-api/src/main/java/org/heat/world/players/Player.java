@@ -19,6 +19,8 @@ import lombok.ToString;
 import org.fungsi.Unit;
 import org.fungsi.concurrent.Future;
 import org.heat.shared.stream.MoreCollectors;
+import org.heat.world.chat.VirtualWorldChannel;
+import org.heat.world.chat.WorldSpeaker;
 import org.heat.world.items.WorldItem;
 import org.heat.world.items.WorldItemType;
 import org.heat.world.metrics.GameStats;
@@ -49,7 +51,9 @@ import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum
 public class Player
         implements Serializable,
             WorldHumanoidActor,
-            PlayerTrader
+            PlayerTrader,
+            WorldSpeaker,
+            VirtualWorldChannel
 {
     EventBus eventBus;
     int id;
@@ -120,6 +124,21 @@ public class Player
     @Override
     public boolean getActorSex() {
         return sex;
+    }
+
+    @Override
+    public int getSpeakerId() {
+        return id;
+    }
+
+    @Override
+    public int getSpeakerUserId() {
+        return userId;
+    }
+
+    @Override
+    public String getSpeakerName() {
+        return name;
     }
 
     @Override
