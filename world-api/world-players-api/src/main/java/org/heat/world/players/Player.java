@@ -19,8 +19,7 @@ import lombok.ToString;
 import org.fungsi.Unit;
 import org.fungsi.concurrent.Future;
 import org.heat.shared.stream.MoreCollectors;
-import org.heat.world.chat.VirtualWorldChannel;
-import org.heat.world.chat.WorldSpeaker;
+import org.heat.world.chat.*;
 import org.heat.world.items.WorldItem;
 import org.heat.world.items.WorldItemType;
 import org.heat.world.metrics.GameStats;
@@ -52,7 +51,7 @@ public class Player
         implements Serializable,
             WorldHumanoidActor,
             PlayerTrader,
-            WorldSpeaker,
+            WorldMessageReceiver,
             VirtualWorldChannel
 {
     EventBus eventBus;
@@ -256,6 +255,15 @@ public class Player
         return getEventBus().publish(KickPlayerEvent.INSTANCE)
             .filter(answers -> answers.contains(KickPlayerEvent.ACK))
             .toUnit();
+    }
+
+    @Override
+    public void speak(WorldSpeaker speaker, WorldChannelMessage message) {
+        eventBus.publish(new WorldChannelEnvelope(
+                speaker,
+                new PrivateChannelMessage.Resolved(this, message),
+                Instant.now()
+        ));
     }
 
     @Override

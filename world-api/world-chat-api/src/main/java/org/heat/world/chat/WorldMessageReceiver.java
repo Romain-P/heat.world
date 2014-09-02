@@ -1,5 +1,5 @@
 package org.heat.world.chat;
 
-public interface WorldMessageReceiver extends WorldSpeaker, WorldChannel {
+public interface WorldMessageReceiver extends WorldSpeaker, VirtualWorldChannel {
 
 }
