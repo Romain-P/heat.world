@@ -26,6 +26,7 @@ import org.fungsi.Unit;
 import org.fungsi.concurrent.Future;
 import org.heat.shared.stream.MoreCollectors;
 import org.heat.world.groups.WorldGroupMember;
+import org.heat.world.chat.*;
 import org.heat.world.items.WorldItem;
 import org.heat.world.items.WorldItemType;
 import org.heat.world.metrics.GameStats;
@@ -57,7 +58,8 @@ public class Player
         implements Serializable,
             WorldHumanoidActor,
             PlayerTrader,
-            WorldGroupMember
+            WorldGroupMember,
+            WorldMessageReceiver
 {
     EventBus eventBus;
     int id;
@@ -139,6 +141,21 @@ public class Player
     public PlayerStatus toPlayerStatus() {
         // TODO(world/players): implement Player#toPlayerStatus()
         return new PlayerStatus(PlayerStatusEnum.PLAYER_STATUS_AVAILABLE.value);
+    }
+
+    @Override
+    public int getSpeakerId() {
+        return id;
+    }
+
+    @Override
+    public int getSpeakerUserId() {
+        return userId;
+    }
+
+    @Override
+    public String getSpeakerName() {
+        return name;
     }
 
     @Override
@@ -297,6 +314,21 @@ public class Player
         return getEventBus().publish(KickPlayerEvent.INSTANCE)
             .filter(answers -> answers.contains(KickPlayerEvent.ACK))
             .toUnit();
+    }
+
+    @Override
+    public void speak(WorldSpeaker speaker, WorldChannelMessage message) {
+        WorldChannelEnvelope envelope = new WorldChannelEnvelope(
+                speaker,
+                new PrivateChannelMessage.Resolved(this, message),
+                Instant.now()
+        );
+
+        eventBus.publish(envelope);
+
+        if (speaker instanceof WorldMessageReceiver) {
+            ((WorldMessageReceiver) speaker).getEventBus().publish(envelope);
+        }
     }
 
     @Override

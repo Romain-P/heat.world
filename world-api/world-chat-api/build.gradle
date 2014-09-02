@@ -1,0 +1,5 @@
+dependencies {
+    compile project(':world-api:world-items-api')
+    compile "com.github.blackrush.acara:acara-api:$acara"
+    compile "org.heat:shared:$heatShared"
+}
