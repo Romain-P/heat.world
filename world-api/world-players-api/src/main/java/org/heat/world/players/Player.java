@@ -51,8 +51,7 @@ public class Player
         implements Serializable,
             WorldHumanoidActor,
             PlayerTrader,
-            WorldMessageReceiver,
-            VirtualWorldChannel
+            WorldMessageReceiver
 {
     EventBus eventBus;
     int id;
@@ -259,11 +258,17 @@ public class Player
 
     @Override
     public void speak(WorldSpeaker speaker, WorldChannelMessage message) {
-        eventBus.publish(new WorldChannelEnvelope(
+        WorldChannelEnvelope envelope = new WorldChannelEnvelope(
                 speaker,
                 new PrivateChannelMessage.Resolved(this, message),
                 Instant.now()
-        ));
+        );
+
+        eventBus.publish(envelope);
+
+        if (speaker instanceof WorldMessageReceiver) {
+            ((WorldMessageReceiver) speaker).getEventBus().publish(envelope);
+        }
     }
 
     @Override
