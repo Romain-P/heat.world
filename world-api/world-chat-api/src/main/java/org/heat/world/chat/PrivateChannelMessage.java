@@ -5,6 +5,10 @@ public interface PrivateChannelMessage extends WorldChannelMessage {
 
     WorldChannelMessage getMessage();
 
+    default WorldMessageReceiver getReceiver() {
+        throw new IllegalStateException("unresolved");
+    }
+
     @Override
     default int getChannelId() {
         return CHANNEL_ID;
@@ -51,6 +55,20 @@ public interface PrivateChannelMessage extends WorldChannelMessage {
 
         public String getReceiverName() {
             return receiverName;
+        }
+    }
+
+    public static final class Resolved extends Base {
+        private final WorldMessageReceiver receiver;
+
+        public Resolved(WorldMessageReceiver receiver, WorldChannelMessage message) {
+            super(message);
+            this.receiver = receiver;
+        }
+
+        @Override
+        public WorldMessageReceiver getReceiver() {
+            return receiver;
         }
     }
 
