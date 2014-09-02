@@ -7,12 +7,13 @@ import com.ankamagames.dofus.network.types.game.context.roleplay.party.PartyMemb
 import com.github.blackrush.acara.EventBus;
 import org.fungsi.Unit;
 import org.fungsi.concurrent.Future;
+import org.heat.world.chat.VirtualWorldChannel;
 import org.heat.world.roleplay.WorldHumanoidActor;
 
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public interface WorldGroup {
+public interface WorldGroup extends VirtualWorldChannel {
     EventBus getEventBus();
 
     int getGroupId();
