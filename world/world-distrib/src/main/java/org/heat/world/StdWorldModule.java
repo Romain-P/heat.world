@@ -15,6 +15,7 @@ import org.heat.StdDataModule;
 import org.rocket.network.acara.RocketAcara;
 import org.rocket.world.StdBackendControllerModule;
 
+import java.time.Clock;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -71,5 +72,10 @@ public class StdWorldModule extends AbstractModule {
     @Singleton
     ByteBufAllocator provideByteBufAllocator() {
         return new PooledByteBufAllocator(/*preferDirect*/true);
+    }
+
+    @Provides
+    Clock provideClock() {
+        return Clock.systemUTC();
     }
 }
