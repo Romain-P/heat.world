@@ -1,59 +1,12 @@
 package org.heat.world.players;
 
-import com.ankamagames.dofus.datacenter.breeds.Breed;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.inject.Guice;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.UnpooledByteBufAllocator;
 import lombok.RequiredArgsConstructor;
-import org.heat.StdDataModule;
-import org.heat.data.Datacenter;
 import org.heat.shared.IntPair;
-import org.heat.world.players.metrics.PlayerSpell;
-import org.junit.Before;
 import org.junit.Test;
-import org.rocket.ImmutableServiceContext;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.heat.shared.tests.CollectionMatchers.hasSize;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 public class PlayersTest {
-
-    @Inject Datacenter datacenter;
-
-    @Before
-    public void setUp() throws Exception {
-        File configFile = new File("world.conf").getAbsoluteFile();
-
-        if (!configFile.exists()) {
-            throw new FileNotFoundException(configFile.toString());
-        }
-
-        Config config = ConfigFactory.parseFileAnySyntax(configFile);
-
-        Injector injector = Guice.createInjector(
-                new StdDataModule(),
-                binder -> {
-                    binder.bind(Config.class).toInstance(config);
-                    binder.bind(ExecutorService.class).toInstance(MoreExecutors.sameThreadExecutor());
-                    binder.bind(ByteBufAllocator.class).toInstance(UnpooledByteBufAllocator.DEFAULT);
-                }
-        );
-        injector.injectMembers(this);
-
-        datacenter.start(ImmutableServiceContext.of(config, ClassLoader.getSystemClassLoader(), injector));
-    }
 
     @Test
     public void testGetCostOneUpgrade() throws Exception {
@@ -137,19 +90,5 @@ public class PlayersTest {
                     Players.upgrade(expectation.stats, expectation.actual, expectation.points)
             );
         }
-    }
-
-    @Test
-    public void testBuildDefaultBreedSpells() throws Exception {
-        // given
-        Breed breed = datacenter.find(Breed.class, 1).get();
-        int actualLevel = 1;
-
-        // when
-        List<PlayerSpell> spells = Players.buildDefaultBreedSpells(datacenter, breed, actualLevel);
-
-        // then
-        assertThat("spells", spells, hasSize(21));
-        assertThat("spells with position", spells.stream().filter(PlayerSpell::hasPosition).count(), equalTo(3L));
     }
 }

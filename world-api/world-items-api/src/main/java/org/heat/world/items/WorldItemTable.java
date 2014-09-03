@@ -6,7 +6,7 @@ import com.ankamagames.dofus.network.types.game.data.items.effects.ObjectEffect;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import lombok.SneakyThrows;
-import org.heat.data.Datacenter;
+import org.heat.datacenter.Datacenter;
 import org.heat.dofus.network.NetworkComponentFactory;
 import org.heat.shared.database.NamedPreparedStatement;
 import org.heat.shared.database.Table;

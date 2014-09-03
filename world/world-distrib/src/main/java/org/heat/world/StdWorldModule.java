@@ -11,7 +11,6 @@ import com.google.inject.name.Named;
 import com.typesafe.config.Config;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.PooledByteBufAllocator;
-import org.heat.StdDataModule;
 import org.rocket.network.acara.RocketAcara;
 import org.rocket.world.StdBackendControllerModule;
 
@@ -24,7 +23,7 @@ public class StdWorldModule extends AbstractModule {
     protected void configure() {
         install(new StdDistBackendModule(new StdBackendControllerModule()));
         install(new StdDistFrontendModule(new StdFrontendControllerModule()));
-        install(new StdDataModule());
+        install(new StdDatacenterModule());
         install(new StdBackendModule());
         install(new StdJdbcModule());
         install(new StdUsersModule());

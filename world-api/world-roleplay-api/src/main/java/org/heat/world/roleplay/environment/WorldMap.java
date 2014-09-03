@@ -4,7 +4,7 @@ import com.ankamagames.dofus.network.enums.DirectionsEnum;
 import com.github.blackrush.acara.EventBus;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.heat.dofus.data.MapData;
+import org.heat.dofus.d2p.data.MapData;
 import org.heat.world.items.WorldItem;
 import org.heat.world.roleplay.WorldActor;
 import org.heat.world.roleplay.environment.events.*;

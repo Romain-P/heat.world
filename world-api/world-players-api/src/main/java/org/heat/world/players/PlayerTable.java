@@ -6,7 +6,7 @@ import com.ankamagames.dofus.network.enums.DirectionsEnum;
 import com.github.blackrush.acara.EventBusBuilder;
 import com.google.common.collect.ImmutableList;
 import lombok.SneakyThrows;
-import org.heat.data.Datacenter;
+import org.heat.datacenter.Datacenter;
 import org.heat.shared.database.NamedPreparedStatement;
 import org.heat.shared.database.Table;
 import org.heat.world.items.MapItemBag;

@@ -5,10 +5,10 @@ import com.github.blackrush.acara.EventBus;
 import java.util.Optional;
 
 /**
- * <p/>
+ * <p>
  * {@link org.heat.world.players.PlayerRegistry} contains all currently online players
  *
- * <p/>
+ * <p>
  * Be careful, a player found from is only online <b>right now</b>, it may soon go offline even if you still have
  * a reference to it. Use a timeout when publishing events on its bus to automatically fail if it goes offline.
  */

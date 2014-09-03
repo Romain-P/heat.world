@@ -4,7 +4,7 @@ import com.ankamagames.dofus.datacenter.effects.EffectInstance;
 import com.ankamagames.dofus.datacenter.items.Item;
 import com.ankamagames.dofus.datacenter.items.Weapon;
 import com.google.common.collect.ImmutableSet;
-import org.heat.data.Datacenter;
+import org.heat.datacenter.Datacenter;
 
 import javax.inject.Inject;
 
