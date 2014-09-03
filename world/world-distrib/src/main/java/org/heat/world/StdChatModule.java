@@ -24,9 +24,8 @@ public class StdChatModule extends AbstractModule {
     @Provides
     @Singleton
     WorldChannelLookup provideChannelLookup(PlayerRegistry playerRegistry, EventBusBuilder eventBusBuilder, Clock clock) {
-        return new VirtualPrivateChannelLookup(
-                playerRegistry,
-                new SharedChannelLookup(eventBusBuilder, clock)
-        );
+        return new VirtualPrivateChannelLookup(playerRegistry)
+                .then(new SharedChannelLookup(eventBusBuilder, clock))
+                ;
     }
 }
