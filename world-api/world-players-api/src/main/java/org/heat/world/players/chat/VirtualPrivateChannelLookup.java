@@ -4,12 +4,18 @@ import org.heat.world.chat.PrivateChannelMessage;
 import org.heat.world.chat.WorldChannel;
 import org.heat.world.chat.WorldChannelLookup;
 import org.heat.world.chat.WorldChannelMessage;
+import org.heat.world.players.Player;
 import org.heat.world.players.PlayerRegistry;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 public final class VirtualPrivateChannelLookup implements WorldChannelLookup {
+    private final Supplier<Player> player;
     private final PlayerRegistry playerRegistry;
 
-    public VirtualPrivateChannelLookup(PlayerRegistry playerRegistry) {
+    public VirtualPrivateChannelLookup(Supplier<Player> player, PlayerRegistry playerRegistry) {
+        this.player = player;
         this.playerRegistry = playerRegistry;
     }
 
@@ -32,5 +38,10 @@ public final class VirtualPrivateChannelLookup implements WorldChannelLookup {
         }
 
         return null;
+    }
+
+    @Override
+    public void forEach(Consumer<WorldChannel> fn) {
+        fn.accept(player.get());
     }
 }

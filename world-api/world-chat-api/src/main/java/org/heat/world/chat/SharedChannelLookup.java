@@ -6,6 +6,7 @@ import java.time.Clock;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public final class SharedChannelLookup implements WorldChannelLookup {
     private final Map<Integer, WorldChannel> channels;
@@ -24,5 +25,10 @@ public final class SharedChannelLookup implements WorldChannelLookup {
     @Override
     public WorldChannel lookupChannel(WorldChannelMessage message) {
         return channels.get(message.getChannelId());
+    }
+
+    @Override
+    public void forEach(Consumer<WorldChannel> fn) {
+        channels.values().forEach(fn);
     }
 }

@@ -5,6 +5,7 @@ import org.heat.world.chat.WorldChannelLookup;
 import org.heat.world.chat.WorldChannelMessage;
 import org.heat.world.players.Player;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static com.ankamagames.dofus.network.enums.ChatChannelsMultiEnum.CHANNEL_GLOBAL;
@@ -23,5 +24,10 @@ public final class CurrentMapChannelLookup implements WorldChannelLookup {
         }
 
         return null;
+    }
+
+    @Override
+    public void forEach(Consumer<WorldChannel> fn) {
+        fn.accept(player.get().getPosition().getMap());
     }
 }
