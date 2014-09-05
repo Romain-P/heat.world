@@ -51,9 +51,8 @@ public class StdFrontendControllerModule extends ControllerModule {
     }
 
     @Provides
-    @Singleton
-    VirtualPrivateChannelLookup provideVirtualPrivateChannelLookup(PlayerRegistry playerRegistry) {
-        return new VirtualPrivateChannelLookup(playerRegistry);
+    VirtualPrivateChannelLookup provideVirtualPrivateChannelLookup(Prop<Player> player, PlayerRegistry playerRegistry) {
+        return new VirtualPrivateChannelLookup(player::get, playerRegistry);
     }
 
     @Provides
