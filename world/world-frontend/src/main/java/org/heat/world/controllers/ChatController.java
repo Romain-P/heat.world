@@ -5,7 +5,8 @@ import com.github.blackrush.acara.Listener;
 import lombok.extern.slf4j.Slf4j;
 import org.heat.shared.stream.ImmutableCollectors;
 import org.heat.world.chat.*;
-import org.heat.world.controllers.events.ChoosePlayerEvent;
+import org.heat.world.controllers.events.EnterContextEvent;
+import org.heat.world.controllers.events.QuitContextEvent;
 import org.heat.world.controllers.utils.Basics;
 import org.heat.world.controllers.utils.RolePlaying;
 import org.heat.world.items.WorldItem;
@@ -41,8 +42,13 @@ public class ChatController {
     }
 
     @Listener
-    public void listenPrivateMessages(ChoosePlayerEvent evt) {
-        evt.getPlayer().getEventBus().subscribe(this);
+    public void subscribeChannels(EnterContextEvent evt) {
+        channelLookup.forEach(channel -> channel.getSubscribableChannelView().subscribe(this));
+    }
+
+    @Listener
+    public void unsubscribeChannels(QuitContextEvent evt) {
+        channelLookup.forEach(channel -> channel.getSubscribableChannelView().unsubscribe(this));
     }
 
     @Receive
