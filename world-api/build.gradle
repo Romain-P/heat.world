@@ -4,6 +4,7 @@ dependencies {
     compile "org.heat:util:$heatUtil"
     compile "org.heat.dofus:d2vendor:$heatD2vendor"
     compile "org.heat:shared:$heatShared"
+    compile "org.heat:shared-datacenter:$heatShared"
 
     compile "org.rocket:rocket-api:$rocket"
 }

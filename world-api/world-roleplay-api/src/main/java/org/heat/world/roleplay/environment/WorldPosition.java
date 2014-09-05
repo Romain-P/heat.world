@@ -5,7 +5,7 @@ import com.ankamagames.dofus.datacenter.world.SubArea;
 import com.ankamagames.dofus.datacenter.world.SuperArea;
 import com.ankamagames.dofus.network.enums.DirectionsEnum;
 import com.ankamagames.dofus.network.types.game.context.EntityDispositionInformations;
-import org.heat.dofus.data.MapData;
+import org.heat.dofus.d2p.data.MapData;
 import org.heat.shared.IntPair;
 
 public interface WorldPosition {

@@ -1,5 +1,6 @@
 dependencies {
     compile "org.heat:shared-distrib:$heatShared"
+    compile "org.heat:shared-datacenter:$heatShared"
 
     compile project(':world:world-backend')
     compile project(':world:world-frontend')

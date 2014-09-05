@@ -10,8 +10,8 @@ allprojects {
     ext.lombok = '1.14.0'
     ext.junit = '4.11'
     ext.mockito = '1.9.5'
-    ext.rocket = '1.1-RC2'
-    ext.acara = '1.4-alpha3'
+    ext.rocket = '1.1-RC3'
+    ext.acara = '1.4-alpha4'
     ext.netty = '4.0.+'
     ext.logback = '1.1.+'
     ext.jbossMarshalling = '1.4.+'
@@ -20,7 +20,7 @@ allprojects {
     ext.guice = '3.0'
     ext.heatUtil = '0.4.+'
     ext.heatShared = '0.1-SNAPSHOT'
-    ext.heatD2vendor = '2.21.3-6'
+    ext.heatD2vendor = '2.21.3-7'
 
     repositories {
         maven {

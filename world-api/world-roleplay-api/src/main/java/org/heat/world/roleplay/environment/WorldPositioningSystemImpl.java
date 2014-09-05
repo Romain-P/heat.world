@@ -6,7 +6,7 @@ import com.ankamagames.dofus.datacenter.world.SubArea;
 import com.ankamagames.dofus.datacenter.world.SuperArea;
 import com.ankamagames.dofus.network.enums.DirectionsEnum;
 import com.google.common.collect.Maps;
-import org.heat.data.Datacenter;
+import org.heat.datacenter.Datacenter;
 import org.heat.shared.IntPair;
 import org.heat.shared.database.Repository;
 import org.rocket.Service;

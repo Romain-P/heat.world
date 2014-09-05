@@ -2,8 +2,8 @@ package org.heat.world.roleplay.environment;
 
 import com.github.blackrush.acara.EventBus;
 import com.google.common.collect.Maps;
-import org.heat.data.MapDatacenter;
-import org.heat.dofus.data.MapData;
+import org.heat.datacenter.MapDatacenter;
+import org.heat.dofus.d2p.data.MapData;
 import org.heat.shared.database.Repository;
 
 import javax.inject.Provider;

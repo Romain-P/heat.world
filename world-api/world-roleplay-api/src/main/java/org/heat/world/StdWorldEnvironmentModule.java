@@ -5,7 +5,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.typesafe.config.Config;
-import org.heat.data.MapDatacenter;
+import org.heat.datacenter.MapDatacenter;
 import org.heat.shared.database.Repository;
 import org.heat.world.roleplay.environment.WorldMap;
 import org.heat.world.roleplay.environment.WorldMapRepositoryImpl;
