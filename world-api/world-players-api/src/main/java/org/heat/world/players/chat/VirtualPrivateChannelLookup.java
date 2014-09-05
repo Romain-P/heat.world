@@ -6,26 +6,11 @@ import org.heat.world.chat.WorldChannelLookup;
 import org.heat.world.chat.WorldChannelMessage;
 import org.heat.world.players.PlayerRegistry;
 
-import java.util.NoSuchElementException;
-
 public final class VirtualPrivateChannelLookup implements WorldChannelLookup {
     private final PlayerRegistry playerRegistry;
-    private WorldChannelLookup fallback;
 
-    public VirtualPrivateChannelLookup(PlayerRegistry playerRegistry, WorldChannelLookup fallback) {
-        this.playerRegistry = playerRegistry;
-        this.fallback = fallback;
-    }
-
-    // NOTE(Blackrush): not thread-safe but should only be used for bootstrap purposes
     public VirtualPrivateChannelLookup(PlayerRegistry playerRegistry) {
         this.playerRegistry = playerRegistry;
-    }
-
-    // NOTE(Blackrush): not thread-safe but should only be used for bootstrap purposes
-    public WorldChannelLookup then(WorldChannelLookup fallback) {
-        this.fallback = fallback;
-        return this;
     }
 
     @Override
@@ -46,9 +31,6 @@ public final class VirtualPrivateChannelLookup implements WorldChannelLookup {
             throw new Error("unhandlable private message " + message);
         }
 
-        if (fallback == null) {
-            throw new NoSuchElementException();
-        }
-        return fallback.lookupChannel(o);
+        return null;
     }
 }

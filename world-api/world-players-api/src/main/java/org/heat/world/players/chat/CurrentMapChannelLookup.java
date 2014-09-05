@@ -5,7 +5,6 @@ import org.heat.world.chat.WorldChannelLookup;
 import org.heat.world.chat.WorldChannelMessage;
 import org.heat.world.players.Player;
 
-import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 
 import static com.ankamagames.dofus.network.enums.ChatChannelsMultiEnum.CHANNEL_GLOBAL;
@@ -13,21 +12,8 @@ import static com.ankamagames.dofus.network.enums.ChatChannelsMultiEnum.CHANNEL_
 public final class CurrentMapChannelLookup implements WorldChannelLookup {
     private final Supplier<Player> player;
 
-    private WorldChannelLookup fallback;
-
     public CurrentMapChannelLookup(Supplier<Player> player) {
         this.player = player;
-        this.fallback = null;
-    }
-
-    public CurrentMapChannelLookup(Supplier<Player> player, WorldChannelLookup fallback) {
-        this.player = player;
-        this.fallback = fallback;
-    }
-
-    public CurrentMapChannelLookup then(WorldChannelLookup fallback) {
-        this.fallback = fallback;
-        return this;
     }
 
     @Override
@@ -36,9 +22,6 @@ public final class CurrentMapChannelLookup implements WorldChannelLookup {
             return player.get().getPosition().getMap();
         }
 
-        if (fallback == null) {
-            throw new NoSuchElementException();
-        }
-        return fallback.lookupChannel(message);
+        return null;
     }
 }
