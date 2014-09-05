@@ -3,7 +3,7 @@ package org.heat.world.users;
 import com.ankamagames.dofus.datacenter.breeds.Breed;
 import com.google.common.collect.ImmutableList;
 import org.heat.User;
-import org.heat.data.Datacenter;
+import org.heat.datacenter.Datacenter;
 import org.rocket.Service;
 import org.rocket.ServiceContext;
 

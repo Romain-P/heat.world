@@ -4,14 +4,18 @@ import com.ankamagames.dofus.network.enums.DirectionsEnum;
 import com.github.blackrush.acara.EventBus;
 import com.github.blackrush.acara.EventBusBuilder;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
+import com.google.inject.*;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
-import org.heat.StdDataModule;
-import org.heat.data.Datacenter;
+import org.fungsi.concurrent.Workers;
+import org.heat.datacenter.Datacenter;
+import org.heat.datacenter.FileDatacenter;
+import org.heat.datacenter.FileMapDatacenter;
+import org.heat.datacenter.MapDatacenter;
+import org.heat.dofus.d2o.D2oReader;
+import org.heat.dofus.d2o.HeatDataClassLookup;
+import org.heat.dofus.d2p.adapters.MapsAdapter;
 import org.heat.shared.IntPair;
 import org.heat.world.StdWorldEnvironmentModule;
 import org.junit.Before;
@@ -21,6 +25,9 @@ import org.rocket.ImmutableServiceContext;
 import javax.inject.Inject;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
 
 import static org.junit.Assert.assertEquals;
@@ -45,13 +52,36 @@ public class WorldPositioningSystemImplTest {
         Config config = ConfigFactory.parseFileAnySyntax(configFile);
 
         Injector injector = Guice.createInjector(
-                new StdDataModule(),
-                new StdWorldEnvironmentModule(),
-                binder -> {
-                    binder.bind(Config.class).toInstance(config);
-                    binder.bind(EventBusBuilder.class).toInstance(mock(EventBusBuilder.class));
-                    binder.bind(ExecutorService.class).toInstance(MoreExecutors.sameThreadExecutor());
-                    binder.bind(ByteBufAllocator.class).toInstance(UnpooledByteBufAllocator.DEFAULT);
+                new AbstractModule() {
+                    @Override
+                    protected void configure() {
+                        install(new StdWorldEnvironmentModule());
+
+                        bind(Config.class).toInstance(config);
+                        bind(EventBusBuilder.class).toInstance(mock(EventBusBuilder.class));
+                        bind(ExecutorService.class).toInstance(MoreExecutors.sameThreadExecutor());
+                    }
+
+                    @Provides
+                    @Singleton
+                    Datacenter provideDatacenter() {
+                        return new FileDatacenter(
+                                Paths.get(config.getString("heat.world.datacenter-path")),
+                                new D2oReader(new UnpooledByteBufAllocator(false), HeatDataClassLookup.INSTANCE)
+                        );
+                    }
+
+                    @Provides
+                    @Singleton
+                    MapDatacenter provideMapDatacenter() throws IOException {
+                        return new FileMapDatacenter(
+                                Workers.wrap(MoreExecutors.sameThreadExecutor()),
+                                MapsAdapter.withDefault(config.getString("heat.world.maps.key")),
+                                new UnpooledByteBufAllocator(false),
+                                Files.list(Paths.get(config.getString("heat.world.maps.data-path")))
+                                    .filter(x -> x.getFileName().toString().endsWith(".d2p"))
+                        );
+                    }
                 }
         );
         injector.injectMembers(this);

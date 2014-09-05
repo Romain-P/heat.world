@@ -3,7 +3,7 @@ package org.heat.world.players;
 import com.ankamagames.dofus.datacenter.breeds.Breed;
 import com.ankamagames.dofus.datacenter.spells.Spell;
 import com.ankamagames.dofus.network.types.game.character.characteristic.CharacterCharacteristicsInformations;
-import org.heat.data.Datacenter;
+import org.heat.datacenter.Datacenter;
 import org.heat.shared.IntPair;
 import org.heat.world.metrics.GameStatBook;
 import org.heat.world.metrics.GameStats;

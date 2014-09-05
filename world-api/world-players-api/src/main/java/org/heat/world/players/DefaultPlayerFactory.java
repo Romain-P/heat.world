@@ -10,7 +10,7 @@ import com.typesafe.config.Config;
 import org.fungsi.concurrent.Future;
 import org.fungsi.concurrent.Futures;
 import org.heat.User;
-import org.heat.data.Datacenter;
+import org.heat.datacenter.Datacenter;
 import org.heat.world.items.MapItemBag;
 import org.heat.world.metrics.Experience;
 import org.heat.world.metrics.GameStats;
