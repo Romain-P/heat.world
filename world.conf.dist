@@ -31,6 +31,8 @@ heat {
     experience-table-path = "./dist/experience.txt"
 
     player {
+      remove-required-answer-min-level = 20
+
       start {
         map = 16395
         cell = 355

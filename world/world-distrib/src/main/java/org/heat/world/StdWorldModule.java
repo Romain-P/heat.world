@@ -33,7 +33,6 @@ public class StdWorldModule extends AbstractModule {
         install(new StdItemsModule());
         install(new StdPlayerTradeModule());
         install(new StdClassicalGroupModule());
-        install(new StdChatModule());
     }
 
     @Provides

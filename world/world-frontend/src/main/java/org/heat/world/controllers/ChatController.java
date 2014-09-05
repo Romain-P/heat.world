@@ -2,9 +2,12 @@ package org.heat.world.controllers;
 
 import com.ankamagames.dofus.network.messages.game.chat.*;
 import com.github.blackrush.acara.Listener;
+import lombok.extern.slf4j.Slf4j;
 import org.heat.shared.stream.ImmutableCollectors;
 import org.heat.world.chat.*;
-import org.heat.world.controllers.events.ChoosePlayerEvent;
+import org.heat.world.controllers.events.EnterContextEvent;
+import org.heat.world.controllers.events.QuitContextEvent;
+import org.heat.world.controllers.utils.Basics;
 import org.heat.world.controllers.utils.RolePlaying;
 import org.heat.world.items.WorldItem;
 import org.heat.world.players.Player;
@@ -20,6 +23,7 @@ import static com.ankamagames.dofus.network.enums.ChatActivableChannelsEnum.PSEU
 
 @Controller
 @RolePlaying
+@Slf4j
 public class ChatController {
     @Inject NetworkClient client;
     @Inject Prop<Player> player;
@@ -28,12 +32,23 @@ public class ChatController {
 
     private void doSpeak(WorldChannelMessage message) {
         WorldChannel channel = channelLookup.lookupChannel(message);
-        channel.speak(player.get(), message);
+
+        if (channel != null) {
+            channel.speak(player.get(), message);
+        } else {
+            log.debug("cannot speak on channel {}", message.getChannelId());
+            client.write(Basics.noop());
+        }
     }
 
     @Listener
-    public void listenPrivateMessages(ChoosePlayerEvent evt) {
-        evt.getPlayer().getEventBus().subscribe(this);
+    public void subscribeChannels(EnterContextEvent evt) {
+        channelLookup.forEach(channel -> channel.getSubscribableChannelView().subscribe(this));
+    }
+
+    @Listener
+    public void unsubscribeChannels(QuitContextEvent evt) {
+        channelLookup.forEach(channel -> channel.getSubscribableChannelView().unsubscribe(this));
     }
 
     @Receive
