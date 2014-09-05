@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import com.google.inject.name.Names;
 import org.heat.User;
 import org.heat.world.chat.SharedChannelLookup;
 import org.heat.world.chat.WorldChannelLookup;
@@ -43,6 +44,7 @@ public class StdFrontendControllerModule extends ControllerModule {
         newProp(User.class);
         newProp(Player.class);
         newProp(WorldAction.class);
+        newProp(WorldGroup.class, Names.named("main"));
     }
 
     @Provides
