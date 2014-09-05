@@ -18,7 +18,7 @@ import org.rocket.network.guice.ControllerModule;
 
 import java.time.Clock;
 
-import static com.ankamagames.dofus.network.enums.ChatChannelsMultiEnum.CHANNEL_ADS;
+import static com.ankamagames.dofus.network.enums.ChatChannelsMultiEnum.CHANNEL_SALES;
 import static com.ankamagames.dofus.network.enums.ChatChannelsMultiEnum.CHANNEL_SEEK;
 
 public class StdFrontendControllerModule extends ControllerModule {
@@ -45,7 +45,7 @@ public class StdFrontendControllerModule extends ControllerModule {
     @Singleton
     SharedChannelLookup provideSharedChannelLookup(EventBusBuilder eventBusBuilder, Clock clock) {
         return new SharedChannelLookup(eventBusBuilder, clock, ImmutableList.of(
-                (int) CHANNEL_ADS.value,
+                (int) CHANNEL_SALES.value,
                 (int) CHANNEL_SEEK.value
         ));
     }
