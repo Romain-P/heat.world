@@ -12,12 +12,10 @@ import org.heat.world.groups.*;
 import org.heat.world.groups.events.*;
 import org.heat.world.players.Player;
 import org.heat.world.players.PlayerRegistry;
-import org.rocket.network.Controller;
-import org.rocket.network.NetworkClient;
-import org.rocket.network.Prop;
-import org.rocket.network.Receive;
+import org.rocket.network.*;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -32,6 +30,7 @@ import static com.ankamagames.dofus.network.enums.PartyJoinErrorEnum.PARTY_JOIN_
 public class GroupsController {
     @Inject NetworkClient client;
     @Inject Prop<Player> player;
+    @Inject @Named("main") MutProp<WorldGroup> mainGroup;
 
     @Inject PlayerRegistry playerRegistry;
     @Inject WorldGroupFactory groupFactory;
@@ -65,6 +64,10 @@ public class GroupsController {
         return group;
     }
 
+    WorldGroup getMainGroup() {
+        return mainGroup.getOrSet(this::createGroup);
+    }
+
     void setGroup(WorldGroup group) {
         if (groups == null) {
             groups = new HashMap<>();
@@ -76,6 +79,9 @@ public class GroupsController {
         WorldGroup group = groups.remove(id);
         if (group == null) {
             throw new IllegalArgumentException();
+        }
+        if (mainGroup.isPresent() && mainGroup.get().getGroupId() == id) {
+            mainGroup.remove();
         }
         group.getEventBus().unsubscribe(this);
         return group;
@@ -137,7 +143,7 @@ public class GroupsController {
         }
 
         Player player = this.player.get();
-        WorldGroup group = createGroup();
+        WorldGroup group = getMainGroup();
 
         Player target = option.get();
         WorldGroup.Invitation invitation = group.invite(player, target);
