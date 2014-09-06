@@ -1,6 +1,8 @@
 apply from: '../../publishable.gradle'
 
 dependencies {
+    compile project(':world-api')
+
     compile "org.heat:util:$heatUtil"
     compile "org.heat:shared-backend:$heatShared"
     compile "org.rocket:rocket-network:$rocket"
