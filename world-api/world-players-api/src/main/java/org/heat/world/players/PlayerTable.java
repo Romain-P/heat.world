@@ -22,7 +22,7 @@ import org.heat.world.players.shortcuts.PlayerShortcutRepository;
 import org.heat.world.roleplay.WorldActorLook;
 import org.heat.world.roleplay.environment.WorldMapPoint;
 import org.heat.world.roleplay.environment.WorldPositioningSystem;
-import org.heat.world.users.UserRepository;
+import org.heat.world.users.WorldUserRepository;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -42,7 +42,7 @@ public final class PlayerTable implements Table<Player> {
     private final PlayerItemRepository playerItems;
     private final PlayerShortcutRepository playerShortcuts;
     private final EventBusBuilder eventBusBuilder;
-    private final UserRepository userRepository;
+    private final WorldUserRepository userRepository;
     private final Duration loadUserTimeout;
 
     @Inject
@@ -53,7 +53,7 @@ public final class PlayerTable implements Table<Player> {
             PlayerItemRepository playerItems,
             PlayerShortcutRepository playerShortcuts,
             @Named("player") EventBusBuilder eventBusBuilder,
-            UserRepository userRepository,
+            WorldUserRepository userRepository,
             Config config
     ) {
         this.datacenter = datacenter;

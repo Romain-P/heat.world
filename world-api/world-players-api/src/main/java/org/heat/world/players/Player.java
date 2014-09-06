@@ -18,7 +18,6 @@ import lombok.Setter;
 import lombok.ToString;
 import org.fungsi.Unit;
 import org.fungsi.concurrent.Future;
-import org.heat.User;
 import org.heat.shared.stream.MoreCollectors;
 import org.heat.world.items.WorldItem;
 import org.heat.world.items.WorldItemType;
@@ -35,6 +34,7 @@ import org.heat.world.roleplay.WorldHumanoidActor;
 import org.heat.world.roleplay.environment.WorldMapPoint;
 import org.heat.world.roleplay.environment.WorldPosition;
 import org.heat.world.trading.impl.player.PlayerTrader;
+import org.heat.world.users.WorldUser;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -54,7 +54,7 @@ public class Player
 {
     EventBus eventBus;
     int id;
-    User user;
+    WorldUser user;
     String name;
     Breed breed;
     boolean sex;
