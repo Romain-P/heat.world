@@ -13,7 +13,6 @@ import org.heat.backend.messages.AuthorizeUserNotif;
 import org.heat.backend.messages.SetNrPlayersReq;
 import org.heat.backend.messages.SetStatusReq;
 import org.heat.shared.Strings;
-import org.heat.world.users.UserRepository;
 import org.rocket.network.NetworkClient;
 import org.rocket.network.NetworkClientService;
 
@@ -27,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 public final class DefaultBackend implements Backend {
 
     private final NetworkClient client;
-    private final UserRepository userRepository;
+    private final BackendUserRepository userRepository;
     private final Random random;
     private final Timer userAuthTtl;
     private final Duration userAuthTtlDuration;
@@ -41,7 +40,7 @@ public final class DefaultBackend implements Backend {
             @Named("ticket") Random random,
             @Named("user-auth-ttl") Timer userAuthTtl,
             Config config,
-            UserRepository userRepository
+            BackendUserRepository userRepository
     ) {
         this.client = client;
         this.random = random;
