@@ -18,6 +18,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.fungsi.Unit;
 import org.fungsi.concurrent.Future;
+import org.heat.User;
 import org.heat.shared.stream.MoreCollectors;
 import org.heat.world.items.WorldItem;
 import org.heat.world.items.WorldItemType;
@@ -53,7 +54,7 @@ public class Player
 {
     EventBus eventBus;
     int id;
-    int userId;
+    User user;
     String name;
     Breed breed;
     boolean sex;
@@ -70,6 +71,10 @@ public class Player
     // lombok auto-generates a #isSex() which is invalid here
     public boolean getSex() {
         return sex;
+    }
+
+    public int getUserId() {
+        return user.getId();
     }
 
     public void moveTo(WorldMapPoint point, DirectionsEnum dir) {
@@ -99,7 +104,7 @@ public class Player
 
     @Override
     public int getActorUserId() {
-        return userId;
+        return getUserId();
     }
 
     @Override
@@ -142,7 +147,7 @@ public class Player
                 position.toEntityDispositionInformations(),
                 name,
                 toHumanInformations(),
-                userId,
+                getUserId(),
                 toActorAlignmentInformations()
         );
     }

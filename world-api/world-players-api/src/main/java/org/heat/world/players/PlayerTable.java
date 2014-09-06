@@ -5,6 +5,7 @@ import com.ankamagames.dofus.datacenter.spells.Spell;
 import com.ankamagames.dofus.network.enums.DirectionsEnum;
 import com.github.blackrush.acara.EventBusBuilder;
 import com.google.common.collect.ImmutableList;
+import com.typesafe.config.Config;
 import lombok.SneakyThrows;
 import org.heat.datacenter.Datacenter;
 import org.heat.shared.database.NamedPreparedStatement;
@@ -21,13 +22,16 @@ import org.heat.world.players.shortcuts.PlayerShortcutRepository;
 import org.heat.world.roleplay.WorldActorLook;
 import org.heat.world.roleplay.environment.WorldMapPoint;
 import org.heat.world.roleplay.environment.WorldPositioningSystem;
+import org.heat.world.users.UserRepository;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.sql.*;
+import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.OptionalInt;
+import java.util.concurrent.TimeUnit;
 
 import static org.heat.world.metrics.GameStats.*;
 
@@ -38,6 +42,8 @@ public final class PlayerTable implements Table<Player> {
     private final PlayerItemRepository playerItems;
     private final PlayerShortcutRepository playerShortcuts;
     private final EventBusBuilder eventBusBuilder;
+    private final UserRepository userRepository;
+    private final Duration loadUserTimeout;
 
     @Inject
     public PlayerTable(
@@ -46,7 +52,9 @@ public final class PlayerTable implements Table<Player> {
             @Named("player") Experience experience,
             PlayerItemRepository playerItems,
             PlayerShortcutRepository playerShortcuts,
-            @Named("player") EventBusBuilder eventBusBuilder
+            @Named("player") EventBusBuilder eventBusBuilder,
+            UserRepository userRepository,
+            Config config
     ) {
         this.datacenter = datacenter;
         this.wps = wps;
@@ -54,6 +62,8 @@ public final class PlayerTable implements Table<Player> {
         this.playerItems = playerItems;
         this.playerShortcuts = playerShortcuts;
         this.eventBusBuilder = eventBusBuilder;
+        this.userRepository = userRepository;
+        this.loadUserTimeout = Duration.ofMillis(config.getDuration("heat.world.player.load-user-timeout", TimeUnit.MILLISECONDS));
     }
 
     @Override
@@ -184,7 +194,7 @@ public final class PlayerTable implements Table<Player> {
         Player player = new Player();
         player.setEventBus(eventBusBuilder.build());
         player.setId(rset.getInt("id"));
-        player.setUserId(rset.getInt("userId"));
+        player.setUser(userRepository.find(rset.getInt("userId")).get(loadUserTimeout));
         player.setName(rset.getString("name"));
         player.setBreed(datacenter.find(Breed.class, rset.getInt("breedId")).get());
         player.setSex(rset.getBoolean("sex"));
