@@ -3,10 +3,7 @@ package org.heat.world;
 import lombok.extern.slf4j.Slf4j;
 import org.fungsi.Either;
 import org.fungsi.Unit;
-import org.fungsi.concurrent.Future;
-import org.fungsi.concurrent.Promise;
-import org.fungsi.concurrent.Promises;
-import org.fungsi.concurrent.Worker;
+import org.fungsi.concurrent.*;
 import org.fungsi.function.UnsafeRunnable;
 import org.fungsi.function.UnsafeSupplier;
 
@@ -18,6 +15,17 @@ public final class WorldWorker implements Worker {
 
     public WorldWorker(Executor executor) {
         this.executor = executor;
+    }
+
+    @Override
+    public <T> Future<T> execute(UnsafeSupplier<Future<T>> fn) {
+        Promise<T> promise = Promises.create();
+        executor.execute(() -> {
+            Future<T> future = Futures.flatten(fn.safelyGet());
+            future.onFailure(err -> log.error("uncaught exception", err));
+            future.pipeTo(promise);
+        });
+        return promise;
     }
 
     @Override
