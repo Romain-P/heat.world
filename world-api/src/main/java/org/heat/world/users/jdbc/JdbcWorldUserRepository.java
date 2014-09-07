@@ -6,13 +6,16 @@ import org.fungsi.concurrent.Future;
 import org.fungsi.concurrent.Worker;
 import org.heat.shared.database.JdbcRepositoryNG;
 import org.heat.shared.database.Table;
+import org.heat.world.users.UserRepository;
 import org.heat.world.users.WorldUser;
 import org.heat.world.users.WorldUserRepository;
 
+import javax.inject.Inject;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.time.Instant;
 
 @SuppressWarnings("deprecated")
 public final class JdbcWorldUserRepository extends JdbcRepositoryNG<WorldUser>
@@ -20,10 +23,13 @@ public final class JdbcWorldUserRepository extends JdbcRepositoryNG<WorldUser>
            WorldUserRepository.Unsafe
 {
     private final DataSource dataSource;
+    private final UserRepository userRepository;
 
-    public JdbcWorldUserRepository(Table<WorldUser> table, Worker worker, DataSource dataSource) {
+    @Inject
+    public JdbcWorldUserRepository(Table<WorldUser> table, Worker worker, DataSource dataSource, UserRepository userRepository) {
         super(table, worker);
         this.dataSource = dataSource;
+        this.userRepository = userRepository;
     }
 
     @SneakyThrows
@@ -39,7 +45,26 @@ public final class JdbcWorldUserRepository extends JdbcRepositoryNG<WorldUser>
 
     @Override
     public Future<WorldUser> find(int id) {
-        return findFirstByIntColumn("id", id);
+        return findFirstByIntColumn("id", id)
+                .flatMap(worldUser ->
+                    userRepository.find(id)
+                        .map(user -> {
+                            worldUser.setUser(user);
+                            return worldUser;
+                        })
+                );
+    }
+
+    @Override
+    public Future<WorldUser> findOrRefresh(int id, Instant updatedAt) {
+        return findFirstByIntColumn("id", id)
+                .flatMap(worldUser ->
+                    userRepository.findOrRefresh(id, updatedAt)
+                        .map(user -> {
+                            worldUser.setUser(user);
+                            return worldUser;
+                        })
+                );
     }
 
     @Override

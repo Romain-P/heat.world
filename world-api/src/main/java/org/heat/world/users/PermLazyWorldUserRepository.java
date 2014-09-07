@@ -6,10 +6,11 @@ import org.fungsi.concurrent.Futures;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@SuppressWarnings("deprecated")
+@SuppressWarnings("deprecation")
 public final class PermLazyWorldUserRepository implements WorldUserRepository, WorldUserRepository.Unsafe {
     private final WorldUserRepository repository;
 
@@ -24,6 +25,17 @@ public final class PermLazyWorldUserRepository implements WorldUserRepository, W
     public Future<WorldUser> find(int id) {
         WorldUser user = cache.get(id);
         if (user != null) {
+            return Futures.success(user);
+        }
+
+        return repository.find(id)
+            .onSuccess(x -> cache.put(id, x));
+    }
+
+    @Override
+    public Future<WorldUser> findOrRefresh(int id, Instant updatedAt) {
+        WorldUser user = cache.get(id);
+        if (user != null && user.getUpdatedAt().compareTo(updatedAt) >= 0) {
             return Futures.success(user);
         }
 
