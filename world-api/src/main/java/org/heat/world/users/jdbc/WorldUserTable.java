@@ -14,7 +14,7 @@ import java.util.List;
 public class WorldUserTable implements Table<WorldUser> {
     @Override
     public String getTableName() {
-        return "users";
+        return "world_users";
     }
 
     @Override

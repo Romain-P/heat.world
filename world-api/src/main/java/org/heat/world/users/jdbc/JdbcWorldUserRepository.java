@@ -3,7 +3,9 @@ package org.heat.world.users.jdbc;
 import lombok.SneakyThrows;
 import org.fungsi.Unit;
 import org.fungsi.concurrent.Future;
+import org.fungsi.concurrent.Futures;
 import org.fungsi.concurrent.Worker;
+import org.heat.User;
 import org.heat.shared.database.JdbcRepositoryNG;
 import org.heat.shared.database.Table;
 import org.heat.world.users.UserRepository;
@@ -43,28 +45,35 @@ public final class JdbcWorldUserRepository extends JdbcRepositoryNG<WorldUser>
         return this;
     }
 
+    private Future<WorldUser> create(User user) {
+        WorldUser wuser = new WorldUser();
+        wuser.setId(user.getId());
+        wuser.setUser(user);
+
+        return insert(wuser);
+    }
+
+    private Future<WorldUser> findOrCreate(User user) {
+        return findFirstByIntColumn("id", user.getId())
+            .map(worldUser -> {
+                worldUser.setUser(user);
+                return worldUser;
+            })
+            .mayRescue(err ->
+                create(user)
+            );
+    }
+
     @Override
     public Future<WorldUser> find(int id) {
-        return findFirstByIntColumn("id", id)
-                .flatMap(worldUser ->
-                    userRepository.find(id)
-                        .map(user -> {
-                            worldUser.setUser(user);
-                            return worldUser;
-                        })
-                );
+        return userRepository.find(id)
+            .flatMap(this::findOrCreate);
     }
 
     @Override
     public Future<WorldUser> findOrRefresh(int id, Instant updatedAt) {
-        return findFirstByIntColumn("id", id)
-                .flatMap(worldUser ->
-                    userRepository.findOrRefresh(id, updatedAt)
-                        .map(user -> {
-                            worldUser.setUser(user);
-                            return worldUser;
-                        })
-                );
+        return userRepository.findOrRefresh(id, updatedAt)
+            .<WorldUser>flatMap(this::findOrCreate);
     }
 
     @Override
@@ -89,7 +98,8 @@ public final class JdbcWorldUserRepository extends JdbcRepositoryNG<WorldUser>
 
     @Override
     public Future<WorldUser> update(WorldUser val) {
-        return super.update(val);
+//        return super.update(val);
+        return Futures.success(val); // there is nothing to update for now
     }
 
     @Override
