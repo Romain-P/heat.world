@@ -3,7 +3,6 @@ package org.heat.world;
 import com.google.inject.PrivateModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import org.fungsi.concurrent.Timer;
 import org.fungsi.concurrent.Timers;
@@ -24,12 +23,12 @@ public class StdBackendModule extends PrivateModule {
         bind(BackendUserRepository.class).to(BackendUserRepositoryImpl.class).asEagerSingleton();
         bind(UserRepository.class).to(BackendUserRepository.class);
         expose(Backend.class);
+        expose(BackendUserRepository.class);
         expose(UserRepository.class);
     }
 
     @Provides
     @Singleton
-    @Named("user-auth-ttl")
     Timer provideUserAuthTtl(ScheduledExecutorService executor) {
         return Timers.wrap(executor);
     }

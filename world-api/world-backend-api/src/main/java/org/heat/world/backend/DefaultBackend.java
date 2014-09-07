@@ -39,7 +39,7 @@ public final class DefaultBackend implements Backend {
     public DefaultBackend(
             @Named("backend") NetworkClientService client,
             @Named("ticket") Random random,
-            @Named("user-auth-ttl") Timer userAuthTtl,
+            Timer userAuthTtl,
             Config config,
             WorldUserRepository userRepository
     ) {

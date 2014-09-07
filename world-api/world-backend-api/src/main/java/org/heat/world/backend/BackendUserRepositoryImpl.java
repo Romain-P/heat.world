@@ -4,8 +4,10 @@ import org.fungsi.concurrent.*;
 import org.heat.User;
 import org.heat.backend.messages.GetUserReq;
 import org.rocket.network.NetworkClient;
+import org.rocket.network.NetworkClientService;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
@@ -21,7 +23,7 @@ public final class BackendUserRepositoryImpl implements BackendUserRepository {
     private final Map<Integer, Promise<User>> userPromises = new ConcurrentHashMap<>();
 
     @Inject
-    public BackendUserRepositoryImpl(NetworkClient client, Timer timer) {
+    public BackendUserRepositoryImpl(@Named("backend") NetworkClientService client, Timer timer) {
         this.client = client;
         this.timer = timer;
     }
