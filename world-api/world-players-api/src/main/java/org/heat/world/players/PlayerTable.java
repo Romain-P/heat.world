@@ -7,6 +7,7 @@ import com.github.blackrush.acara.EventBusBuilder;
 import com.google.common.collect.ImmutableList;
 import com.typesafe.config.Config;
 import lombok.SneakyThrows;
+import org.fungsi.concurrent.Future;
 import org.heat.datacenter.Datacenter;
 import org.heat.shared.database.NamedPreparedStatement;
 import org.heat.shared.database.Table;
@@ -190,11 +191,10 @@ public final class PlayerTable implements Table<Player> {
 
 
     @Override
-    public Player importFromDb(ResultSet rset) throws SQLException {
+    public Future<Player> importFromDb(ResultSet rset) throws SQLException {
         Player player = new Player();
         player.setEventBus(eventBusBuilder.build());
         player.setId(rset.getInt("id"));
-        player.setUser(userRepository.find(rset.getInt("userId")).get(loadUserTimeout));
         player.setName(rset.getString("name"));
         player.setBreed(datacenter.find(Breed.class, rset.getInt("breedId")).get());
         player.setSex(rset.getBoolean("sex"));
@@ -219,7 +219,12 @@ public final class PlayerTable implements Table<Player> {
 
         player.getStats().apply(player.getWallet().findEquiped());
 
-        return player;
+
+        return userRepository.find(rset.getInt("userId"))
+            .map(user -> {
+                player.setUser(user);
+                return player;
+            });
     }
 
     @Override

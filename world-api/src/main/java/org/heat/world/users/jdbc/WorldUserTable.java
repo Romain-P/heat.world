@@ -1,6 +1,7 @@
 package org.heat.world.users.jdbc;
 
 import com.google.common.collect.ImmutableList;
+import org.fungsi.concurrent.Future;
 import org.heat.shared.database.NamedPreparedStatement;
 import org.heat.shared.database.Table;
 import org.heat.world.users.UserRepository;
@@ -45,9 +46,12 @@ public class WorldUserTable implements Table<WorldUser> {
     }
 
     @Override
-    public WorldUser importFromDb(ResultSet rset) throws SQLException {
-        int id = rset.getInt("id");
-        return new WorldUser(userRepository.find(id).get());
+    public Future<WorldUser> importFromDb(ResultSet rset) throws SQLException {
+        return userRepository.find(rset.getInt("id")).map(WorldUser::new)
+                .map(user -> {
+                    // set fields here
+                    return user;
+                });
     }
 
     @Override

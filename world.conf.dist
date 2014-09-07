@@ -32,7 +32,6 @@ heat {
 
     player {
       remove-required-answer-min-level = 20
-      load-user-timeout = 500ms
 
       start {
         map = 16395

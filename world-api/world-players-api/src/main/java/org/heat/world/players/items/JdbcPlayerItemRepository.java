@@ -60,7 +60,8 @@ public final class JdbcPlayerItemRepository implements PlayerItemRepository {
                 List<WorldItem> items = new ArrayList<>();
                 try (ResultSet resultSet = statement.executeQuery()) {
                     while (resultSet.next()) {
-                        items.add(itemTable.importFromDb(resultSet));
+                        // NOTE(Blackrush): dirty but fine as long as WorldItemTable doesn't perform async operations
+                        items.add(itemTable.importFromDb(resultSet).get());
                     }
                 }
 
