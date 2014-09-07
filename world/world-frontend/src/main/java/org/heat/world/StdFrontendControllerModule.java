@@ -1,9 +1,9 @@
 package org.heat.world;
 
-import org.heat.User;
 import org.heat.world.controllers.*;
 import org.heat.world.players.Player;
 import org.heat.world.roleplay.WorldAction;
+import org.heat.world.users.WorldUser;
 import org.rocket.network.guice.ControllerModule;
 
 public class StdFrontendControllerModule extends ControllerModule {
@@ -20,7 +20,7 @@ public class StdFrontendControllerModule extends ControllerModule {
         newController().to(ShortcutsController.class);
         newController().to(PlayerTradesController.class);
 
-        newProp(User.class);
+        newProp(WorldUser.class);
         newProp(Player.class);
         newProp(WorldAction.class);
     }
