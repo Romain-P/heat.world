@@ -6,6 +6,8 @@ import com.ankamagames.dofus.network.messages.game.context.roleplay.party.*;
 import com.github.blackrush.acara.Listener;
 import lombok.extern.slf4j.Slf4j;
 import org.heat.world.controllers.events.ChoosePlayerEvent;
+import org.heat.world.controllers.events.roleplay.chat.NewChannelEvent;
+import org.heat.world.controllers.events.roleplay.chat.QuitChannelEvent;
 import org.heat.world.controllers.utils.Basics;
 import org.heat.world.controllers.utils.RolePlaying;
 import org.heat.world.groups.*;
@@ -39,18 +41,8 @@ public class GroupsController {
     Map<Integer, WorldGroup.Invitation> invitations;
 
     WorldGroup createGroup() {
-        if (groups != null) {
-            if (!groups.isEmpty()) {
-                throw new IllegalStateException();
-            }
-        } else {
-            groups = new HashMap<>();
-        }
-
         WorldGroup group = groupFactory.create(player.get());
-        group.getEventBus().subscribe(this);
-        groups.put(group.getGroupId(), group);
-
+        setGroup(group);
         writePartyJoinMessage(group);
 
         return group;
@@ -73,6 +65,8 @@ public class GroupsController {
             groups = new HashMap<>();
         }
         groups.put(group.getGroupId(), group);
+        group.getEventBus().subscribe(this);
+        client.getEventBus().publish(new NewChannelEvent(group));
     }
 
     WorldGroup popGroup(int id) {
@@ -84,6 +78,7 @@ public class GroupsController {
             mainGroup.remove();
         }
         group.getEventBus().unsubscribe(this);
+        client.getEventBus().publish(new QuitChannelEvent(group));
         return group;
     }
 
@@ -211,7 +206,6 @@ public class GroupsController {
             invitation.accept();
             setGroup(group);
             writePartyJoinMessage(group);
-            group.getEventBus().subscribe(this);
         } catch (WorldGroupMemberOverflowException e) {
             client.write(new PartyCannotJoinErrorMessage(msg.partyId, PARTY_JOIN_ERROR_NOT_ENOUGH_ROOM.value));
         }
