@@ -129,6 +129,19 @@ public class GroupsController {
         evt.getPlayer().getEventBus().subscribe(this);
     }
 
+    @Disconnect
+    public void onDisconnect() {
+        for (WorldGroup group : groups.values()) {
+            group.getEventBus().unsubscribe(this);
+            client.getEventBus().publish(new QuitChannelEvent(group));
+
+            group.leave(player.get());
+        }
+
+        groups.clear();
+        mainGroup.remove();
+    }
+
     @Receive
     public void invite(PartyInvitationRequestMessage msg) {
         Optional<Player> option = playerRegistry.findPlayerByName(msg.name);
