@@ -1,5 +1,6 @@
 package org.heat.world.roleplay.environment;
 
+import com.ankamagames.dofus.network.enums.ChatActivableChannelsEnum;
 import com.ankamagames.dofus.network.enums.DirectionsEnum;
 import com.github.blackrush.acara.EventBus;
 import lombok.Getter;
@@ -289,6 +290,11 @@ public final class WorldMap implements VirtualWorldChannel {
                         "map %d isn't adjacent to %d",
                         this.data.getId(), other.data.getId())))
                 ;
+    }
+
+    @Override
+    public int getChannelId() {
+        return ChatActivableChannelsEnum.CHANNEL_GLOBAL.value;
     }
 
     @Override

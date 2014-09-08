@@ -2,6 +2,7 @@ package org.heat.world.players;
 
 import com.ankamagames.dofus.datacenter.breeds.Breed;
 import com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum;
+import com.ankamagames.dofus.network.enums.ChatActivableChannelsEnum;
 import com.ankamagames.dofus.network.enums.DirectionsEnum;
 import com.ankamagames.dofus.network.types.game.character.alignment.ActorAlignmentInformations;
 import com.ankamagames.dofus.network.types.game.character.alignment.ActorExtendedAlignmentInformations;
@@ -259,6 +260,11 @@ public class Player
         return getEventBus().publish(KickPlayerEvent.INSTANCE)
             .filter(answers -> answers.contains(KickPlayerEvent.ACK))
             .toUnit();
+    }
+
+    @Override
+    public int getChannelId() {
+        return ChatActivableChannelsEnum.PSEUDO_CHANNEL_PRIVATE.value;
     }
 
     @Override

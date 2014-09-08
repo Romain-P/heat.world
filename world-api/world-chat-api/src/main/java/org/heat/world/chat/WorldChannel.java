@@ -4,6 +4,12 @@ import com.github.blackrush.acara.Subscribable;
 
 public interface WorldChannel {
     /**
+     * Get channel id
+     * @return a valid channel id
+     */
+    int getChannelId();
+
+    /**
      * Get a subscribable view of this channel
      * @return a non-null subscribable channel view
      */
