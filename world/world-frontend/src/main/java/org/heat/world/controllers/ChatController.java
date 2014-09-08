@@ -35,6 +35,11 @@ public class ChatController {
     @Inject WorldChannelLookup channelLookup;
 
     private void doSpeak(WorldChannelMessage message) {
+        if (!user.get().hasChannel(message.getChannelId())) {
+            client.write(Basics.noop());
+            return;
+        }
+
         WorldChannel channel = channelLookup.lookupChannel(message);
 
         if (channel != null) {
@@ -69,7 +74,7 @@ public class ChatController {
     public void sendEnabledChannels(ChoosePlayerEvent evt) {
         client.write(new EnabledChannelsMessage(
                 evt.getPlayer().getUser().getChannelsAsBytes(),
-                new byte[0]
+                evt.getPlayer().getUser().getDisabledChannelsAsBytes()
         ));
     }
 

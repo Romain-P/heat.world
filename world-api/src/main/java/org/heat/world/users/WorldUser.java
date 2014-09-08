@@ -17,12 +17,28 @@ public final class WorldUser {
     org.heat.User user;
     int channels;
 
+    public static final int CHANNELS_COUNT = 13;
+
     public byte[] getChannelsAsBytes() {
         byte[] result = new byte[Integer.bitCount(channels)];
         int i = 0, j = 1;
         byte id = 1;
-        for (int k = 0; k < 32; k++) {
+        for (int k = 0; k < CHANNELS_COUNT; k++) {
             if ((channels & j) != 0) {
+                result[i++] = id;
+            }
+            j <<= 1;
+            id++;
+        }
+        return result;
+    }
+
+    public byte[] getDisabledChannelsAsBytes() {
+        byte[] result = new byte[CHANNELS_COUNT - Integer.bitCount(channels)];
+        int i = 0, j = 1;
+        byte id = 1;
+        for (int k = 0; k < CHANNELS_COUNT; k++) {
+            if ((channels & j) == 0) {
                 result[i++] = id;
             }
             j <<= 1;
