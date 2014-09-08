@@ -6,7 +6,6 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
-import org.heat.User;
 import org.heat.world.chat.SharedChannelLookup;
 import org.heat.world.chat.WorldChannelLookup;
 import org.heat.world.controllers.*;
@@ -17,8 +16,8 @@ import org.heat.world.players.PlayerRegistry;
 import org.heat.world.players.chat.CurrentMapChannelLookup;
 import org.heat.world.players.chat.VirtualPrivateChannelLookup;
 import org.heat.world.roleplay.WorldAction;
-import org.rocket.network.Prop;
 import org.heat.world.users.WorldUser;
+import org.rocket.network.Prop;
 import org.rocket.network.guice.ControllerModule;
 
 import java.time.Clock;
@@ -41,6 +40,7 @@ public class StdFrontendControllerModule extends ControllerModule {
         newController().to(PlayerTradesController.class);
         newController().to(GroupsController.class);
         newController().to(ChatController.class);
+        newController().to(ContactsController.class);
 
         newProp(WorldUser.class);
         newProp(Player.class);
