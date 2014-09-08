@@ -1,6 +1,8 @@
 package org.heat.world.players.shortcuts;
 
 import com.google.common.collect.ImmutableList;
+import org.fungsi.concurrent.Future;
+import org.fungsi.concurrent.Futures;
 import org.heat.shared.database.NamedPreparedStatement;
 import org.heat.shared.database.Table;
 
@@ -47,7 +49,7 @@ public final class PlayerShortcutTable implements Table<PlayerShortcut> {
     }
 
     @Override
-    public PlayerShortcut importFromDb(ResultSet rset) throws SQLException {
+    public Future<PlayerShortcut> importFromDb(ResultSet rset) throws SQLException {
         PlayerShortcut shortcut;
 
         shortcut = // no need here to verify if shortcut == null
@@ -59,7 +61,7 @@ public final class PlayerShortcutTable implements Table<PlayerShortcut> {
         if (shortcut == null) {
             throw new IllegalArgumentException();
         }
-        return shortcut;
+        return Futures.success(shortcut);
     }
 
     ItemShortcut tryImportItemShortcut(ResultSet resultSet) throws SQLException {
