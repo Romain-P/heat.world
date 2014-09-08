@@ -1,5 +1,6 @@
 package org.heat.world.users.jdbc;
 
+import com.ankamagames.dofus.network.enums.ChatActivableChannelsEnum;
 import lombok.SneakyThrows;
 import org.fungsi.Unit;
 import org.fungsi.concurrent.Future;
@@ -17,7 +18,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.Instant;
-import java.util.EnumSet;
 
 import static com.ankamagames.dofus.network.enums.ChatActivableChannelsEnum.*;
 
@@ -47,11 +47,19 @@ public final class JdbcWorldUserRepository extends JdbcRepositoryNG<WorldUser>
         return this;
     }
 
+    private int packChannelsAsInt(ChatActivableChannelsEnum... channels) {
+        int integer = 0;
+        for (ChatActivableChannelsEnum channel : channels) {
+            integer |= (1 << channel.value);
+        }
+        return integer;
+    }
+
     private Future<WorldUser> create(User user) {
         WorldUser wuser = new WorldUser();
         wuser.setId(user.getId());
         wuser.setUser(user);
-        wuser.setChannels(EnumSet.of(CHANNEL_SALES, CHANNEL_SEEK, CHANNEL_GLOBAL, CHANNEL_PARTY, CHANNEL_GUILD));
+        wuser.setChannels(packChannelsAsInt(CHANNEL_SALES, CHANNEL_SEEK, CHANNEL_GLOBAL, CHANNEL_PARTY, CHANNEL_GUILD));
 
         return insert(wuser);
     }
