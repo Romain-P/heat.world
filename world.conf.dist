@@ -57,5 +57,9 @@ heat {
       data-path = "/opt/dofus/dofus-2.21-linux/share/content/maps"
       key = "649ae451ca33ec53bbcbcc33becf15f4" # Dofus 2.21.3
     }
+
+    groups {
+      max-members = 15
+    }
   }
 }

@@ -1,0 +1,6 @@
+apply from: '../../publishable.gradle'
+
+dependencies {
+    compile project(':world-api:world-roleplay-api')
+    compile project(':world-api:world-chat-api')
+}

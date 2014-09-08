@@ -4,10 +4,14 @@ import com.github.blackrush.acara.EventBusBuilder;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+import com.google.inject.name.Names;
 import org.heat.User;
 import org.heat.world.chat.SharedChannelLookup;
 import org.heat.world.chat.WorldChannelLookup;
 import org.heat.world.controllers.*;
+import org.heat.world.groups.WorldGroup;
+import org.heat.world.groups.chat.GroupChannelLookup;
 import org.heat.world.players.Player;
 import org.heat.world.players.PlayerRegistry;
 import org.heat.world.players.chat.CurrentMapChannelLookup;
@@ -35,11 +39,13 @@ public class StdFrontendControllerModule extends ControllerModule {
         newController().to(ItemsController.class);
         newController().to(ShortcutsController.class);
         newController().to(PlayerTradesController.class);
+        newController().to(GroupsController.class);
         newController().to(ChatController.class);
 
         newProp(WorldUser.class);
         newProp(Player.class);
         newProp(WorldAction.class);
+        newProp(WorldGroup.class, Names.named("main"));
     }
 
     @Provides
@@ -62,12 +68,19 @@ public class StdFrontendControllerModule extends ControllerModule {
     }
 
     @Provides
+    GroupChannelLookup provideGroupChannelLookup(@Named("main") Prop<WorldGroup> mainGroup) {
+        return new GroupChannelLookup(mainGroup::tryGet);
+    }
+
+    @Provides
     WorldChannelLookup provideChannelLookup(
             SharedChannelLookup shared,
             VirtualPrivateChannelLookup virtualPrivate,
-            CurrentMapChannelLookup currentMap
+            CurrentMapChannelLookup currentMap,
+            GroupChannelLookup group
     ) {
         return currentMap
+            .andThen(group)
             .andThen(virtualPrivate)
             .andThen(shared);
     }

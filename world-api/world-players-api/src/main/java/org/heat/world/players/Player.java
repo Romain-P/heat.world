@@ -1,17 +1,23 @@
 package org.heat.world.players;
 
 import com.ankamagames.dofus.datacenter.breeds.Breed;
+import com.ankamagames.dofus.network.enums.BreedEnum;
 import com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum;
 import com.ankamagames.dofus.network.enums.ChatActivableChannelsEnum;
 import com.ankamagames.dofus.network.enums.DirectionsEnum;
+import com.ankamagames.dofus.network.enums.PlayerStatusEnum;
 import com.ankamagames.dofus.network.types.game.character.alignment.ActorAlignmentInformations;
 import com.ankamagames.dofus.network.types.game.character.alignment.ActorExtendedAlignmentInformations;
 import com.ankamagames.dofus.network.types.game.character.characteristic.CharacterCharacteristicsInformations;
 import com.ankamagames.dofus.network.types.game.character.characteristic.CharacterSpellModification;
 import com.ankamagames.dofus.network.types.game.character.choice.CharacterBaseInformations;
 import com.ankamagames.dofus.network.types.game.character.restriction.ActorRestrictionsInformations;
+import com.ankamagames.dofus.network.types.game.character.status.PlayerStatus;
 import com.ankamagames.dofus.network.types.game.context.roleplay.GameRolePlayCharacterInformations;
 import com.ankamagames.dofus.network.types.game.context.roleplay.HumanInformations;
+import com.ankamagames.dofus.network.types.game.context.roleplay.party.PartyInvitationMemberInformations;
+import com.ankamagames.dofus.network.types.game.context.roleplay.party.PartyMemberInformations;
+import com.ankamagames.dofus.network.types.game.context.roleplay.party.companion.PartyCompanionMemberInformations;
 import com.github.blackrush.acara.EventBus;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +26,7 @@ import lombok.ToString;
 import org.fungsi.Unit;
 import org.fungsi.concurrent.Future;
 import org.heat.shared.stream.MoreCollectors;
+import org.heat.world.groups.WorldGroupMember;
 import org.heat.world.chat.*;
 import org.heat.world.items.WorldItem;
 import org.heat.world.items.WorldItemType;
@@ -53,6 +60,7 @@ public class Player
         implements Serializable,
             WorldHumanoidActor,
             PlayerTrader,
+            WorldGroupMember,
             WorldMessageReceiver
 {
     EventBus eventBus;
@@ -131,6 +139,17 @@ public class Player
     }
 
     @Override
+    public BreedEnum getActorBreed() {
+        return BreedEnum.valueOf((byte) breed.getId()).get();
+    }
+
+    @Override
+    public PlayerStatus toPlayerStatus() {
+        // TODO(world/players): implement Player#toPlayerStatus()
+        return new PlayerStatus(PlayerStatusEnum.PLAYER_STATUS_AVAILABLE.value);
+    }
+
+    @Override
     public int getSpeakerId() {
         return id;
     }
@@ -187,6 +206,47 @@ public class Player
         Players.populateCharacterCharacteristicsInformations(stats, res);
 
         return res;
+    }
+
+    @Override
+    public PartyMemberInformations toPartyMemberInformations() {
+        return new PartyMemberInformations(
+            id,
+            (short) experience.getCurrentLevel(),
+            name,
+            look.toEntityLook(),
+            (byte) breed.getId(),
+            sex,
+            stats.get(GameStats.LIFE).getCurrent(),
+            stats.get(GameStats.LIFE).getMax(),
+            stats.get(GameStats.PROSPECTING).getTotal(),
+            (short) 1, // TODO(world/players): regen rate
+            stats.get(GameStats.INITIATIVE).getTotal(),
+            (byte) 0, // TODO(world/players): alignment side
+            (short) position.getMapCoordinates().first,
+            (short) position.getMapCoordinates().second,
+            position.getMapId(),
+            (short) position.getSubAreaId(),
+            toPlayerStatus(),
+            new PartyCompanionMemberInformations[0] // TODO(world/players): companions
+        );
+    }
+
+    @Override
+    public PartyInvitationMemberInformations toPartyInvitationMemberInformations() {
+        return new PartyInvitationMemberInformations(
+                id,
+                (short) experience.getCurrentLevel(),
+                name,
+                look.toEntityLook(),
+                (byte) breed.getId(),
+                sex,
+                (short) position.getMapCoordinates().first,
+                (short) position.getMapCoordinates().second,
+                position.getMapId(),
+                (short) position.getSubAreaId(),
+                new PartyCompanionMemberInformations[0] // TODO(world/players): companions
+        );
     }
 
     @SuppressWarnings({"SimplifiableIfStatement", "RedundantIfStatement"})
