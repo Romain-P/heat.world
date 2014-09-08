@@ -1,16 +1,19 @@
 package org.heat.world.controllers;
 
 import com.ankamagames.dofus.network.messages.game.chat.*;
+import com.ankamagames.dofus.network.messages.game.chat.channel.EnabledChannelsMessage;
 import com.github.blackrush.acara.Listener;
 import lombok.extern.slf4j.Slf4j;
 import org.heat.shared.stream.ImmutableCollectors;
 import org.heat.world.chat.*;
+import org.heat.world.controllers.events.ChoosePlayerEvent;
 import org.heat.world.controllers.events.EnterContextEvent;
 import org.heat.world.controllers.events.QuitContextEvent;
 import org.heat.world.controllers.utils.Basics;
 import org.heat.world.controllers.utils.RolePlaying;
 import org.heat.world.items.WorldItem;
 import org.heat.world.players.Player;
+import org.heat.world.users.WorldUser;
 import org.rocket.network.Controller;
 import org.rocket.network.NetworkClient;
 import org.rocket.network.Prop;
@@ -27,10 +30,16 @@ import static com.ankamagames.dofus.network.enums.ChatActivableChannelsEnum.PSEU
 public class ChatController {
     @Inject NetworkClient client;
     @Inject Prop<Player> player;
+    @Inject Prop<WorldUser> user;
 
     @Inject WorldChannelLookup channelLookup;
 
     private void doSpeak(WorldChannelMessage message) {
+        if (!user.get().hasChannel(message.getChannelId())) {
+            client.write(Basics.noop());
+            return;
+        }
+
         WorldChannel channel = channelLookup.lookupChannel(message);
 
         if (channel != null) {
@@ -41,14 +50,42 @@ public class ChatController {
         }
     }
 
+    private void subscribeAllChannels() {
+        WorldUser user = this.user.get();
+
+        channelLookup.forEach(channel -> {
+            if (user.hasChannel(channel.getChannelId())) {
+                channel.getSubscribableChannelView().subscribe(this);
+            }
+        });
+    }
+
+    private void unsubscribeAllChannels() {
+        WorldUser user = this.user.get();
+
+        channelLookup.forEach(channel -> {
+            if (user.hasChannel(channel.getChannelId())) {
+                channel.getSubscribableChannelView().unsubscribe(this);
+            }
+        });
+    }
+
+    @Listener
+    public void sendEnabledChannels(ChoosePlayerEvent evt) {
+        client.write(new EnabledChannelsMessage(
+                evt.getPlayer().getUser().getChannelsAsBytes(),
+                evt.getPlayer().getUser().getDisabledChannelsAsBytes()
+        ));
+    }
+
     @Listener
     public void subscribeChannels(EnterContextEvent evt) {
-        channelLookup.forEach(channel -> channel.getSubscribableChannelView().subscribe(this));
+        subscribeAllChannels();
     }
 
     @Listener
     public void unsubscribeChannels(QuitContextEvent evt) {
-        channelLookup.forEach(channel -> channel.getSubscribableChannelView().unsubscribe(this));
+        unsubscribeAllChannels();
     }
 
     @Receive

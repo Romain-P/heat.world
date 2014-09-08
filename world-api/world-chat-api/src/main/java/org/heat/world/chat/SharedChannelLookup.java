@@ -18,7 +18,7 @@ public final class SharedChannelLookup implements WorldChannelLookup {
     public SharedChannelLookup(EventBusBuilder eventBusBuilder, Clock clock, List<Integer> channelIds) {
         this.channels = new HashMap<>();
         for (Integer channelId : channelIds) {
-            this.channels.put(channelId, new DedicatedWorldChannel(eventBusBuilder.build(), clock));
+            this.channels.put(channelId, new DedicatedWorldChannel(channelId, eventBusBuilder.build(), clock));
         }
     }
 

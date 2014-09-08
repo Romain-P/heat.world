@@ -6,6 +6,7 @@ import com.ankamagames.dofus.network.enums.DirectionsEnum;
 import com.github.blackrush.acara.EventBusBuilder;
 import com.google.common.collect.ImmutableList;
 import lombok.SneakyThrows;
+import org.fungsi.concurrent.Future;
 import org.heat.datacenter.Datacenter;
 import org.heat.shared.database.NamedPreparedStatement;
 import org.heat.shared.database.Table;
@@ -21,6 +22,7 @@ import org.heat.world.players.shortcuts.PlayerShortcutRepository;
 import org.heat.world.roleplay.WorldActorLook;
 import org.heat.world.roleplay.environment.WorldMapPoint;
 import org.heat.world.roleplay.environment.WorldPositioningSystem;
+import org.heat.world.users.WorldUserRepository;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -38,6 +40,7 @@ public final class PlayerTable implements Table<Player> {
     private final PlayerItemRepository playerItems;
     private final PlayerShortcutRepository playerShortcuts;
     private final EventBusBuilder eventBusBuilder;
+    private final WorldUserRepository userRepository;
 
     @Inject
     public PlayerTable(
@@ -46,7 +49,8 @@ public final class PlayerTable implements Table<Player> {
             @Named("player") Experience experience,
             PlayerItemRepository playerItems,
             PlayerShortcutRepository playerShortcuts,
-            @Named("player") EventBusBuilder eventBusBuilder
+            @Named("player") EventBusBuilder eventBusBuilder,
+            WorldUserRepository userRepository
     ) {
         this.datacenter = datacenter;
         this.wps = wps;
@@ -54,6 +58,7 @@ public final class PlayerTable implements Table<Player> {
         this.playerItems = playerItems;
         this.playerShortcuts = playerShortcuts;
         this.eventBusBuilder = eventBusBuilder;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -180,11 +185,10 @@ public final class PlayerTable implements Table<Player> {
 
 
     @Override
-    public Player importFromDb(ResultSet rset) throws SQLException {
+    public Future<Player> importFromDb(ResultSet rset) throws SQLException {
         Player player = new Player();
         player.setEventBus(eventBusBuilder.build());
         player.setId(rset.getInt("id"));
-        player.setUserId(rset.getInt("userId"));
         player.setName(rset.getString("name"));
         player.setBreed(datacenter.find(Breed.class, rset.getInt("breedId")).get());
         player.setSex(rset.getBoolean("sex"));
@@ -209,7 +213,12 @@ public final class PlayerTable implements Table<Player> {
 
         player.getStats().apply(player.getWallet().findEquiped());
 
-        return player;
+
+        return userRepository.find(rset.getInt("userId"))
+            .map(user -> {
+                player.setUser(user);
+                return player;
+            });
     }
 
     @Override

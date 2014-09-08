@@ -3,6 +3,7 @@ package org.heat.world.players;
 import com.ankamagames.dofus.datacenter.breeds.Breed;
 import com.ankamagames.dofus.network.enums.BreedEnum;
 import com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum;
+import com.ankamagames.dofus.network.enums.ChatActivableChannelsEnum;
 import com.ankamagames.dofus.network.enums.DirectionsEnum;
 import com.ankamagames.dofus.network.enums.PlayerStatusEnum;
 import com.ankamagames.dofus.network.types.game.character.alignment.ActorAlignmentInformations;
@@ -42,6 +43,7 @@ import org.heat.world.roleplay.WorldHumanoidActor;
 import org.heat.world.roleplay.environment.WorldMapPoint;
 import org.heat.world.roleplay.environment.WorldPosition;
 import org.heat.world.trading.impl.player.PlayerTrader;
+import org.heat.world.users.WorldUser;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -63,7 +65,7 @@ public class Player
 {
     EventBus eventBus;
     int id;
-    int userId;
+    WorldUser user;
     String name;
     Breed breed;
     boolean sex;
@@ -80,6 +82,10 @@ public class Player
     // lombok auto-generates a #isSex() which is invalid here
     public boolean getSex() {
         return sex;
+    }
+
+    public int getUserId() {
+        return user.getId();
     }
 
     public void moveTo(WorldMapPoint point, DirectionsEnum dir) {
@@ -109,7 +115,7 @@ public class Player
 
     @Override
     public int getActorUserId() {
-        return userId;
+        return getUserId();
     }
 
     @Override
@@ -150,7 +156,7 @@ public class Player
 
     @Override
     public int getSpeakerUserId() {
-        return userId;
+        return user.getId();
     }
 
     @Override
@@ -178,7 +184,7 @@ public class Player
                 position.toEntityDispositionInformations(),
                 name,
                 toHumanInformations(),
-                userId,
+                getUserId(),
                 toActorAlignmentInformations()
         );
     }
@@ -314,6 +320,11 @@ public class Player
         return getEventBus().publish(KickPlayerEvent.INSTANCE)
             .filter(answers -> answers.contains(KickPlayerEvent.ACK))
             .toUnit();
+    }
+
+    @Override
+    public int getChannelId() {
+        return ChatActivableChannelsEnum.PSEUDO_CHANNEL_PRIVATE.value;
     }
 
     @Override

@@ -6,6 +6,8 @@ import com.ankamagames.dofus.network.types.game.data.items.effects.ObjectEffect;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import lombok.SneakyThrows;
+import org.fungsi.concurrent.Future;
+import org.fungsi.concurrent.Futures;
 import org.heat.datacenter.Datacenter;
 import org.heat.dofus.network.NetworkComponentFactory;
 import org.heat.shared.database.NamedPreparedStatement;
@@ -77,15 +79,15 @@ public class WorldItemTable implements Table<WorldItem> {
     }
 
     @Override
-    public WorldItem importFromDb(ResultSet rset) throws SQLException {
-        return WorldItem.create(
+    public Future<WorldItem> importFromDb(ResultSet rset) throws SQLException {
+        return Futures.success(WorldItem.create(
                 rset.getInt("uid"),
                 0,
                 datacenter.find(Item.class, rset.getInt("gid")).get(),
                 importEffects(rset),
                 CharacterInventoryPositionEnum.valueOf(rset.getByte("position")).get(),
                 rset.getInt("quantity")
-        );
+        ));
     }
 
     @Override

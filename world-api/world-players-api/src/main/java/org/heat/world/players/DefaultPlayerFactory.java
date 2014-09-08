@@ -9,7 +9,6 @@ import com.google.inject.name.Names;
 import com.typesafe.config.Config;
 import org.fungsi.concurrent.Future;
 import org.fungsi.concurrent.Futures;
-import org.heat.User;
 import org.heat.datacenter.Datacenter;
 import org.heat.world.items.MapItemBag;
 import org.heat.world.metrics.Experience;
@@ -25,6 +24,7 @@ import org.heat.world.roleplay.WorldActorLook;
 import org.heat.world.roleplay.environment.WorldMapPoint;
 import org.heat.world.roleplay.environment.WorldPosition;
 import org.heat.world.roleplay.environment.WorldPositioningSystem;
+import org.heat.world.users.WorldUser;
 import org.rocket.Service;
 import org.rocket.ServiceContext;
 
@@ -110,11 +110,11 @@ public class DefaultPlayerFactory implements PlayerFactory, Service {
     public void stop(ServiceContext ctx) { }
 
     @Override
-    public Future<Player> create(User user, String name, byte breed, boolean sex, int[] colors, int cosmeticId) {
+    public Future<Player> create(WorldUser user, String name, byte breed, boolean sex, int[] colors, int cosmeticId) {
         Player player = new Player();
         player.setEventBus(eventBusBuilder.build());
         player.setId(idGenerator.incrementAndGet());
-        player.setUserId(user.getId());
+        player.setUser(user);
         player.setName(name);
         player.setBreed(datacenter.find(Breed.class, breed).get());
         player.setSex(sex);

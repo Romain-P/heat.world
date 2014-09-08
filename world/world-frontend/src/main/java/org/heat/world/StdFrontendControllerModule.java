@@ -18,6 +18,7 @@ import org.heat.world.players.chat.CurrentMapChannelLookup;
 import org.heat.world.players.chat.VirtualPrivateChannelLookup;
 import org.heat.world.roleplay.WorldAction;
 import org.rocket.network.Prop;
+import org.heat.world.users.WorldUser;
 import org.rocket.network.guice.ControllerModule;
 
 import java.time.Clock;
@@ -41,7 +42,7 @@ public class StdFrontendControllerModule extends ControllerModule {
         newController().to(GroupsController.class);
         newController().to(ChatController.class);
 
-        newProp(User.class);
+        newProp(WorldUser.class);
         newProp(Player.class);
         newProp(WorldAction.class);
         newProp(WorldGroup.class, Names.named("main"));

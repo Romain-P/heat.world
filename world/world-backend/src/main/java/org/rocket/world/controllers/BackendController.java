@@ -2,6 +2,7 @@ package org.rocket.world.controllers;
 
 import org.heat.backend.messages.*;
 import org.heat.world.backend.Backend;
+import org.heat.world.backend.BackendUserRepository;
 import org.heat.world.players.Player;
 import org.heat.world.players.PlayerRepository;
 import org.rocket.InjectConfig;
@@ -18,6 +19,7 @@ public class BackendController {
     @Inject NetworkClient client;
     @Inject Backend backend;
     @Inject PlayerRepository players;
+    @Inject BackendUserRepository userRepository;
 
     @InjectConfig("heat.world.id") int worldId;
     @InjectConfig("heat.world.frontend.public-host") String publicHost;
@@ -47,15 +49,19 @@ public class BackendController {
 
     @Receive
     public void authorizeUser(AuthorizeUserNotif notif) {
-        backend.authorizeUser(notif.user)
-                .flatMap(ticket -> client.write(new AuthorizeUserReq(notif.user.getId(), ticket)))
-                .mayRescue(cause -> client.write(new ForbidUserReq(notif.user.getId(), cause)))
-        ;
+        backend.authorizeUser(notif)
+            .flatMap(ticket -> client.write(new AuthorizeUserReq(notif.userId, ticket)))
+            .mayRescue(cause -> client.write(new ForbidUserReq(notif.userId, cause)));
     }
 
     @Receive
     public void getNrPlayers(GetNrPlayersNotif notif) {
         List<Player> players = this.players.findByUserId(notif.userId).get(); // TODO(world/backend): player load timeout
         client.write(new SetNrPlayersReq(notif.userId, players.size()));
+    }
+
+    @Receive
+    public void getUser(GetUserResp resp) {
+        userRepository.push(resp.user);
     }
 }

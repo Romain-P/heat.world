@@ -25,7 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.fungsi.Either;
 import org.fungsi.Unit;
 import org.fungsi.concurrent.Future;
-import org.heat.User;
 import org.heat.shared.Strings;
 import org.heat.shared.function.UnsafeFunctions;
 import org.heat.shared.stream.MoreCollectors;
@@ -40,6 +39,7 @@ import org.heat.world.players.*;
 import org.heat.world.players.events.KickPlayerEvent;
 import org.heat.world.players.metrics.PlayerSpell;
 import org.heat.world.players.metrics.PlayerStatBook;
+import org.heat.world.users.WorldUser;
 import org.rocket.InjectConfig;
 import org.rocket.network.*;
 
@@ -59,7 +59,7 @@ import static com.ankamagames.dofus.network.enums.CharacterDeletionErrorEnum.DEL
 @Slf4j
 public class PlayersController {
     @Inject NetworkClient client;
-    @Inject Prop<User> user;
+    @Inject Prop<WorldUser> user;
     @Inject MutProp<Player> player;
 
     @Inject PlayerRepository players;

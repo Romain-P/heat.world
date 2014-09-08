@@ -6,6 +6,7 @@ import org.heat.User;
 import org.heat.world.backend.Backend;
 import org.heat.world.controllers.utils.Basics;
 import org.heat.world.users.UserCapabilities;
+import org.heat.world.users.WorldUser;
 import org.rocket.network.*;
 
 import javax.inject.Inject;
@@ -15,7 +16,7 @@ import java.util.List;
 public class UsersController {
     @Inject NetworkClient client;
     @Inject Backend backend;
-    @Inject MutProp<User> user;
+    @Inject MutProp<WorldUser> user;
     @Inject UserCapabilities capabilities;
 
     @Connect
@@ -32,11 +33,11 @@ public class UsersController {
     }
 
     private short exportVisibleBreeds() {
-        return exportBreeds(capabilities.getVisibleBreeds(user.get()));
+        return exportBreeds(capabilities.getVisibleBreeds(user.get().getUser()));
     }
 
     private short exportAvailableBreeds() {
-        return exportBreeds(capabilities.getAvailableBreeds(user.get()));
+        return exportBreeds(capabilities.getAvailableBreeds(user.get().getUser()));
     }
 
     @PropValidation(value = User.class, present = false)
@@ -51,7 +52,7 @@ public class UsersController {
                     tx.write(new ServerSettingsMessage("fr", (byte) 0, (byte) 0));
                     tx.write(new AccountCapabilitiesMessage(
                             user.getId(),
-                            capabilities.isTutorialAvailable(user),
+                            capabilities.isTutorialAvailable(user.getUser()),
                             exportVisibleBreeds(),
                             exportAvailableBreeds(),
                             (byte) 0 // TODO(world/frontend): status when authenticating
@@ -64,7 +65,7 @@ public class UsersController {
     @Disconnect
     public void acknowledgeUserDisconnection() {
         if (user.isPresent()) {
-            backend.acknowledgeDisconnection(user.get());
+            backend.acknowledgeDisconnection(user.get().getId());
         }
     }
 }

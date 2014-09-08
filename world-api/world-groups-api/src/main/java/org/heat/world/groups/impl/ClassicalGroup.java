@@ -1,5 +1,6 @@
 package org.heat.world.groups.impl;
 
+import com.ankamagames.dofus.network.enums.ChatActivableChannelsEnum;
 import com.ankamagames.dofus.network.enums.PartyTypeEnum;
 import com.github.blackrush.acara.EventBus;
 import lombok.Getter;
@@ -82,6 +83,11 @@ final class ClassicalGroup implements WorldGroup {
     @Override
     public PartyTypeEnum getGroupType() {
         return PartyTypeEnum.PARTY_TYPE_CLASSICAL;
+    }
+
+    @Override
+    public int getChannelId() {
+        return ChatActivableChannelsEnum.CHANNEL_PARTY.value;
     }
 
     @Override
