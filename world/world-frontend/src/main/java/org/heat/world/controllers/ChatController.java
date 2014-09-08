@@ -6,6 +6,7 @@ import com.github.blackrush.acara.Listener;
 import lombok.extern.slf4j.Slf4j;
 import org.heat.shared.stream.ImmutableCollectors;
 import org.heat.world.chat.*;
+import org.heat.world.controllers.events.ChoosePlayerEvent;
 import org.heat.world.controllers.events.EnterContextEvent;
 import org.heat.world.controllers.events.QuitContextEvent;
 import org.heat.world.controllers.utils.Basics;
@@ -65,12 +66,15 @@ public class ChatController {
     }
 
     @Listener
-    public void subscribeChannels(EnterContextEvent evt) {
+    public void sendEnabledChannels(ChoosePlayerEvent evt) {
         client.write(new EnabledChannelsMessage(
-                user.get().getChannelsAsBytes(),
+                evt.getPlayer().getUser().getChannelsAsBytes(),
                 new byte[0]
         ));
+    }
 
+    @Listener
+    public void subscribeChannels(EnterContextEvent evt) {
         subscribeAllChannels();
     }
 
