@@ -114,7 +114,7 @@ public class ChatController {
     public void privatelySpeak(ChatClientPrivateMessage msg) {
         WorldChannelMessage message = new PrivateChannelMessage.ByReceiverName(
                 msg.receiver,
-                new StringChannelMessage(PrivateChannelMessage.CHANNEL_ID, msg.content));
+                new StringChannelMessage(PSEUDO_CHANNEL_PRIVATE.value, msg.content));
 
         doSpeak(message);
     }
@@ -126,7 +126,7 @@ public class ChatController {
         WorldChannelMessage message = new PrivateChannelMessage.ByReceiverName(
             msg.receiver,
             new ChannelMessageWithAttachments(
-                new StringChannelMessage(PrivateChannelMessage.CHANNEL_ID, msg.content),
+                new StringChannelMessage(PSEUDO_CHANNEL_PRIVATE.value, msg.content),
                 Stream.of(msg.objects)
                     .map(item -> player.getWallet().findByUid(item.objectUID).get())
                     .collect(ImmutableCollectors.toList())));

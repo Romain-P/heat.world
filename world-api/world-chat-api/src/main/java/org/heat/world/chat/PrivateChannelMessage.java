@@ -1,8 +1,8 @@
 package org.heat.world.chat;
 
-public interface PrivateChannelMessage extends WorldChannelMessage {
-    public static final int CHANNEL_ID = -1;
+import com.ankamagames.dofus.network.enums.ChatActivableChannelsEnum;
 
+public interface PrivateChannelMessage extends WorldChannelMessage {
     WorldChannelMessage getMessage();
 
     default WorldMessageReceiver getReceiver() {
@@ -11,7 +11,7 @@ public interface PrivateChannelMessage extends WorldChannelMessage {
 
     @Override
     default int getChannelId() {
-        return CHANNEL_ID;
+        return ChatActivableChannelsEnum.PSEUDO_CHANNEL_PRIVATE.value;
     }
 
     @Override
