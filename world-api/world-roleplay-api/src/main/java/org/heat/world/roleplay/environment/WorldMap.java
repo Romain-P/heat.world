@@ -1,10 +1,12 @@
 package org.heat.world.roleplay.environment;
 
+import com.ankamagames.dofus.network.enums.ChatActivableChannelsEnum;
 import com.ankamagames.dofus.network.enums.DirectionsEnum;
 import com.github.blackrush.acara.EventBus;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.heat.dofus.d2p.data.MapData;
+import org.heat.world.chat.VirtualWorldChannel;
 import org.heat.world.items.WorldItem;
 import org.heat.world.roleplay.WorldActor;
 import org.heat.world.roleplay.environment.events.*;
@@ -22,7 +24,7 @@ import static com.ankamagames.dofus.network.enums.DirectionsEnum.*;
 import static java.util.Objects.requireNonNull;
 
 @RequiredArgsConstructor
-public final class WorldMap {
+public final class WorldMap implements VirtualWorldChannel {
     /**
      * From {@link java.util.concurrent.ConcurrentHashMap}
      * " the (estimated) number of elements needed for this operation to be executed in parallel "
@@ -288,6 +290,11 @@ public final class WorldMap {
                         "map %d isn't adjacent to %d",
                         this.data.getId(), other.data.getId())))
                 ;
+    }
+
+    @Override
+    public int getChannelId() {
+        return ChatActivableChannelsEnum.CHANNEL_GLOBAL.value;
     }
 
     @Override

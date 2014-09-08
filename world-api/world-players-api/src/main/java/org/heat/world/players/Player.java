@@ -2,6 +2,7 @@ package org.heat.world.players;
 
 import com.ankamagames.dofus.datacenter.breeds.Breed;
 import com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum;
+import com.ankamagames.dofus.network.enums.ChatActivableChannelsEnum;
 import com.ankamagames.dofus.network.enums.DirectionsEnum;
 import com.ankamagames.dofus.network.types.game.character.alignment.ActorAlignmentInformations;
 import com.ankamagames.dofus.network.types.game.character.alignment.ActorExtendedAlignmentInformations;
@@ -19,6 +20,7 @@ import lombok.ToString;
 import org.fungsi.Unit;
 import org.fungsi.concurrent.Future;
 import org.heat.shared.stream.MoreCollectors;
+import org.heat.world.chat.*;
 import org.heat.world.items.WorldItem;
 import org.heat.world.items.WorldItemType;
 import org.heat.world.metrics.GameStats;
@@ -50,7 +52,8 @@ import static com.ankamagames.dofus.network.enums.CharacterInventoryPositionEnum
 public class Player
         implements Serializable,
             WorldHumanoidActor,
-            PlayerTrader
+            PlayerTrader,
+            WorldMessageReceiver
 {
     EventBus eventBus;
     int id;
@@ -125,6 +128,21 @@ public class Player
     @Override
     public boolean getActorSex() {
         return sex;
+    }
+
+    @Override
+    public int getSpeakerId() {
+        return id;
+    }
+
+    @Override
+    public int getSpeakerUserId() {
+        return user.getId();
+    }
+
+    @Override
+    public String getSpeakerName() {
+        return name;
     }
 
     @Override
@@ -242,6 +260,26 @@ public class Player
         return getEventBus().publish(KickPlayerEvent.INSTANCE)
             .filter(answers -> answers.contains(KickPlayerEvent.ACK))
             .toUnit();
+    }
+
+    @Override
+    public int getChannelId() {
+        return ChatActivableChannelsEnum.PSEUDO_CHANNEL_PRIVATE.value;
+    }
+
+    @Override
+    public void speak(WorldSpeaker speaker, WorldChannelMessage message) {
+        WorldChannelEnvelope envelope = new WorldChannelEnvelope(
+                speaker,
+                new PrivateChannelMessage.Resolved(this, message),
+                Instant.now()
+        );
+
+        eventBus.publish(envelope);
+
+        if (speaker instanceof WorldMessageReceiver) {
+            ((WorldMessageReceiver) speaker).getEventBus().publish(envelope);
+        }
     }
 
     @Override

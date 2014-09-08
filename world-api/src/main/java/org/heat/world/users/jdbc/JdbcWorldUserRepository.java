@@ -1,9 +1,9 @@
 package org.heat.world.users.jdbc;
 
+import com.ankamagames.dofus.network.enums.ChatActivableChannelsEnum;
 import lombok.SneakyThrows;
 import org.fungsi.Unit;
 import org.fungsi.concurrent.Future;
-import org.fungsi.concurrent.Futures;
 import org.fungsi.concurrent.Worker;
 import org.heat.User;
 import org.heat.shared.database.JdbcRepositoryNG;
@@ -45,10 +45,21 @@ public final class JdbcWorldUserRepository extends JdbcRepositoryNG<WorldUser>
         return this;
     }
 
+    @SuppressWarnings("UnusedDeclaration")
+    private int packChannelsAsInt(ChatActivableChannelsEnum... channels) {
+        int integer = 0;
+        for (ChatActivableChannelsEnum channel : channels) {
+            integer |= (1 << channel.value);
+        }
+        return integer;
+    }
+
     private Future<WorldUser> create(User user) {
         WorldUser wuser = new WorldUser();
         wuser.setId(user.getId());
         wuser.setUser(user);
+        //wuser.setChannels(packChannelsAsInt(CHANNEL_SALES, CHANNEL_SEEK, CHANNEL_GLOBAL, CHANNEL_PARTY, CHANNEL_GUILD));
+        wuser.setChannels(Integer.MAX_VALUE);
 
         return insert(wuser);
     }
@@ -98,8 +109,7 @@ public final class JdbcWorldUserRepository extends JdbcRepositoryNG<WorldUser>
 
     @Override
     public Future<WorldUser> update(WorldUser val) {
-//        return super.update(val);
-        return Futures.success(val); // there is nothing to update for now
+        return super.update(val);
     }
 
     @Override

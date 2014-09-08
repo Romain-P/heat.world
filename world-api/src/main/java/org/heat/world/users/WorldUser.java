@@ -15,6 +15,45 @@ import java.util.OptionalInt;
 public final class WorldUser {
     int id;
     org.heat.User user;
+    int channels;
+
+    public static final int CHANNELS_COUNT = 13;
+
+    public byte[] getChannelsAsBytes() {
+        byte[] result = new byte[Integer.bitCount(channels)];
+        int i = 0, j = 1;
+        byte id = 0;
+        for (int k = 0; k < CHANNELS_COUNT; k++) {
+            if ((channels & j) != 0) {
+                result[i++] = id;
+            }
+            j <<= 1;
+            id++;
+        }
+        return result;
+    }
+
+    public byte[] getDisabledChannelsAsBytes() {
+        int len = CHANNELS_COUNT - Integer.bitCount(channels);
+        if (len <= 0) {
+            return new byte[0];
+        }
+        byte[] result = new byte[len];
+        int i = 0, j = 1;
+        byte id = 0;
+        for (int k = 0; k < CHANNELS_COUNT; k++) {
+            if ((channels & j) == 0) {
+                result[i++] = id;
+            }
+            j <<= 1;
+            id++;
+        }
+        return result;
+    }
+
+    public boolean hasChannel(int id) {
+        return (channels & (1 << id)) != 0;
+    }
 
     //<editor-fold desc="org.heat.User delegate">
     public double getSubscriptionEndMilliOrZero() {
