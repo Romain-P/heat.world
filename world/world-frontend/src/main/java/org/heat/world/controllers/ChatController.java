@@ -9,6 +9,8 @@ import org.heat.world.chat.*;
 import org.heat.world.controllers.events.ChoosePlayerEvent;
 import org.heat.world.controllers.events.EnterContextEvent;
 import org.heat.world.controllers.events.QuitContextEvent;
+import org.heat.world.controllers.events.roleplay.chat.NewChannelEvent;
+import org.heat.world.controllers.events.roleplay.chat.QuitChannelEvent;
 import org.heat.world.controllers.utils.Basics;
 import org.heat.world.controllers.utils.RolePlaying;
 import org.heat.world.items.WorldItem;
@@ -191,5 +193,19 @@ public class ChatController {
                 ));
             }
         }
+    }
+
+    @Listener
+    public void onNewChannel(NewChannelEvent evt) {
+        WorldUser user = this.user.get();
+        WorldChannel channel = evt.getChannel();
+        if (user.hasChannel(channel.getChannelId())) {
+            channel.getSubscribableChannelView().subscribe(this);
+        }
+    }
+
+    @Listener
+    public void onQuitChannel(QuitChannelEvent evt) {
+        evt.getChannel().getSubscribableChannelView().unsubscribe(this);
     }
 }
