@@ -22,7 +22,7 @@ public final class WorldUser {
     public byte[] getChannelsAsBytes() {
         byte[] result = new byte[Integer.bitCount(channels)];
         int i = 0, j = 1;
-        byte id = 1;
+        byte id = 0;
         for (int k = 0; k < CHANNELS_COUNT; k++) {
             if ((channels & j) != 0) {
                 result[i++] = id;
@@ -34,9 +34,13 @@ public final class WorldUser {
     }
 
     public byte[] getDisabledChannelsAsBytes() {
-        byte[] result = new byte[CHANNELS_COUNT - Integer.bitCount(channels)];
+        int len = CHANNELS_COUNT - Integer.bitCount(channels);
+        if (len <= 0) {
+            return new byte[0];
+        }
+        byte[] result = new byte[len];
         int i = 0, j = 1;
-        byte id = 1;
+        byte id = 0;
         for (int k = 0; k < CHANNELS_COUNT; k++) {
             if ((channels & j) == 0) {
                 result[i++] = id;

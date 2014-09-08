@@ -19,8 +19,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.Instant;
 
-import static com.ankamagames.dofus.network.enums.ChatActivableChannelsEnum.*;
-
 @SuppressWarnings("deprecated")
 public final class JdbcWorldUserRepository extends JdbcRepositoryNG<WorldUser>
     implements WorldUserRepository,
@@ -47,6 +45,7 @@ public final class JdbcWorldUserRepository extends JdbcRepositoryNG<WorldUser>
         return this;
     }
 
+    @SuppressWarnings("UnusedDeclaration")
     private int packChannelsAsInt(ChatActivableChannelsEnum... channels) {
         int integer = 0;
         for (ChatActivableChannelsEnum channel : channels) {
@@ -59,7 +58,8 @@ public final class JdbcWorldUserRepository extends JdbcRepositoryNG<WorldUser>
         WorldUser wuser = new WorldUser();
         wuser.setId(user.getId());
         wuser.setUser(user);
-        wuser.setChannels(packChannelsAsInt(CHANNEL_SALES, CHANNEL_SEEK, CHANNEL_GLOBAL, CHANNEL_PARTY, CHANNEL_GUILD));
+        //wuser.setChannels(packChannelsAsInt(CHANNEL_SALES, CHANNEL_SEEK, CHANNEL_GLOBAL, CHANNEL_PARTY, CHANNEL_GUILD));
+        wuser.setChannels(Integer.MAX_VALUE);
 
         return insert(wuser);
     }
