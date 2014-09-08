@@ -21,7 +21,7 @@ public final class WorldUser {
         byte[] result = new byte[Integer.bitCount(channels)];
         int i = 0, j = 1;
         byte id = 1;
-        while (j < Integer.MAX_VALUE) {
+        for (int k = 0; k < 32; k++) {
             if ((channels & j) != 0) {
                 result[i++] = id;
             }
