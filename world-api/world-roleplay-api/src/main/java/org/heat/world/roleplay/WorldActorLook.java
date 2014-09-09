@@ -1,48 +1,65 @@
 package org.heat.world.roleplay;
 
 import com.ankamagames.dofus.network.types.game.look.EntityLook;
-import lombok.Value;
-import lombok.experimental.Wither;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
 import java.util.stream.Stream;
 
-@Value
-@Wither
+@Getter
+@EqualsAndHashCode
+@ToString
 public final class WorldActorLook {
-    final Bones bones;
-    final short lookId;
-    final short headId;
-    final short scale;
+    final short bones;
+    final short[] skins;
+    final short[] scales;
     final int[] colors;
+
+    public WorldActorLook(short bones, short[] skins, short[] scales, int[] colors) {
+        this.bones = bones;
+        this.skins = skins;
+        this.scales = scales;
+        this.colors = colors;
+    }
+
+    public WorldActorLook(short bones, short lookId, short headId, short scale, int[] colors) {
+        this(bones, new short[] {lookId, headId}, new short[]{scale}, WorldActorLooks.toIndexedColors(colors));
+    }
+
+    public int getLookId() {
+        if (skins.length <= 0) {
+            throw new IllegalStateException();
+        }
+        return skins[0];
+    }
+
+    public int getHeadId() {
+        if (skins.length <= 1) {
+            throw new IllegalStateException();
+        }
+        return skins[1];
+    }
+
+    public int getScale() {
+        if (scales.length != 1) {
+            throw new IllegalStateException();
+        }
+        return scales[0];
+    }
 
     public EntityLook toEntityLook() {
         return new EntityLook(
-                bones.value,
-                new short[] {lookId, headId}, // TODO(world): entity look skins
+                bones,
+                skins,
                 colors,
-                new short[] {scale},
+                scales,
                 Stream.empty() // TODO(world): entity look subentities
         );
     }
 
-    public enum Bones {
-        STANDING(1),
-        MOUNTING(639),
+    public static final short
+        STANDING_BONES = 1,
+        MOUNTING_BONES = 639
         ;
-
-        public final short value;
-
-        Bones(int value) {
-            this.value = (short) value;
-        }
-    }
-
-    public static int[] toIndexedColors(int[] colors) {
-        // << index :: size(8), color :: size(24) >>
-        int[] res = new int[colors.length];
-        for (int i = 0; i < colors.length; i++) {
-            res[i] = (((i + 1) & 0xFF) << 24) | (colors[i] & 0xFFFFFF);
-        }
-        return res;
-    }
 }

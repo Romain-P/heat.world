@@ -154,7 +154,7 @@ public class DefaultPlayerFactory implements PlayerFactory, Service {
         short headId = Short.parseShort(head.getSkins());
 
 
-        return new WorldActorLook(WorldActorLook.Bones.STANDING, lookId, headId, scale, WorldActorLook.toIndexedColors(colors));
+        return new WorldActorLook(WorldActorLook.STANDING_BONES, lookId, headId, scale, colors);
     }
 
     @SuppressWarnings("UnusedParameters")

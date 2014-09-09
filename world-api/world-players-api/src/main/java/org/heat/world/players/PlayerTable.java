@@ -193,7 +193,7 @@ public final class PlayerTable implements Table<Player> {
         player.setBreed(datacenter.find(Breed.class, rset.getInt("breedId")).get());
         player.setSex(rset.getBoolean("sex"));
         player.setLook(new WorldActorLook(
-                WorldActorLook.Bones.STANDING,
+                WorldActorLook.STANDING_BONES,
                 rset.getShort("lookId"),
                 rset.getShort("headId"),
                 rset.getShort("scale"),
