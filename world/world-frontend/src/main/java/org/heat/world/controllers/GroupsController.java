@@ -131,14 +131,17 @@ public class GroupsController {
 
     @Disconnect
     public void onDisconnect() {
-        for (WorldGroup group : groups.values()) {
-            group.getEventBus().unsubscribe(this);
-            client.getEventBus().publish(new QuitChannelEvent(group));
+        if (groups != null) {
+            for (WorldGroup group : groups.values()) {
+                group.getEventBus().unsubscribe(this);
+                client.getEventBus().publish(new QuitChannelEvent(group));
 
-            group.leave(player.get());
+                group.leave(player.get());
+            }
+
+            groups.clear();
         }
 
-        groups.clear();
         mainGroup.remove();
     }
 
