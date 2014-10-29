@@ -95,3 +95,9 @@ flyway {
 task wrapper(type: Wrapper) {
     gradleVersion = '1.12'
 }
+
+task docs(type: Javadoc) {
+    source         = files(allprojects*.sourceSets*.main*.allJava)
+    classpath      = files(allprojects*.sourceSets*.main*.compileClasspath)
+    destinationDir = file("${buildDir}/docs/docs")
+}
