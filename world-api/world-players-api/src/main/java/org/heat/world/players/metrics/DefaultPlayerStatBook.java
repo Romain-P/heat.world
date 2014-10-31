@@ -121,4 +121,12 @@ public final class DefaultPlayerStatBook implements PlayerStatBook {
     public DefaultPlayerStatBook copy() {
         return new DefaultPlayerStatBook(breed, GameStats.copy(map), statsPoints, spellsPoints);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ImmutableMap<GameStats<?>, GameStat> copyAsMap() {
+        return GameStats.copy(map);
+    }
 }
