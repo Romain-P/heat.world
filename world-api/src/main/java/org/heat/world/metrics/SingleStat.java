@@ -9,7 +9,7 @@ import org.heat.shared.Arithmetics;
 @RequiredArgsConstructor
 @AllArgsConstructor
 public final class SingleStat implements GameStat {
-    final GameStats<LimitStat> id;
+    final GameStats<SingleStat> id;
 
     short current;
 

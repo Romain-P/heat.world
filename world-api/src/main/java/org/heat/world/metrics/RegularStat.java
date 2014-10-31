@@ -10,7 +10,7 @@ import org.heat.shared.Arithmetics;
 @RequiredArgsConstructor
 @AllArgsConstructor
 public final class RegularStat implements GameStat {
-    final GameStats<LimitStat> id;
+    final GameStats<RegularStat> id;
 
     short base, objectsAndMountBonus, alignGiftBonus, contextModif;
 
