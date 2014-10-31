@@ -48,6 +48,13 @@ public final class DefaultPlayerStatBook implements PlayerStatBook {
         get(INTELLIGENCE).setBase(intelligence);
     }
 
+    public DefaultPlayerStatBook(Breed breed, ImmutableMap<GameStats<?>, GameStat> map, int statsPoints, int spellsPoints) {
+        this.breed = breed;
+        this.map = map;
+        this.statsPoints = statsPoints;
+        this.spellsPoints = spellsPoints;
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     public <T extends GameStat> T get(GameStats<T> id) {
@@ -105,5 +112,13 @@ public final class DefaultPlayerStatBook implements PlayerStatBook {
     public void unapply(WorldItem item) {
         WorldItemEffectApplier applier = new WorldItemEffectApplier(this, item, false);
         item.getEffects().forEach(e -> e.<Unit>visit(applier));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DefaultPlayerStatBook copy() {
+        return new DefaultPlayerStatBook(breed, GameStats.copy(map), statsPoints, spellsPoints);
     }
 }

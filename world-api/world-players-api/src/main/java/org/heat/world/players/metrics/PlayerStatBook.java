@@ -35,6 +35,12 @@ public interface PlayerStatBook extends GameStatBook {
     void unapply(WorldItem item);
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    PlayerStatBook copy();
+
+    /**
      * Apply one by one items' effects to this stat book
      * @param items a non-null, non-leaking stream
      */

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Optional;
 
 public final class GameStats<T extends GameStat> implements Serializable {
@@ -74,6 +75,15 @@ public final class GameStats<T extends GameStat> implements Serializable {
             map.put(value, value.createStat());
         }
         return map.build();
+    }
+
+    public static ImmutableMap<GameStats<?>, GameStat> copy(ImmutableMap<GameStats<?>, GameStat> map) {
+        ImmutableMap.Builder<GameStats<?>, GameStat> copy = ImmutableMap.builder();
+        for (Map.Entry<GameStats<?>, GameStat> entry : map.entrySet()) {
+            GameStat copiedStat = entry.getValue().copy();
+            copy.put(entry.getKey(), copiedStat);
+        }
+        return copy.build();
     }
 
     public static final GameStats<LimitStat> LIFE = new GameStats<>("LIFE", LimitStat.class );
