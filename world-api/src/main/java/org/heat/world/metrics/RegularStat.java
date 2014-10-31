@@ -1,10 +1,14 @@
 package org.heat.world.metrics;
 
 import com.ankamagames.dofus.network.types.game.character.characteristic.CharacterBaseCharacteristic;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.heat.shared.Arithmetics;
 
 @Data
+@RequiredArgsConstructor
+@AllArgsConstructor
 public final class RegularStat implements GameStat {
     final GameStats<LimitStat> id;
 
@@ -38,5 +42,10 @@ public final class RegularStat implements GameStat {
     @Override
     public void plusEquipment(short equipment) {
         plusObjectsAndMountBonus(equipment);
+    }
+
+    @Override
+    public RegularStat copy() {
+        return new RegularStat(id, base, objectsAndMountBonus, alignGiftBonus, contextModif);
     }
 }

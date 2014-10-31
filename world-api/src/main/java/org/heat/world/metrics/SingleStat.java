@@ -1,9 +1,13 @@
 package org.heat.world.metrics;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.heat.shared.Arithmetics;
 
 @Data
+@RequiredArgsConstructor
+@AllArgsConstructor
 public final class SingleStat implements GameStat {
     final GameStats<LimitStat> id;
 
@@ -21,5 +25,10 @@ public final class SingleStat implements GameStat {
     @Override
     public void plusEquipment(short equipment) {
         plus(equipment);
+    }
+
+    @Override
+    public SingleStat copy() {
+        return new SingleStat(id, current);
     }
 }

@@ -1,10 +1,14 @@
 package org.heat.world.metrics;
 
 import com.google.common.primitives.Shorts;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.heat.shared.Arithmetics;
 
 @Data
+@RequiredArgsConstructor
+@AllArgsConstructor
 public final class LimitStat implements GameStat {
     final GameStats<LimitStat> id;
 
@@ -72,5 +76,10 @@ public final class LimitStat implements GameStat {
 
         // less here
         plus(equipment);
+    }
+
+    @Override
+    public LimitStat copy() {
+        return new LimitStat(id, current, min, max);
     }
 }
