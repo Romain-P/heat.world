@@ -103,7 +103,7 @@ public class PlayerTradesController {
         PlayerTrade trade = tradeFactory.apply(player, target);
 
         target.getEventBus().publish(new InvitePlayerTradeEvent(trade, player))
-            .filter(answers -> answers.contains(InvitePlayerTradeEvent.Ack)).toUnit()
+//            .filter(answers -> answers.contains(InvitePlayerTradeEvent.Ack)).toUnit()
             .onSuccess(u -> {
                 currentAction.set(new TradeAction(trade, WorldTradeSide.FIRST));
                 trade.getEventBus().subscribe(this);
